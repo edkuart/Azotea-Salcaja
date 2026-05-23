@@ -1,0 +1,381 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  owner
+  admin
+  editor
+}
+
+enum EventType {
+  restaurant
+  chess
+  community
+}
+
+enum PublishStatus {
+  draft
+  published
+  archived
+}
+
+enum TournamentKind {
+  official
+  private
+}
+
+enum TournamentVisibility {
+  draft
+  published
+  unlisted
+  archived
+}
+
+enum TournamentSystem {
+  swiss
+  round_robin
+}
+
+enum TournamentStatus {
+  setup
+  active
+  closed
+  cancelled
+}
+
+enum PlayerStatus {
+  active
+  withdrawn
+  absent
+}
+
+enum RoundStatus {
+  pending
+  paired
+  in_progress
+  completed
+  locked
+}
+
+enum GameResult {
+  white_win
+  black_win
+  draw
+  white_forfeit
+  black_forfeit
+  double_forfeit
+  bye
+  unplayed
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      UserRole @default(editor)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  auditLogs        AdminAuditLog[]
+  mediaAssets      MediaAsset[]
+  chessTournaments ChessTournament[]
+
+  @@map("users")
+}
+
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  userId     String?  @map("user_id")
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  action     String
+  beforeJson Json?    @map("before_json")
+  afterJson  Json?    @map("after_json")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("admin_audit_logs")
+}
+
+model RestaurantProfile {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String?
+  address       String?
+  mapsUrl       String?  @map("maps_url")
+  latitude      Decimal?
+  longitude     Decimal?
+  phone         String?
+  whatsappPhone String?  @map("whatsapp_phone")
+  email         String?
+  instagramUrl  String?  @map("instagram_url")
+  facebookUrl   String?  @map("facebook_url")
+  tiktokUrl     String?  @map("tiktok_url")
+  priceRange    String?  @map("price_range")
+  servesCuisine String?  @map("serves_cuisine")
+  heroImageId   String?  @map("hero_image_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  heroImage     MediaAsset?    @relation("RestaurantHeroImage", fields: [heroImageId], references: [id], onDelete: SetNull)
+  businessHours BusinessHour[]
+  categories    MenuCategory[]
+
+  @@map("restaurant_profiles")
+}
+
+model BusinessHour {
+  id           String  @id @default(cuid())
+  restaurantId String  @map("restaurant_id")
+  dayOfWeek    Int     @map("day_of_week")
+  opensAt      String? @map("opens_at")
+  closesAt     String? @map("closes_at")
+  isClosed     Boolean @default(false) @map("is_closed")
+  note         String?
+
+  restaurant RestaurantProfile @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, dayOfWeek])
+  @@map("business_hours")
+}
+
+model MenuCategory {
+  id           String  @id @default(cuid())
+  restaurantId String  @map("restaurant_id")
+  name         String
+  slug         String
+  description  String?
+  sortOrder    Int     @default(0) @map("sort_order")
+  isActive     Boolean @default(true) @map("is_active")
+
+  restaurant RestaurantProfile @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  products   Product[]
+
+  @@unique([restaurantId, slug])
+  @@map("menu_categories")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  categoryId  String   @map("category_id")
+  name        String
+  slug        String
+  description String?
+  priceCents  Int      @map("price_cents")
+  currency    String   @default("GTQ")
+  imageId     String?  @map("image_id")
+  isFeatured  Boolean  @default(false) @map("is_featured")
+  isAvailable Boolean  @default(true) @map("is_available")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  category MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  image    MediaAsset?  @relation("ProductImage", fields: [imageId], references: [id], onDelete: SetNull)
+
+  @@unique([categoryId, slug])
+  @@map("products")
+}
+
+model Promotion {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  startsAt    DateTime? @map("starts_at")
+  endsAt      DateTime? @map("ends_at")
+  imageId     String?   @map("image_id")
+  isPublished Boolean   @default(false) @map("is_published")
+
+  image MediaAsset? @relation("PromotionImage", fields: [imageId], references: [id], onDelete: SetNull)
+
+  @@map("promotions")
+}
+
+model Event {
+  id            String        @id @default(cuid())
+  title         String
+  slug          String        @unique
+  type          EventType
+  description   String?
+  startsAt      DateTime      @map("starts_at")
+  endsAt        DateTime?     @map("ends_at")
+  locationLabel String?       @map("location_label")
+  imageId       String?       @map("image_id")
+  status        PublishStatus @default(draft)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  image MediaAsset? @relation("EventImage", fields: [imageId], references: [id], onDelete: SetNull)
+
+  @@map("events")
+}
+
+model MediaAsset {
+  id              String   @id @default(cuid())
+  bucket          String
+  path            String
+  publicUrl       String?  @map("public_url")
+  altText         String?  @map("alt_text")
+  mimeType        String   @map("mime_type")
+  width           Int?
+  height          Int?
+  sizeBytes       Int?     @map("size_bytes")
+  createdByUserId String?  @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  createdBy User? @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  restaurantHeroImages RestaurantProfile[] @relation("RestaurantHeroImage")
+  productImages        Product[]           @relation("ProductImage")
+  promotionImages      Promotion[]         @relation("PromotionImage")
+  eventImages          Event[]             @relation("EventImage")
+  chessPlayerPhotos    ChessPlayer[]       @relation("ChessPlayerPhoto")
+
+  @@unique([bucket, path])
+  @@map("media_assets")
+}
+
+model ChessTournament {
+  id                 String               @id @default(cuid())
+  kind               TournamentKind
+  visibility         TournamentVisibility @default(draft)
+  title              String
+  slug               String?
+  description        String?
+  system             TournamentSystem
+  roundsPlanned      Int                  @map("rounds_planned")
+  currentRoundNumber Int                  @default(0) @map("current_round_number")
+  status             TournamentStatus     @default(setup)
+  startsAt           DateTime?            @map("starts_at")
+  locationLabel      String?              @map("location_label")
+  byePoints          Decimal              @default(1) @map("bye_points")
+  forfeitWinPoints   Decimal              @default(1) @map("forfeit_win_points")
+  forfeitLossPoints  Decimal              @default(0) @map("forfeit_loss_points")
+  drawPoints         Decimal              @default(0.5) @map("draw_points")
+  winPoints          Decimal              @default(1) @map("win_points")
+  lossPoints         Decimal              @default(0) @map("loss_points")
+  tieBreakOrderJson  Json                 @map("tie_break_order_json")
+  publicTokenHash    String?              @map("public_token_hash")
+  manageTokenHash    String?              @map("manage_token_hash")
+  createdByUserId    String?              @map("created_by_user_id")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+
+  createdBy       User?                      @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  players         ChessPlayer[]
+  rounds          ChessRound[]
+  games           ChessGame[]
+  standings       ChessStandingsSnapshot[]
+  pairingAttempts ChessPairingAttempt[]
+  privateSessions PrivateTournamentSession[]
+
+  @@unique([kind, slug])
+  @@map("chess_tournaments")
+}
+
+model ChessPlayer {
+  id                  String       @id @default(cuid())
+  tournamentId        String       @map("tournament_id")
+  name                String
+  rating              Int?
+  seed                Int?
+  photoId             String?      @map("photo_id")
+  status              PlayerStatus @default(active)
+  withdrawnAfterRound Int?         @map("withdrawn_after_round")
+  createdAt           DateTime     @default(now()) @map("created_at")
+
+  tournament ChessTournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  photo      MediaAsset?     @relation("ChessPlayerPhoto", fields: [photoId], references: [id], onDelete: SetNull)
+  whiteGames ChessGame[]     @relation("WhitePlayer")
+  blackGames ChessGame[]     @relation("BlackPlayer")
+
+  @@map("chess_players")
+}
+
+model ChessRound {
+  id           String      @id @default(cuid())
+  tournamentId String      @map("tournament_id")
+  roundNumber  Int         @map("round_number")
+  status       RoundStatus @default(pending)
+  generatedAt  DateTime?   @map("generated_at")
+  lockedAt     DateTime?   @map("locked_at")
+
+  tournament ChessTournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  games      ChessGame[]
+
+  @@unique([tournamentId, roundNumber])
+  @@map("chess_rounds")
+}
+
+model ChessGame {
+  id               String     @id @default(cuid())
+  tournamentId     String     @map("tournament_id")
+  roundId          String     @map("round_id")
+  boardNumber      Int        @map("board_number")
+  whitePlayerId    String?    @map("white_player_id")
+  blackPlayerId    String?    @map("black_player_id")
+  result           GameResult @default(unplayed)
+  whiteScore       Decimal?   @map("white_score")
+  blackScore       Decimal?   @map("black_score")
+  isBye            Boolean    @default(false) @map("is_bye")
+  isForfeit        Boolean    @default(false) @map("is_forfeit")
+  reportedByUserId String?    @map("reported_by_user_id")
+  reportedAt       DateTime?  @map("reported_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  tournament  ChessTournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  round       ChessRound      @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  whitePlayer ChessPlayer?    @relation("WhitePlayer", fields: [whitePlayerId], references: [id], onDelete: SetNull)
+  blackPlayer ChessPlayer?    @relation("BlackPlayer", fields: [blackPlayerId], references: [id], onDelete: SetNull)
+
+  @@unique([roundId, boardNumber])
+  @@map("chess_games")
+}
+
+model ChessStandingsSnapshot {
+  id            String   @id @default(cuid())
+  tournamentId  String   @map("tournament_id")
+  roundNumber   Int      @map("round_number")
+  standingsJson Json     @map("standings_json")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  tournament ChessTournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, roundNumber])
+  @@map("chess_standings_snapshots")
+}
+
+model ChessPairingAttempt {
+  id           String   @id @default(cuid())
+  tournamentId String   @map("tournament_id")
+  roundNumber  Int      @map("round_number")
+  algorithm    String
+  inputJson    Json     @map("input_json")
+  outputJson   Json     @map("output_json")
+  warningsJson Json?    @map("warnings_json")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tournament ChessTournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@map("chess_pairing_attempts")
+}
+
+model PrivateTournamentSession {
+  id              String   @id @default(cuid())
+  tournamentId    String   @map("tournament_id")
+  deviceLabel     String?  @map("device_label")
+  manageTokenHash String   @map("manage_token_hash")
+  lastSeenAt      DateTime @default(now()) @map("last_seen_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  tournament ChessTournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@map("private_tournament_sessions")
+}
