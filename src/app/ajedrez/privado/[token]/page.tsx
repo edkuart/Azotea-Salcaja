@@ -56,7 +56,7 @@ export default async function PrivateTournamentPage({
               Torneo privado casual
             </p>
             <p className="mt-2 leading-6">
-              Este link no pertenece a un torneo oficial de Azotea Salcaja y no
+              Este link no pertenece a un torneo oficial de Azotea Salcajá y no
               aparece en listados publicos.
             </p>
           </div>

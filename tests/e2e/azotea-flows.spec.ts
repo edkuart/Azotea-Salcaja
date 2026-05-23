@@ -10,7 +10,7 @@ async function capture(page: Page, name: string) {
 test.describe("public restaurant flows", () => {
   test("home, menu, events, contact and chess pages render", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Azotea Salcaja" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Azotea Salcajá" })).toBeVisible();
     await capture(page, "home");
 
     await page
@@ -19,7 +19,7 @@ test.describe("public restaurant flows", () => {
       .click();
     await expect(page).toHaveURL("/menu");
     await expect(page.getByRole("heading", { name: "Menu" })).toBeVisible();
-    await expect(page.getByText("Hamburguesa Salcaja")).toBeVisible();
+    await expect(page.getByText("Hamburguesa Salcajá")).toBeVisible();
     await capture(page, "menu");
 
     await page
@@ -35,7 +35,7 @@ test.describe("public restaurant flows", () => {
       .getByRole("link", { exact: true, name: "Contacto" })
       .click();
     await expect(page).toHaveURL("/contacto");
-    await expect(page.getByRole("heading", { name: "Visitanos en Salcaja" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Visitanos en Salcajá" })).toBeVisible();
     await capture(page, "contacto");
 
     await page

@@ -7,7 +7,7 @@ import { publicEvents } from "@/modules/events/public-data";
 
 export const metadata: Metadata = {
   title: "Eventos",
-  description: "Eventos, actividades y comunidad en Azotea Salcaja.",
+  description: "Eventos, actividades y comunidad en Azotea Salcajá.",
 };
 
 export default function EventsPage() {

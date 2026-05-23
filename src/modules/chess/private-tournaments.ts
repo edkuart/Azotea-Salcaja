@@ -92,7 +92,7 @@ export function privateDraftToTournament(
     title: draft.title,
     slug: token,
     description:
-      "Torneo casual creado por link. No es un evento oficial publicado por Azotea Salcaja.",
+      "Torneo casual creado por link. No es un evento oficial publicado por Azotea Salcajá.",
     recap:
       "Torneo privado/no oficial para uso rapido entre amigos o grupos pequenos.",
     system: draft.system as TournamentSystem,

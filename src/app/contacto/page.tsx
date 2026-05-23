@@ -7,7 +7,7 @@ import { restaurantInfo } from "@/modules/restaurant/public-data";
 
 export const metadata: Metadata = {
   title: "Contacto",
-  description: "Ubicacion, horarios y contacto de Azotea Salcaja.",
+  description: "Ubicacion, horarios y contacto de Azotea Salcajá.",
 };
 
 export default function ContactPage() {
@@ -19,7 +19,7 @@ export default function ContactPage() {
             Contacto
           </p>
           <h1 className="mt-3 text-4xl font-semibold text-stone-950">
-            Visitanos en Salcaja
+            Visitanos en Salcajá
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-stone-700">
             Encuentra horarios, direccion y enlaces directos para pedir

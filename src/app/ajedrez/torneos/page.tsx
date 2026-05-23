@@ -14,7 +14,7 @@ import { getTournamentCoverImage } from "@/modules/chess/publication";
 
 export const metadata: Metadata = {
   title: "Torneos de ajedrez",
-  description: "Torneos oficiales de ajedrez publicados por Azotea Salcaja.",
+  description: "Torneos oficiales de ajedrez publicados por Azotea Salcajá.",
 };
 
 export default function ChessTournamentsPage() {
@@ -41,7 +41,7 @@ export default function ChessTournamentsPage() {
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-stone-100">
               Resultados, pareos e historias de las noches de ajedrez en Azotea
-              Salcaja, listos para compartir con jugadores y visitantes.
+              Salcajá, listos para compartir con jugadores y visitantes.
             </p>
           </div>
         </section>
@@ -119,7 +119,7 @@ export default function ChessTournamentsPage() {
             <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-600">
               Los torneos oficiales son publicados por el restaurante. Los
               torneos casuales por link se mantendran separados para no
-              confundirse con eventos oficiales de Azotea Salcaja.
+              confundirse con eventos oficiales de Azotea Salcajá.
             </p>
           </div>
         </Section>

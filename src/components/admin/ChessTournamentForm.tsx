@@ -48,7 +48,7 @@ export function ChessTournamentForm({
         <TextField
           defaultValue={tournament?.locationLabel}
           label="Ubicacion"
-          placeholder="Azotea Salcaja"
+          placeholder="Azotea Salcajá"
         />
       </div>
 

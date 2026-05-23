@@ -1,15 +1,7 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  CalendarDays,
-  Clock,
-  MapPin,
-  MessageCircle,
-  Trophy,
-} from "lucide-react";
+import { ArrowRight, CalendarDays } from "lucide-react";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
-import { Section } from "@/components/public/Section";
 import { chessCommunity } from "@/modules/chess/public-data";
 import { publicEvents } from "@/modules/events/public-data";
 import {
@@ -22,236 +14,444 @@ export default function Home() {
   return (
     <PublicLayout>
       <main>
+
+        {/* ── HERO ── */}
         <section
-          className="relative flex min-h-[78svh] items-end overflow-hidden bg-stone-950"
+          className="relative overflow-hidden border-b-[3px]"
           style={{
-            backgroundImage: `linear-gradient(90deg, rgba(28,25,23,0.82), rgba(28,25,23,0.36)), url(${restaurantInfo.heroImage})`,
-            backgroundPosition: "center",
-            backgroundSize: "cover",
+            background: "var(--color-ink)",
+            color: "var(--color-cream)",
+            borderColor: "var(--color-stage)",
+            padding: "96px 0 120px",
           }}
         >
-          <div className="mx-auto w-full max-w-6xl px-4 pb-12 pt-28 text-white sm:px-6 lg:px-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-200">
-              Restaurante local en Salcaja
-            </p>
-            <h1 className="mt-4 max-w-3xl text-5xl font-semibold leading-tight sm:text-6xl lg:text-7xl">
-              {restaurantInfo.name}
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-stone-100 sm:text-lg">
-              {restaurantInfo.tagline}. Menu, eventos, contacto directo y una
-              comunidad de ajedrez que se reune cada lunes por la noche.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-amber-300 px-5 text-sm font-semibold text-stone-950 transition hover:bg-amber-200"
-                href="/menu"
+          {/* Ghost typography watermark */}
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              bottom: "-22%",
+              left: "-6%",
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(14rem, 28vw, 26rem)",
+              lineHeight: 0.8,
+              color: "var(--color-cream)",
+              opacity: 0.045,
+              pointerEvents: "none",
+              whiteSpace: "nowrap",
+              userSelect: "none",
+            }}
+          >
+            AZOTEA
+          </div>
+
+          {/* Spinning vinyl disc */}
+          <div
+            aria-hidden="true"
+            className="vinyl-disc animate-vinyl-slow parallax-slow"
+            style={{
+              width: "560px",
+              height: "560px",
+              position: "absolute",
+              right: "-160px",
+              top: "-100px",
+              opacity: 0.9,
+            }}
+          />
+
+          {/* Content */}
+          <div
+            className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8"
+          >
+            <span
+              className="section-label reveal"
+              style={{ color: "var(--color-marquee)" }}
+            >
+              Restaurante local en Salcajá
+            </span>
+
+            <h1
+              className="reveal"
+              data-reveal-delay="80"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "var(--text-hero)",
+                lineHeight: 0.92,
+                margin: "22px 0 0",
+                maxWidth: "18ch",
+              }}
+            >
+              Sabores para compartir{" "}
+              <em
+                style={{
+                  fontFamily: "var(--font-chess)",
+                  fontStyle: "italic",
+                  color: "var(--color-stage)",
+                }}
               >
-                Ver menu
+                sobre
+              </em>{" "}
+              Salcajá.
+            </h1>
+
+            <p
+              className="reveal"
+              data-reveal-delay="160"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "var(--text-lg)",
+                lineHeight: 1.55,
+                maxWidth: "52ch",
+                marginTop: "22px",
+                opacity: 0.88,
+              }}
+            >
+              {restaurantInfo.description} Abiertos toda la semana, con la
+              cocina hasta las diez.
+            </p>
+
+            <div
+              className="reveal flex flex-col gap-3 sm:flex-row"
+              data-reveal-delay="240"
+              style={{ marginTop: "30px" }}
+            >
+              <Link href="/menu" className="btn btn-primary">
+                Ver menú
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
               <a
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-white/70 px-5 text-sm font-semibold text-white transition hover:bg-white hover:text-stone-950"
                 href={`https://wa.me/${restaurantInfo.whatsapp}`}
+                className="btn btn-secondary"
                 rel="noreferrer"
                 target="_blank"
+                style={{ color: "var(--color-cream)", borderColor: "var(--color-cream)" }}
               >
-                <MessageCircle className="h-4 w-4" aria-hidden />
-                Escribir por WhatsApp
+                WhatsApp
               </a>
             </div>
-            <div className="mt-10 grid max-w-3xl gap-3 text-sm text-stone-100 sm:grid-cols-3">
-              <p className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-amber-200" aria-hidden />
-                {restaurantInfo.address}
-              </p>
-              <p className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-amber-200" aria-hidden />
-                Abierto esta semana
-              </p>
-              <p className="flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-amber-200" aria-hidden />
-                Ajedrez lunes 7:30 p.m.
-              </p>
+
+            {/* Meta strip */}
+            <div
+              className="reveal mt-14 grid max-w-3xl gap-6 sm:grid-cols-3"
+              data-reveal-delay="320"
+            >
+              <div>
+                <p
+                  className="eyebrow"
+                  style={{ color: "var(--color-marquee)" }}
+                >
+                  Dirección
+                </p>
+                <p
+                  className="mt-1.5"
+                  style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)" }}
+                >
+                  {restaurantInfo.address}
+                </p>
+              </div>
+              <div>
+                <p
+                  className="eyebrow"
+                  style={{ color: "var(--color-marquee)" }}
+                >
+                  Esta semana
+                </p>
+                <p
+                  className="mt-1.5"
+                  style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)" }}
+                >
+                  Lunes a Domingo
+                </p>
+              </div>
+              <div>
+                <p
+                  className="eyebrow"
+                  style={{ color: "var(--color-marquee)" }}
+                >
+                  Ajedrez
+                </p>
+                <p
+                  className="mt-1.5"
+                  style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)" }}
+                >
+                  Lunes 7:30 p.m.
+                </p>
+              </div>
             </div>
           </div>
         </section>
 
-        <Section>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                Menu destacado
-              </p>
-              <h2 className="mt-3 text-3xl font-semibold text-stone-950">
-                Para empezar a elegir
-              </h2>
-            </div>
-            <Link
-              className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-800"
-              href="/menu"
-            >
-              Ver catalogo completo
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
-          </div>
-
-          <div className="mt-8 grid gap-5 md:grid-cols-2">
-            {featuredProducts.map((product) => (
-              <article
-                className="grid overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm sm:grid-cols-[180px_1fr]"
-                key={product.name}
-              >
-                <div
-                  className="min-h-44 bg-stone-200"
-                  style={{
-                    backgroundImage: `url(${product.image})`,
-                    backgroundPosition: "center",
-                    backgroundSize: "cover",
-                  }}
-                />
-                <div className="p-5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-700">
-                    {product.category}
-                  </p>
-                  <h3 className="mt-3 text-xl font-semibold text-stone-950">
-                    {product.name}
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-stone-600">
-                    {product.description}
-                  </p>
-                  <p className="mt-4 text-lg font-semibold text-emerald-800">
-                    {product.price}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </Section>
-
-        <div className="bg-white">
-          <Section>
-            <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-              <div
-                className="min-h-80 rounded-lg bg-stone-200"
-                style={{
-                  backgroundImage: `url(${restaurantInfo.terraceImage})`,
-                  backgroundPosition: "center",
-                  backgroundSize: "cover",
-                }}
-              />
+        {/* ── FEATURED PRODUCTS ── */}
+        <section
+          className="section-restaurant py-16 sm:py-24"
+        >
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                  Catalogo digital
-                </p>
-                <h2 className="mt-3 text-3xl font-semibold text-stone-950">
-                  Menu claro, precios visibles y contacto inmediato
+                <span
+                  className="section-label reveal"
+                  style={{ color: "var(--color-stage)" }}
+                >
+                  Menú destacado
+                </span>
+                <h2
+                  className="reveal mt-4"
+                  data-reveal-delay="80"
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "var(--text-3xl)",
+                    lineHeight: 1,
+                  }}
+                >
+                  Para empezar a elegir.
                 </h2>
-                <p className="mt-4 text-base leading-7 text-stone-700">
-                  El MVP inicia como catalogo profesional sin carrito. Cada
-                  categoria puede crecer con fotos, disponibilidad, destacados y
-                  promociones administrables.
-                </p>
-                <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                  {menuCategories.map((category) => (
+              </div>
+              <Link
+                href="/menu"
+                className="reveal inline-flex items-center gap-2 no-underline transition-opacity hover:opacity-70"
+                data-reveal-delay="80"
+                style={{
+                  fontFamily: "var(--font-poster)",
+                  fontSize: "var(--text-xs)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.2em",
+                  color: "var(--color-stage)",
+                }}
+              >
+                Ver catálogo completo
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+              </Link>
+            </div>
+
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {featuredProducts.map((product, i) => {
+                const duotones = ["duotone-red", "duotone-gold", "duotone-night"];
+                const duotone = duotones[i % duotones.length];
+                return (
+                  <article
+                    className={`product-card reveal`}
+                    key={product.name}
+                    data-reveal-delay={String(i * 80)}
+                  >
                     <div
-                      className="rounded-lg border border-stone-200 bg-[#fbfaf7] p-4"
-                      key={category.name}
-                    >
-                      <p className="font-semibold text-stone-950">
-                        {category.name}
-                      </p>
-                      <p className="mt-2 text-sm leading-5 text-stone-600">
-                        {category.description}
-                      </p>
+                      className={`card-img ${duotone}`}
+                      style={{ backgroundImage: `url(${product.image})` }}
+                    />
+                    <div className="card-body">
+                      <span className="card-cat">{product.category}</span>
+                      <h3 className="card-name">{product.name}</h3>
+                      <p className="card-desc">{product.description}</p>
+                      <p className="card-price">{product.price}</p>
                     </div>
-                  ))}
-                </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ── MENU CATEGORIES ── */}
+        <section
+          className="section-chess py-16 sm:py-20"
+        >
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:items-center">
+              <div>
+                <span
+                  className="section-label reveal"
+                  style={{ color: "var(--color-gold)" }}
+                >
+                  Catálogo digital
+                </span>
+                <h2
+                  className="reveal mt-4"
+                  data-reveal-delay="80"
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "var(--text-3xl)",
+                    lineHeight: 1,
+                    color: "var(--color-board)",
+                  }}
+                >
+                  Menú claro, precios visibles.
+                </h2>
+                <p
+                  className="reveal mt-4 max-w-[52ch] leading-7 opacity-85"
+                  data-reveal-delay="160"
+                  style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-lg)", color: "var(--color-board)" }}
+                >
+                  Cada categoría con fotos, disponibilidad y destacados
+                  administrables desde el panel. Sin carrito — solo contacto
+                  directo por WhatsApp.
+                </p>
+                <Link
+                  href="/menu"
+                  className="btn btn-primary reveal mt-8"
+                  data-reveal-delay="240"
+                >
+                  Ver menú completo
+                </Link>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1 lg:gap-3">
+                {menuCategories.map((category, i) => (
+                  <div
+                    key={category.name}
+                    className="reveal border-l-4 py-3 pl-5"
+                    data-reveal-delay={String(i * 80)}
+                    style={{ borderColor: "var(--color-gold)" }}
+                  >
+                    <p
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontSize: "var(--text-xl)",
+                        color: "var(--color-board)",
+                        lineHeight: 1,
+                      }}
+                    >
+                      {category.name}
+                    </p>
+                    <p
+                      className="mt-1.5 opacity-75"
+                      style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", color: "var(--color-board)" }}
+                    >
+                      {category.description}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
-          </Section>
-        </div>
+          </div>
+        </section>
 
-        <Section>
-          <div className="grid gap-5 lg:grid-cols-3">
-            {publicEvents.slice(0, 2).map((event) => (
-              <article
-                className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm"
-                key={event.title}
-              >
-                <div
-                  className="h-48 bg-stone-200"
-                  style={{
-                    backgroundImage: `url(${event.image})`,
-                    backgroundPosition: "center",
-                    backgroundSize: "cover",
-                  }}
-                />
-                <div className="p-5">
-                  <p className="flex items-center gap-2 text-sm font-semibold text-emerald-800">
-                    <CalendarDays className="h-4 w-4" aria-hidden />
-                    {event.date} - {event.time}
-                  </p>
-                  <h3 className="mt-3 text-xl font-semibold text-stone-950">
-                    {event.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-stone-600">
-                    {event.description}
-                  </p>
-                </div>
-              </article>
-            ))}
-
-            <article
-              className="rounded-lg border border-stone-200 bg-stone-950 p-6 text-white"
+        {/* ── EVENTS ── */}
+        <section className="section-restaurant py-16 sm:py-24">
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+            <span
+              className="section-label reveal"
+              style={{ color: "var(--color-stage)" }}
+            >
+              Esta semana en la azotea
+            </span>
+            <h2
+              className="reveal mt-4"
+              data-reveal-delay="80"
               style={{
-                backgroundImage: `linear-gradient(rgba(28,25,23,0.75), rgba(28,25,23,0.75)), url(${chessCommunity.image})`,
-                backgroundPosition: "center",
-                backgroundSize: "cover",
+                fontFamily: "var(--font-display)",
+                fontSize: "var(--text-3xl)",
+                lineHeight: 1,
               }}
             >
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-200">
-                Comunidad
-              </p>
-              <h3 className="mt-3 text-2xl font-semibold">
-                {chessCommunity.title}
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-stone-100">
-                {chessCommunity.description}
-              </p>
-              <Link
-                className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-amber-200"
-                href="/ajedrez"
-              >
-                Ver ajedrez
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-            </article>
-          </div>
-        </Section>
+              Eventos y comunidad.
+            </h2>
 
-        <div className="bg-emerald-800 text-white">
-          <Section className="py-10">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-8 grid gap-5 lg:grid-cols-3">
+              {/* Featured chess event card */}
+              <article
+                className="event-card featured reveal"
+                data-reveal-delay="0"
+              >
+                <span className="eyebrow">Comunidad · Lunes</span>
+                <h3 className="card-title">{chessCommunity.title}</h3>
+                <span className="card-when">Todos los lunes · {chessCommunity.schedule}</span>
+                <p className="card-desc">{chessCommunity.description}</p>
+                <div className="mt-2">
+                  <Link
+                    href="/ajedrez"
+                    className="btn btn-secondary"
+                    style={{ color: "var(--color-cream)", borderColor: "var(--color-cream)" }}
+                  >
+                    Ver ajedrez
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                  </Link>
+                </div>
+              </article>
+
+              {/* Regular event cards */}
+              {publicEvents.slice(0, 2).map((event, i) => (
+                <article
+                  key={event.title}
+                  className="event-card reveal"
+                  data-reveal-delay={String((i + 1) * 80)}
+                >
+                  {event.image && (
+                    <div
+                      className="h-48 border-b-2 border-[var(--color-ink)]"
+                      style={{
+                        backgroundImage: `url(${event.image})`,
+                        backgroundPosition: "center",
+                        backgroundSize: "cover",
+                        marginBottom: "4px",
+                      }}
+                    />
+                  )}
+                  <span className="eyebrow">{event.type}</span>
+                  <h3 className="card-title">{event.title}</h3>
+                  <span className="card-when flex items-center gap-2">
+                    <CalendarDays className="h-3.5 w-3.5" aria-hidden />
+                    {event.date} · {event.time}
+                  </span>
+                  <p className="card-desc">{event.description}</p>
+                </article>
+              ))}
+            </div>
+
+            <div className="mt-4 text-right">
+              <Link
+                href="/eventos"
+                className="inline-flex items-center gap-2 no-underline transition-opacity hover:opacity-70"
+                style={{
+                  fontFamily: "var(--font-poster)",
+                  fontSize: "var(--text-xs)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.2em",
+                  color: "var(--color-stage)",
+                }}
+              >
+                Ver todos los eventos
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ── WHATSAPP CTA ── */}
+        <section
+          className="section-events py-14"
+          style={{ borderTop: "3px solid var(--color-ink)" }}
+        >
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-200">
-                  Contacto rapido
+                <p
+                  className="eyebrow"
+                  style={{ color: "var(--color-marquee)" }}
+                >
+                  Contacto rápido
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold">
+                <h2
+                  className="mt-2"
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "var(--text-2xl)",
+                    lineHeight: 1.1,
+                  }}
+                >
                   Pregunta por horarios, productos o eventos.
                 </h2>
               </div>
               <a
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-white px-5 text-sm font-semibold text-emerald-900 transition hover:bg-amber-100"
                 href={`https://wa.me/${restaurantInfo.whatsapp}`}
+                className="btn btn-poster shrink-0"
                 rel="noreferrer"
                 target="_blank"
               >
-                <MessageCircle className="h-4 w-4" aria-hidden />
                 WhatsApp
               </a>
             </div>
-          </Section>
-        </div>
+          </div>
+        </section>
+
       </main>
     </PublicLayout>
   );

@@ -47,7 +47,7 @@ export const officialChessTournaments: ChessTournament[] = [
     currentRoundNumber: 2,
     status: "active",
     startsAt: "2026-06-01 19:30",
-    locationLabel: "Azotea Salcaja",
+    locationLabel: "Azotea Salcajá",
     tieBreakOrder: ["points", "buchholz_cut_1", "buchholz", "wins"],
     players: [
       { id: "p1", name: "Carlos Mendez", rating: 1540, seed: 1, status: "active" },
@@ -149,7 +149,7 @@ export const officialChessTournaments: ChessTournament[] = [
     currentRoundNumber: 0,
     status: "setup",
     startsAt: "2026-06-08 19:30",
-    locationLabel: "Azotea Salcaja",
+    locationLabel: "Azotea Salcajá",
     tieBreakOrder: ["points", "sonneborn_berger", "direct_encounter", "wins"],
     players: [
       { id: "p7", name: "Invitado 1", seed: 1, status: "active" },

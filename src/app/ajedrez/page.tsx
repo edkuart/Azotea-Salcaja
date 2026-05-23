@@ -8,7 +8,7 @@ import { chessCommunity } from "@/modules/chess/public-data";
 
 export const metadata: Metadata = {
   title: "Ajedrez",
-  description: "Comunidad y torneos de ajedrez en Azotea Salcaja.",
+  description: "Comunidad y torneos de ajedrez en Azotea Salcajá.",
 };
 
 export default function ChessPage() {

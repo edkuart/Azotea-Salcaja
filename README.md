@@ -1,6 +1,6 @@
-# Azotea Salcaja
+# Azotea Salcajá
 
-Web mobile-first para Azotea Salcaja: catalogo digital del restaurante, eventos, contacto y modulo comunitario de ajedrez con torneos oficiales y privados.
+Web mobile-first para Azotea Salcajá: catalogo digital del restaurante, eventos, contacto y modulo comunitario de ajedrez con torneos oficiales y privados.
 
 ## Estado del MVP
 

@@ -4,33 +4,183 @@ import { restaurantInfo } from "@/modules/restaurant/public-data";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-stone-200 bg-stone-950 text-white">
-      <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr] lg:px-8">
-        <div>
-          <p className="text-xl font-semibold">{restaurantInfo.name}</p>
-          <p className="mt-3 max-w-md text-sm leading-6 text-stone-300">
-            {restaurantInfo.description}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-amber-300">
-            Explorar
-          </p>
-          <div className="mt-3 grid gap-2 text-sm text-stone-300">
-            <Link href="/menu">Menu</Link>
-            <Link href="/eventos">Eventos</Link>
-            <Link href="/ajedrez">Ajedrez</Link>
-            <Link href="/contacto">Contacto</Link>
+    <footer className="sf">
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+        {/* Big display name */}
+        <p
+          aria-label={restaurantInfo.name}
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "clamp(4rem, 12vw, 10rem)",
+            lineHeight: 0.9,
+            letterSpacing: "-0.01em",
+            margin: "0 0 36px",
+          }}
+        >
+          Azotea
+          <br />
+          <em
+            style={{
+              fontFamily: "var(--font-chess)",
+              fontStyle: "italic",
+              color: "var(--color-marquee)",
+            }}
+          >
+            Salcajá
+          </em>
+          .
+        </p>
+
+        {/* 4-column grid */}
+        <div
+          className="grid gap-8 border-t-2 pt-7 sm:grid-cols-2 lg:grid-cols-4"
+          style={{ borderColor: "var(--color-marquee)" }}
+        >
+          {/* Dirección */}
+          <div>
+            <p
+              className="mb-3"
+              style={{
+                fontFamily: "var(--font-poster)",
+                textTransform: "uppercase",
+                letterSpacing: "0.22em",
+                fontSize: "var(--text-xs)",
+                color: "var(--color-marquee)",
+              }}
+            >
+              Dirección
+            </p>
+            <p
+              className="leading-6 opacity-85"
+              style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)" }}
+            >
+              {restaurantInfo.address}
+            </p>
+          </div>
+
+          {/* Horario */}
+          <div>
+            <p
+              className="mb-3"
+              style={{
+                fontFamily: "var(--font-poster)",
+                textTransform: "uppercase",
+                letterSpacing: "0.22em",
+                fontSize: "var(--text-xs)",
+                color: "var(--color-marquee)",
+              }}
+            >
+              Horario
+            </p>
+            <div
+              className="grid gap-1 opacity-85"
+              style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)" }}
+            >
+              {restaurantInfo.hours.map((h) => (
+                <p key={h.day}>
+                  {h.day} · {h.time}
+                </p>
+              ))}
+            </div>
+          </div>
+
+          {/* Contacto */}
+          <div>
+            <p
+              className="mb-3"
+              style={{
+                fontFamily: "var(--font-poster)",
+                textTransform: "uppercase",
+                letterSpacing: "0.22em",
+                fontSize: "var(--text-xs)",
+                color: "var(--color-marquee)",
+              }}
+            >
+              Contacto
+            </p>
+            <div
+              className="grid gap-1.5 opacity-85"
+              style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)" }}
+            >
+              <a
+                href={`https://wa.me/${restaurantInfo.whatsapp}`}
+                rel="noreferrer"
+                target="_blank"
+                className="no-underline transition-opacity hover:opacity-100"
+                style={{ color: "var(--color-cream)" }}
+              >
+                WhatsApp
+              </a>
+              <a
+                href={restaurantInfo.mapsUrl}
+                rel="noreferrer"
+                target="_blank"
+                className="no-underline transition-opacity hover:opacity-100"
+                style={{ color: "var(--color-cream)" }}
+              >
+                Google Maps
+              </a>
+              <p>{restaurantInfo.phone}</p>
+            </div>
+          </div>
+
+          {/* Comunidad */}
+          <div>
+            <p
+              className="mb-3"
+              style={{
+                fontFamily: "var(--font-poster)",
+                textTransform: "uppercase",
+                letterSpacing: "0.22em",
+                fontSize: "var(--text-xs)",
+                color: "var(--color-marquee)",
+              }}
+            >
+              Comunidad
+            </p>
+            <div
+              className="grid gap-1.5 opacity-85"
+              style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)" }}
+            >
+              <Link
+                href="/ajedrez"
+                className="no-underline transition-opacity hover:opacity-100"
+                style={{ color: "var(--color-cream)" }}
+              >
+                Lunes de ajedrez
+              </Link>
+              <Link
+                href="/eventos"
+                className="no-underline transition-opacity hover:opacity-100"
+                style={{ color: "var(--color-cream)" }}
+              >
+                Eventos
+              </Link>
+              <Link
+                href="/ajedrez/crear"
+                className="no-underline transition-opacity hover:opacity-100"
+                style={{ color: "var(--color-cream)" }}
+              >
+                Torneos privados
+              </Link>
+            </div>
           </div>
         </div>
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-amber-300">
-            Visitanos
-          </p>
-          <p className="mt-3 text-sm leading-6 text-stone-300">
-            {restaurantInfo.address}
-          </p>
-          <p className="mt-2 text-sm text-stone-300">{restaurantInfo.phone}</p>
+
+        {/* Legal */}
+        <div
+          className="mt-12 flex justify-between opacity-60"
+          style={{
+            fontFamily: "var(--font-poster)",
+            textTransform: "uppercase",
+            letterSpacing: "0.22em",
+            fontSize: "10px",
+          }}
+        >
+          <span>© 2026 Azotea Salcajá</span>
+          <span className="hidden sm:inline">
+            Diseñado con vinilo, café y tablero
+          </span>
         </div>
       </div>
     </footer>

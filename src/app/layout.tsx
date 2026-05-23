@@ -1,15 +1,41 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import {
+  Abril_Fatface,
+  Anton,
+  Playfair_Display,
+  Zilla_Slab,
+} from "next/font/google";
 import "./globals.css";
+import { DesignEffects } from "@/components/DesignEffects";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const displayFont = Abril_Fatface({
+  weight: "400",
   subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const posterFont = Anton({
+  weight: "400",
   subsets: ["latin"],
+  variable: "--font-poster",
+  display: "swap",
+});
+
+const bodyFont = Zilla_Slab({
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap",
+});
+
+const chessFont = Playfair_Display({
+  weight: ["400", "700", "900"],
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-chess",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -17,16 +43,16 @@ export const metadata: Metadata = {
     process.env.APP_URL ?? "https://azotea-salcaja.vercel.app",
   ),
   title: {
-    default: "Azotea Salcaja",
-    template: "%s | Azotea Salcaja",
+    default: "Azotea Salcajá",
+    template: "%s | Azotea Salcajá",
   },
   description:
-    "Catalogo digital, eventos y comunidad de ajedrez de Azotea Salcaja.",
+    "Catalogo digital, eventos y comunidad de ajedrez de Azotea Salcajá.",
   openGraph: {
-    title: "Azotea Salcaja",
+    title: "Azotea Salcajá",
     description:
-      "Catalogo digital, eventos y comunidad de ajedrez de Azotea Salcaja.",
-    siteName: "Azotea Salcaja",
+      "Catalogo digital, eventos y comunidad de ajedrez de Azotea Salcajá.",
+    siteName: "Azotea Salcajá",
     locale: "es_GT",
     type: "website",
   },
@@ -40,9 +66,12 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${displayFont.variable} ${posterFont.variable} ${bodyFont.variable} ${chessFont.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="grain-overlay min-h-full flex flex-col">
+        <DesignEffects />
+        {children}
+      </body>
     </html>
   );
 }

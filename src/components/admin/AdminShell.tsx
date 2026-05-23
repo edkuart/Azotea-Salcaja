@@ -28,7 +28,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
               Admin
             </p>
-            <p className="mt-2 text-xl font-semibold">Azotea Salcaja</p>
+            <p className="mt-2 text-xl font-semibold">Azotea Salcajá</p>
           </div>
 
           <nav className="flex gap-1 overflow-x-auto p-3 lg:grid lg:overflow-visible">

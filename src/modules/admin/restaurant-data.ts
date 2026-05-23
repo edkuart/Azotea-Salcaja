@@ -29,5 +29,5 @@ export const adminRestaurantProfile = {
   ...restaurantInfo,
   email: "contacto@azoteasalcaja.com",
   instagram: "@azoteasalcaja",
-  facebook: "Azotea Salcaja",
+  facebook: "Azotea Salcajá",
 };

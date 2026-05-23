@@ -18,7 +18,7 @@ export function ProductForm({ values = {} }: { values?: ProductFormValues }) {
         <TextField
           defaultValue={values.name}
           label="Nombre del producto"
-          placeholder="Ej. Hamburguesa Salcaja"
+          placeholder="Ej. Hamburguesa Salcajá"
         />
         <TextField
           defaultValue={values.price}
