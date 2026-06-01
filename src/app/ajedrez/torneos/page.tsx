@@ -4,12 +4,15 @@ import { ArrowRight, CalendarDays, ListChecks, Trophy, Users } from "lucide-reac
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Section } from "@/components/public/Section";
+import { listTournaments } from "@/lib/tournament-store";
 import {
   formatTournamentStatus,
   formatTournamentSystem,
-  getPublishedOfficialTournaments,
+  getEffectiveTournamentStatus,
   getTournamentSummary,
+  isTournamentHistorical,
 } from "@/modules/chess/public-data";
+import type { ChessTournament } from "@/modules/chess/types";
 import { getTournamentCoverImage } from "@/modules/chess/publication";
 
 export const metadata: Metadata = {
@@ -17,8 +20,16 @@ export const metadata: Metadata = {
   description: "Torneos oficiales de ajedrez publicados por Azotea Salcajá.",
 };
 
+export const dynamic = "force-dynamic";
+
+function getPublicTournamentList(): ChessTournament[] {
+  return listTournaments().filter(
+    (tournament) => tournament.kind === "official",
+  );
+}
+
 export default function ChessTournamentsPage() {
-  const tournaments = getPublishedOfficialTournaments();
+  const tournaments = getPublicTournamentList();
 
   return (
     <PublicLayout>
@@ -50,6 +61,8 @@ export default function ChessTournamentsPage() {
           <div className="grid gap-5 md:grid-cols-2">
             {tournaments.map((tournament) => {
               const summary = getTournamentSummary(tournament);
+              const isHistorical = isTournamentHistorical(tournament);
+              const status = getEffectiveTournamentStatus(tournament);
 
               return (
                 <article
@@ -75,7 +88,7 @@ export default function ChessTournamentsPage() {
                         </h2>
                       </div>
                       <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
-                        {formatTournamentStatus(tournament.status)}
+                        {formatTournamentStatus(status)}
                       </span>
                     </div>
 
@@ -98,13 +111,25 @@ export default function ChessTournamentsPage() {
                       </p>
                     </div>
 
-                    <Link
-                      className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-emerald-800"
-                      href={`/ajedrez/torneos/${tournament.slug}`}
-                    >
-                      Ver torneo
-                      <ArrowRight className="h-4 w-4" aria-hidden />
-                    </Link>
+                    <div className="mt-6 flex flex-wrap gap-4">
+                      {isHistorical ? (
+                        <Link
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-800"
+                          href={`/ajedrez/torneos/${tournament.slug}`}
+                        >
+                          Ver torneo
+                          <ArrowRight className="h-4 w-4" aria-hidden />
+                        </Link>
+                      ) : (
+                        <Link
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-rose-700"
+                          href={`/ajedrez/torneos/live/${tournament.id}`}
+                        >
+                          Ver en vivo
+                          <ArrowRight className="h-4 w-4" aria-hidden />
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </article>
               );

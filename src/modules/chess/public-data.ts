@@ -164,7 +164,56 @@ export const officialChessTournaments: ChessTournament[] = [
 export function getPublishedOfficialTournaments() {
   return officialChessTournaments.filter(
     (tournament) =>
-      tournament.kind === "official" && tournament.visibility === "published",
+      tournament.kind === "official" &&
+      tournament.visibility === "published" &&
+      !isTournamentHistorical(tournament),
+  );
+}
+
+export function isTournamentHistorical(tournament: ChessTournament) {
+  return (
+    tournament.status === "closed" ||
+    tournament.status === "cancelled" ||
+    isTournamentComplete(tournament)
+  );
+}
+
+export function isTournamentComplete(tournament: ChessTournament) {
+  if (tournament.rounds.length < tournament.roundsPlanned) {
+    return false;
+  }
+
+  const lastRound = tournament.rounds.at(-1);
+  return (
+    tournament.rounds.length > 0 &&
+    (!lastRound ||
+      lastRound.games.every((game) => game.result !== "unplayed"))
+  );
+}
+
+export function getEffectiveTournamentStatus(
+  tournament: ChessTournament,
+): ChessTournament["status"] {
+  if (tournament.status === "cancelled") {
+    return "cancelled";
+  }
+
+  if (tournament.status === "closed" || isTournamentComplete(tournament)) {
+    return "closed";
+  }
+
+  return tournament.status;
+}
+
+export function getActiveOfficialTournaments() {
+  return officialChessTournaments.filter(
+    (tournament) => tournament.kind === "official" && !isTournamentHistorical(tournament),
+  );
+}
+
+export function getHistoricalOfficialTournaments() {
+  return officialChessTournaments.filter(
+    (tournament) => tournament.kind === "official" && isTournamentHistorical(tournament),
   );
 }
 

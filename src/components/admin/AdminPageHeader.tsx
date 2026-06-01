@@ -5,26 +5,88 @@ export function AdminPageHeader({
   title,
   description,
   action,
+  backHref,
+  backLabel = "Volver",
 }: {
   eyebrow: string;
   title: string;
   description?: string;
   action?: ReactNode;
+  backHref?: string;
+  backLabel?: string;
 }) {
   return (
-    <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-          {eyebrow}
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold text-stone-950">{title}</h1>
-        {description ? (
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-            {description}
+    <header style={{ paddingBottom: 20, borderBottom: "2px solid var(--color-ink)", marginBottom: 24 }}>
+      {backHref && (
+        <a
+          href={backHref}
+          style={{
+            fontFamily: "var(--font-mono, monospace)",
+            fontSize: 10,
+            textTransform: "uppercase",
+            letterSpacing: "0.2em",
+            color: "var(--color-stage)",
+            textDecoration: "none",
+            display: "inline-block",
+            marginBottom: 8,
+          }}
+        >
+          ← {backLabel}
+        </a>
+      )}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p
+            style={{
+              fontFamily: "var(--font-poster)",
+              textTransform: "uppercase",
+              letterSpacing: "0.22em",
+              fontSize: 11,
+              color: "var(--color-stage)",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <span
+              style={{
+                display: "inline-block",
+                width: 18,
+                height: 2,
+                background: "var(--color-stage)",
+                flexShrink: 0,
+              }}
+            />
+            {eyebrow}
           </p>
-        ) : null}
+          <h1
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(1.75rem, 5vw, 2.5rem)",
+              lineHeight: 1,
+              margin: "8px 0 0",
+              color: "var(--color-ink)",
+            }}
+          >
+            {title}
+          </h1>
+          {description && (
+            <p
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: 13,
+                lineHeight: 1.5,
+                color: "#555",
+                marginTop: 6,
+                maxWidth: 560,
+              }}
+            >
+              {description}
+            </p>
+          )}
+        </div>
+        {action && <div className="flex flex-col gap-2 sm:flex-row">{action}</div>}
       </div>
-      {action}
     </header>
   );
 }

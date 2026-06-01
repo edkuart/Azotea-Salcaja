@@ -40,13 +40,14 @@ function applyGameToStanding(
   const opponentScore = color === "white" ? blackScore : whiteScore;
 
   standing.points += score;
-  standing.colorHistory.push(color);
 
   if (game.isBye || game.result === "bye") {
+    standing.colorHistory.push("bye");
     standing.byes += 1;
     return;
   }
 
+  standing.colorHistory.push(color);
   standing.played += 1;
 
   if (score > opponentScore) {

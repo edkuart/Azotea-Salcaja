@@ -13,8 +13,10 @@ import {
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Section } from "@/components/public/Section";
+import { listTournaments } from "@/lib/tournament-store";
 import {
   formatGameResult,
+  getEffectiveTournamentStatus,
   formatTournamentStatus,
   formatTournamentSystem,
   getPlayerName,
@@ -22,6 +24,7 @@ import {
   getTournamentSummary,
   officialChessTournaments,
 } from "@/modules/chess/public-data";
+import type { ChessTournament } from "@/modules/chess/types";
 import { generateNextRoundPreview } from "@/modules/chess/pairings";
 import {
   getTournamentCoverImage,
@@ -37,13 +40,22 @@ export function generateStaticParams() {
   }));
 }
 
+export const dynamic = "force-dynamic";
+
+function findTournamentBySlug(slug: string): ChessTournament | undefined {
+  return (
+    listTournaments().find((item) => item.slug === slug) ??
+    officialChessTournaments.find((item) => item.slug === slug)
+  );
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const tournament = officialChessTournaments.find((item) => item.slug === slug);
+  const tournament = findTournamentBySlug(slug);
 
   if (!tournament) {
     return {
@@ -71,13 +83,14 @@ export default async function ChessTournamentDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const tournament = officialChessTournaments.find((item) => item.slug === slug);
+  const tournament = findTournamentBySlug(slug);
 
-  if (!tournament || tournament.visibility !== "published") {
+  if (!tournament) {
     notFound();
   }
 
   const summary = getTournamentSummary(tournament);
+  const status = getEffectiveTournamentStatus(tournament);
   const standings = calculateStandings(tournament);
   const podium = getTournamentPodium(tournament);
   const nextRoundPreview = generateNextRoundPreview(tournament);
@@ -118,7 +131,7 @@ export default async function ChessTournamentDetailPage({
             <div className="mt-8 grid gap-3 text-sm text-stone-100 sm:grid-cols-2 lg:grid-cols-4">
               <p className="flex items-center gap-2">
                 <Trophy className="h-4 w-4 text-amber-200" />
-                {formatTournamentStatus(tournament.status)}
+                {formatTournamentStatus(status)}
               </p>
               <p className="flex items-center gap-2">
                 <ListChecks className="h-4 w-4 text-amber-200" />
@@ -172,7 +185,7 @@ export default async function ChessTournamentDetailPage({
                 </h2>
               </div>
               <span className="rounded-full bg-stone-100 px-3 py-1 text-sm font-semibold text-stone-700">
-                {tournament.status === "closed" ? "Final" : "Provisional"}
+                {status === "closed" ? "Final" : "Provisional"}
               </span>
             </div>
 

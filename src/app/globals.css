@@ -53,6 +53,10 @@
   --shadow-card:   4px 4px 0 #1A1A1A;
   --shadow-poster: 6px 6px 0 currentColor;
   --shadow-glow:   0 0 20px rgba(204, 45, 48, 0.30);
+
+  /* Status colors (admin) */
+  --color-emerald: #15803d;
+  --color-amber:   #d97706;
 }
 
 /* ============================================================

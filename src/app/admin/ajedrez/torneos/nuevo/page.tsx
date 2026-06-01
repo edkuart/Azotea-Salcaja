@@ -3,9 +3,16 @@ import Link from "next/link";
 import { AdminCard } from "@/components/admin/AdminCard";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminShell } from "@/components/admin/AdminShell";
-import { ChessTournamentForm } from "@/components/admin/ChessTournamentForm";
+import { NewTournamentForm } from "@/components/admin/chess/NewTournamentForm";
 
-export default function NewChessTournamentPage() {
+export default async function NewChessTournamentPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ plantilla?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const template = params?.plantilla === "lunes" ? "lunes" : undefined;
+
   return (
     <AdminShell>
       <AdminPageHeader
@@ -17,14 +24,14 @@ export default function NewChessTournamentPage() {
             Volver
           </Link>
         }
-        description="Crea la configuracion base: sistema, rondas, fecha, ubicacion y desempates."
+        description="Crea la configuración base: sistema, rondas, fecha, ubicación y desempates."
         eyebrow="Ajedrez"
         title="Nuevo torneo oficial"
       />
 
       <div className="mt-8">
         <AdminCard>
-          <ChessTournamentForm />
+          <NewTournamentForm template={template} />
         </AdminCard>
       </div>
     </AdminShell>
