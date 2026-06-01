@@ -22,14 +22,9 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-function getPublicTournamentList(): ChessTournament[] {
-  return listTournaments().filter(
-    (tournament) => tournament.kind === "official",
-  );
-}
-
-export default function ChessTournamentsPage() {
-  const tournaments = getPublicTournamentList();
+export default async function ChessTournamentsPage() {
+  const all = await listTournaments();
+  const tournaments = all.filter((tournament) => tournament.kind === "official");
 
   return (
     <PublicLayout>

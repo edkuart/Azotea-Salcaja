@@ -367,6 +367,15 @@ model ChessPairingAttempt {
   @@map("chess_pairing_attempts")
 }
 
+model TournamentBlob {
+  id        String   @id
+  data      Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("tournament_blobs")
+}
+
 model PrivateTournamentSession {
   id              String   @id @default(cuid())
   tournamentId    String   @map("tournament_id")

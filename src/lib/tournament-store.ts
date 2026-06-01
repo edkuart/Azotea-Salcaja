@@ -1,29 +1,38 @@
+import { PrismaClient } from "@prisma/client";
 import type { ChessTournament } from "@/modules/chess/types";
 
 declare global {
   // eslint-disable-next-line no-var
-  var __tournamentStore: Map<string, ChessTournament> | undefined;
+  var __prisma: PrismaClient | undefined;
 }
 
-function getStore(): Map<string, ChessTournament> {
-  if (!globalThis.__tournamentStore) {
-    globalThis.__tournamentStore = new Map();
+function db(): PrismaClient {
+  if (!globalThis.__prisma) {
+    globalThis.__prisma = new PrismaClient();
   }
-  return globalThis.__tournamentStore;
+  return globalThis.__prisma;
 }
 
-export function storeTournament(t: ChessTournament): void {
-  getStore().set(t.id, t);
+export async function storeTournament(t: ChessTournament): Promise<void> {
+  await db().tournamentBlob.upsert({
+    where: { id: t.id },
+    update: { data: t as object },
+    create: { id: t.id, data: t as object },
+  });
 }
 
-export function getTournament(id: string): ChessTournament | undefined {
-  return getStore().get(id);
+export async function getTournament(id: string): Promise<ChessTournament | null> {
+  const row = await db().tournamentBlob.findUnique({ where: { id } });
+  return row ? (row.data as unknown as ChessTournament) : null;
 }
 
-export function listTournaments(): ChessTournament[] {
-  return Array.from(getStore().values());
+export async function listTournaments(): Promise<ChessTournament[]> {
+  const rows = await db().tournamentBlob.findMany({ orderBy: { createdAt: "desc" } });
+  return rows.map((r) => r.data as unknown as ChessTournament);
 }
 
-export function deleteTournament(id: string): void {
-  getStore().delete(id);
+export async function deleteTournament(id: string): Promise<void> {
+  try {
+    await db().tournamentBlob.delete({ where: { id } });
+  } catch { /* already deleted */ }
 }

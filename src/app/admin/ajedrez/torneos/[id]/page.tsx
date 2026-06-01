@@ -93,7 +93,7 @@ export default async function AdminChessTournamentDetailPage({
 
   // Server-stored tournament (API)
   if (id.startsWith("t")) {
-    const tournament = getTournament(id);
+    const tournament = await getTournament(id);
     if (!tournament) notFound();
     return (
       <TournamentShell

@@ -14,7 +14,7 @@ export async function GET(
 ) {
   const { id } = await params;
   const t =
-    getTournament(id) ??
+    (await getTournament(id)) ??
     officialChessTournaments.find((tournament) => tournament.id === id);
 
   if (!t) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -27,7 +27,7 @@ export async function PUT(
 ) {
   const { id } = await params;
   const body = (await req.json()) as ChessTournament;
-  storeTournament({ ...body, id });
+  await storeTournament({ ...body, id });
   return NextResponse.json({ ...body, id });
 }
 
@@ -36,6 +36,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  deleteTournament(id);
+  await deleteTournament(id);
   return NextResponse.json({ ok: true });
 }

@@ -42,9 +42,10 @@ export function generateStaticParams() {
 
 export const dynamic = "force-dynamic";
 
-function findTournamentBySlug(slug: string): ChessTournament | undefined {
+async function findTournamentBySlug(slug: string): Promise<ChessTournament | undefined> {
+  const stored = await listTournaments();
   return (
-    listTournaments().find((item) => item.slug === slug) ??
+    stored.find((item) => item.slug === slug) ??
     officialChessTournaments.find((item) => item.slug === slug)
   );
 }
@@ -55,7 +56,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const tournament = findTournamentBySlug(slug);
+  const tournament = await findTournamentBySlug(slug);
 
   if (!tournament) {
     return {
@@ -83,7 +84,7 @@ export default async function ChessTournamentDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const tournament = findTournamentBySlug(slug);
+  const tournament = await findTournamentBySlug(slug);
 
   if (!tournament) {
     notFound();
