@@ -13,6 +13,8 @@ import {
 import { listTournaments } from "@/lib/tournament-store";
 import { deleteTournamentAction } from "@/app/actions/tournaments";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminChessTournamentsPage() {
   const activeTournaments = getActiveOfficialTournaments();
   const historicalTournaments = getHistoricalOfficialTournaments();

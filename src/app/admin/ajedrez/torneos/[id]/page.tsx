@@ -9,6 +9,8 @@ import { officialChessTournaments } from "@/modules/chess/public-data";
 import { getTournament } from "@/lib/tournament-store";
 import type { ChessTournament } from "@/modules/chess/types";
 
+export const dynamic = "force-dynamic";
+
 export function generateStaticParams() {
   return officialChessTournaments.map((t) => ({ id: t.id }));
 }
