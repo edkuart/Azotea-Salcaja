@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
+import { Loader2, MessageCircle } from "lucide-react";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
+
+const ADMIN_WHATSAPP = "50235262791"; // +502 3526 2791
 
 // ── Design tokens reutilizados del sistema ─────────────────────────────────
 
@@ -89,6 +91,22 @@ export default function InscribirPage() {
         return;
       }
 
+      // Abrir WhatsApp con mensaje pre-diseñado
+      const expLabel = { none: "Ninguna", basic: "Básica", intermediate: "Intermedia" }[experience] ?? experience;
+      const lines = [
+        `¡Hola! Acabo de inscribir a mi hijo/a en *Chessitos* 🎉`,
+        ``,
+        `♟ *Niño/a:* ${payload.childName}, ${payload.childAge} años`,
+        `👤 *Tutor:* ${payload.parentName}`,
+        `📱 *Contacto:* ${payload.phone}`,
+        `🎯 *Experiencia:* ${expLabel}`,
+        ...(payload.message ? [`💬 *Nota:* ${payload.message}`] : []),
+        ``,
+        `Quedo pendiente de confirmar el cupo. ¡Gracias!`,
+      ];
+      const waMsg = encodeURIComponent(lines.join("\n"));
+      window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${waMsg}`, "_blank", "noopener");
+
       router.push("/ajedrez/clases/gracias");
     } catch {
       setErrorMsg("No se pudo conectar. Verifica tu conexión e intenta de nuevo.");
@@ -154,6 +172,27 @@ export default function InscribirPage() {
             >
               Completa el formulario y nos pondremos en contacto para confirmar el cupo.
             </p>
+
+            <a
+              href={`https://wa.me/${ADMIN_WHATSAPP}`}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "7px",
+                marginTop: "14px",
+                fontFamily: "var(--font-poster)",
+                textTransform: "uppercase",
+                letterSpacing: "0.16em",
+                fontSize: "10px",
+                color: "var(--color-marquee)",
+                textDecoration: "none",
+              }}
+            >
+              <MessageCircle style={{ width: "13px", height: "13px" }} aria-hidden />
+              Preguntas: +502 3526 2791
+            </a>
           </div>
         </div>
 

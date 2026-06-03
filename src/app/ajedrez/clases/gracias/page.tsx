@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MessageCircle } from "lucide-react";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { restaurantInfo } from "@/modules/restaurant/public-data";
+
+const ADMIN_WHATSAPP = "50235262791";
+const WA_FALLBACK = encodeURIComponent(
+  "¡Hola! Completé la inscripción de mi hijo/a en Chessitos y quiero confirmar el cupo. ¡Gracias!"
+);
 
 export const metadata: Metadata = {
   title: "Inscripción recibida — Chessitos · Azotea Salcajá",
@@ -125,6 +131,34 @@ export default function GraciasPage() {
                 ))}
               </div>
             </div>
+
+            {/* WhatsApp fallback */}
+            <a
+              href={`https://wa.me/${ADMIN_WHATSAPP}?text=${WA_FALLBACK}`}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                width: "100%",
+                background: "#25D366",
+                color: "#fff",
+                border: "2px solid #1ebe5d",
+                padding: "13px 20px",
+                fontFamily: "var(--font-poster)",
+                textTransform: "uppercase",
+                letterSpacing: "0.16em",
+                fontSize: "11px",
+                textDecoration: "none",
+                marginBottom: "10px",
+                boxShadow: "3px 3px 0 #1a9e4c",
+              }}
+            >
+              <MessageCircle style={{ width: "15px", height: "15px" }} aria-hidden />
+              ¿No se abrió WhatsApp? Toca aquí
+            </a>
 
             <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
               <Link href="/ajedrez/clases" className="btn btn-primary" style={{ padding: "12px 20px" }}>
