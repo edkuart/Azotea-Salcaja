@@ -124,7 +124,7 @@ export function SiteFooter() {
             </div>
           </div>
 
-          {/* Comunidad */}
+          {/* Ajedrez */}
           <div>
             <p
               className="mb-3"
@@ -136,25 +136,32 @@ export function SiteFooter() {
                 color: "var(--color-marquee)",
               }}
             >
-              Comunidad
+              Ajedrez
             </p>
             <div
               className="grid gap-1.5 opacity-85"
               style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)" }}
             >
               <Link
+                href="/ajedrez/clases"
+                className="no-underline transition-opacity hover:opacity-100"
+                style={{ color: "var(--color-cream)" }}
+              >
+                Clases Chessitos
+              </Link>
+              <Link
+                href="/ajedrez/torneos"
+                className="no-underline transition-opacity hover:opacity-100"
+                style={{ color: "var(--color-cream)" }}
+              >
+                Torneos
+              </Link>
+              <Link
                 href="/ajedrez"
                 className="no-underline transition-opacity hover:opacity-100"
                 style={{ color: "var(--color-cream)" }}
               >
-                Lunes de ajedrez
-              </Link>
-              <Link
-                href="/eventos"
-                className="no-underline transition-opacity hover:opacity-100"
-                style={{ color: "var(--color-cream)" }}
-              >
-                Eventos
+                Comunidad
               </Link>
               <Link
                 href="/ajedrez/crear"
