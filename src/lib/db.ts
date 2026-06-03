@@ -9,7 +9,8 @@ declare global {
 
 export function db(): PrismaClient {
   if (!globalThis.__prisma) {
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    // El adapter-pg necesita la URL directa (no el pooler pgbouncer de Supabase)
+    const pool = new Pool({ connectionString: process.env.DIRECT_URL ?? process.env.DATABASE_URL });
     const adapter = new PrismaPg(pool);
     globalThis.__prisma = new PrismaClient({ adapter });
   }
