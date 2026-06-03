@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Brain, ChevronDown, Clock, MapPin, Shield, Swords, Target } from "lucide-react";
+import { ArrowRight, Brain, ChevronDown, Clock, MapPin, Navigation, Shield, Swords, Target } from "lucide-react";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Section } from "@/components/public/Section";
@@ -597,6 +597,122 @@ export default function ClasesPage() {
             </div>
           </Section>
         </div>
+
+        {/* ── Dónde estamos ── */}
+        <Section>
+          <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr] lg:items-start">
+
+            {/* Mapa */}
+            <div
+              style={{
+                border: "2px solid var(--color-ink)",
+                boxShadow: "var(--shadow-card)",
+                overflow: "hidden",
+              }}
+            >
+              <iframe
+                src={restaurantInfo.embedUrl}
+                title="Ubicación de Azotea Salcajá"
+                width="100%"
+                height="340"
+                style={{ border: 0, display: "block" }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
+              <div
+                style={{
+                  background: "var(--color-ink)",
+                  color: "var(--color-cream)",
+                  padding: "12px 16px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <p style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.18em", fontSize: 9, color: "var(--color-marquee)", marginBottom: 2 }}>
+                    Azotea Salcajá
+                  </p>
+                  <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "rgba(255,253,208,0.6)" }}>
+                    {restaurantInfo.floor} · Salcajá, Quetzaltenango
+                  </p>
+                </div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <a
+                    href={restaurantInfo.mapsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.12em", fontSize: 9,
+                      color: "rgba(255,253,208,0.65)", border: "1px solid rgba(255,253,208,0.2)",
+                      padding: "5px 10px", textDecoration: "none",
+                    }}
+                  >
+                    Ver mapa
+                  </a>
+                  <a
+                    href={restaurantInfo.directionsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.12em", fontSize: 9,
+                      color: "var(--color-marquee)", border: "1px solid var(--color-marquee)",
+                      padding: "5px 10px", textDecoration: "none",
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                    }}
+                  >
+                    <Navigation style={{ width: 9, height: 9 }} aria-hidden />
+                    Cómo llegar
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Info de ubicación */}
+            <div style={{ display: "grid", gap: 14 }}>
+              <div>
+                <p style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.22em", fontSize: 11, color: "var(--color-stage)", marginBottom: 10 }}>
+                  Dónde encontrarnos
+                </p>
+                <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.6rem, 4vw, 2.4rem)", lineHeight: 1, letterSpacing: "-0.01em", color: "var(--color-ink)", marginBottom: 14 }}>
+                  Azotea Salcajá
+                </h2>
+                <p style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)", lineHeight: 1.7, color: "#444" }}>
+                  Las clases se realizan en el restaurante —{" "}
+                  <strong style={{ color: "var(--color-ink)" }}>{restaurantInfo.floor}</strong>{" "}
+                  del edificio, en el centro de Salcajá. Los papás pueden quedarse
+                  a disfrutar el local mientras los niños tienen su clase.
+                </p>
+              </div>
+
+              {[
+                { icon: MapPin, label: "Dirección",  value: `${restaurantInfo.floor} · Salcajá, Quetzaltenango` },
+                { icon: Clock,  label: "Clases",     value: "Lunes · 5:30 – 7:30 PM"                           },
+              ].map(({ icon: Icon, label, value }) => (
+                <div
+                  key={label}
+                  style={{
+                    background: "var(--color-grain)",
+                    border: "2px solid var(--color-ink)",
+                    padding: "14px 16px",
+                    display: "flex",
+                    gap: 12,
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <Icon style={{ width: 16, height: 16, color: "var(--color-stage)", flexShrink: 0, marginTop: 2 }} aria-hidden />
+                  <div>
+                    <p style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.16em", fontSize: 9, color: "#888", marginBottom: 3 }}>{label}</p>
+                    <p style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--color-ink)" }}>{value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Section>
 
         {/* ── FAQ ── */}
         <Section>
