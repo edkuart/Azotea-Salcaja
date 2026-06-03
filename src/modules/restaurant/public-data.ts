@@ -1,12 +1,20 @@
+const LAT = 14.877478976699559;
+const LNG = -91.46062557638479;
+
 export const restaurantInfo = {
   name: "Azotea Salcajá",
   tagline: "Sabores para compartir sobre Salcajá",
   description:
     "Restaurante local con menu casual, eventos de comunidad y noches de ajedrez los lunes.",
-  phone: "+502 0000 0000",
-  whatsapp: "50200000000",
-  address: "Salcajá, Quetzaltenango, Guatemala",
-  mapsUrl: "https://maps.google.com/?q=Salcajá%2C%20Quetzaltenango",
+  phone: "+502 3526 2791",
+  whatsapp: "50235262791",
+  address: "3er piso · Salcajá, Quetzaltenango, Guatemala",
+  floor: "Tercer piso",
+  latitude: LAT,
+  longitude: LNG,
+  mapsUrl: `https://www.google.com/maps?q=${LAT},${LNG}`,
+  directionsUrl: `https://www.google.com/maps/dir/?api=1&destination=${LAT},${LNG}`,
+  embedUrl: `https://maps.google.com/maps?q=${LAT},${LNG}&z=18&output=embed`,
   hours: [
     { day: "Lunes", time: "5:00 p.m. - 10:00 p.m." },
     { day: "Martes a viernes", time: "12:00 p.m. - 10:00 p.m." },
