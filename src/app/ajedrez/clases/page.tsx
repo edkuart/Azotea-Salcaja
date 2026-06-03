@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Brain, ChevronDown, Clock, MapPin, MessageCircle, Shield, Swords, Target } from "lucide-react";
+import { ArrowRight, Brain, ChevronDown, Clock, MapPin, Shield, Swords, Target } from "lucide-react";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Section } from "@/components/public/Section";
@@ -215,15 +215,9 @@ export default function ClasesPage() {
             </div>
 
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-              <a
-                href={`https://wa.me/${restaurantInfo.whatsapp}?text=${WHATSAPP_MSG}`}
-                className="btn btn-primary"
-                rel="noreferrer"
-                target="_blank"
-              >
-                <MessageCircle style={{ width: "14px", height: "14px" }} aria-hidden />
+              <Link href="/ajedrez/clases/inscribir" className="btn btn-primary">
                 Inscribir a mi hijo/a
-              </a>
+              </Link>
               <a href="#programa" className="btn btn-secondary">
                 Ver programa
                 <ArrowRight style={{ width: "14px", height: "14px" }} aria-hidden />
@@ -728,16 +722,13 @@ export default function ClasesPage() {
                 el lugar de tu hijo/a y recibir información sobre la
                 mensualidad y fecha de inicio.
               </p>
-              <a
-                href={`https://wa.me/${restaurantInfo.whatsapp}?text=${WHATSAPP_MSG}`}
+              <Link
+                href="/ajedrez/clases/inscribir"
                 className="btn btn-primary"
-                rel="noreferrer"
-                target="_blank"
                 style={{ fontSize: "14px", padding: "16px 28px" }}
               >
-                <MessageCircle style={{ width: "16px", height: "16px" }} aria-hidden />
-                Inscribir por WhatsApp
-              </a>
+                Completar inscripción
+              </Link>
               <p
                 style={{
                   fontFamily: "var(--font-poster)",

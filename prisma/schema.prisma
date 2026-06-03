@@ -367,6 +367,29 @@ model ChessPairingAttempt {
   @@map("chess_pairing_attempts")
 }
 
+enum EnrollmentStatus {
+  pending
+  contacted
+  enrolled
+  cancelled
+}
+
+model ChessEnrollment {
+  id         String           @id @default(cuid())
+  childName  String           @map("child_name")
+  childAge   Int              @map("child_age")
+  parentName String           @map("parent_name")
+  phone      String
+  email      String?
+  experience String           @default("none")
+  message    String?
+  status     EnrollmentStatus @default(pending)
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+
+  @@map("chess_enrollments")
+}
+
 model TournamentBlob {
   id        String   @id
   data      Json

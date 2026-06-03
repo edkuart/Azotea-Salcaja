@@ -12,7 +12,8 @@ const primaryNav = [
   { href: "/admin/productos",     label: "Productos",        icon: "◉",  isChess: false },
   { href: "/admin/categorias",    label: "Categorías",       icon: "⊞",  isChess: false },
   { href: "/admin/eventos",       label: "Eventos",          icon: "★",  isChess: false },
-  { href: "/admin/ajedrez/torneos", label: "Ajedrez · torneos", icon: "♛", isChess: true },
+  { href: "/admin/ajedrez/torneos",       label: "Ajedrez · torneos",       icon: "♛", isChess: true },
+  { href: "/admin/ajedrez/inscripciones", label: "Ajedrez · inscripciones", icon: "♟", isChess: true },
 ];
 
 const secondaryNav = [
