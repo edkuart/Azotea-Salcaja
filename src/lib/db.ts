@@ -11,7 +11,7 @@ export function db(): PrismaClient {
   if (!globalThis.__prisma) {
     // El adapter-pg necesita la URL directa (no el pooler pgbouncer de Supabase)
     const pool = new Pool({
-      connectionString: process.env.DIRECT_URL ?? process.env.DATABASE_URL,
+      connectionString: (process.env.DIRECT_URL ?? process.env.DATABASE_URL)?.trim(),
       ssl: { rejectUnauthorized: false },
     });
     const adapter = new PrismaPg(pool);
