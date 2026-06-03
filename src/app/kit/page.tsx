@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
+import { Download, Loader2 } from "lucide-react";
 
 /* ─── Grain texture (mismo del diseño original) ───────────────────────────── */
 const GRAIN_BG = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")`;
@@ -375,43 +376,140 @@ function Status() {
 
 /* ─── Artboards config ─────────────────────────────────────────────────────── */
 const ARTBOARDS = [
-  { id: "ig-post",  label: "Instagram Post",          w: 1080, h: 1080, Component: IgPost   },
-  { id: "ig-story", label: "Instagram Story",         w: 1080, h: 1920, Component: IgStory  },
-  { id: "banner",   label: "Facebook / WA Banner",    w: 1200, h: 628,  Component: Banner   },
-  { id: "status",   label: "WhatsApp Status",         w: 1080, h: 1920, Component: Status   },
+  { id: "ig-post",  label: "Instagram Post",       w: 1080, h: 1080, Component: IgPost   },
+  { id: "ig-story", label: "Instagram Story",      w: 1080, h: 1920, Component: IgStory  },
+  { id: "banner",   label: "Facebook / WA Banner", w: 1200, h: 628,  Component: Banner   },
+  { id: "status",   label: "WhatsApp Status",      w: 1080, h: 1920, Component: Status   },
 ];
+
+/* ─── Botón de descarga ────────────────────────────────────────────────────── */
+function DownloadBtn({
+  artboardId, label, nodeRef, small = false,
+}: {
+  artboardId: string;
+  label: string;
+  nodeRef: React.RefObject<HTMLDivElement | null>;
+  small?: boolean;
+}) {
+  const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
+
+  const handleDownload = useCallback(async () => {
+    const node = nodeRef.current;
+    if (!node) return;
+    setState("loading");
+    try {
+      // Importación dinámica para evitar SSR
+      const { toPng } = await import("html-to-image");
+      const ab = ARTBOARDS.find((a) => a.id === artboardId)!;
+      const dataUrl = await toPng(node, {
+        width: ab.w,
+        height: ab.h,
+        pixelRatio: 1,
+        cacheBust: true,
+        // Resuelve CSS custom properties antes de capturar
+        style: { transform: "none" },
+      });
+      const link = document.createElement("a");
+      link.download = `chessitos-${artboardId}.png`;
+      link.href = dataUrl;
+      link.click();
+      setState("done");
+      setTimeout(() => setState("idle"), 2000);
+    } catch {
+      setState("error");
+      setTimeout(() => setState("idle"), 2500);
+    }
+  }, [artboardId, nodeRef]);
+
+  const loading = state === "loading";
+  const done    = state === "done";
+  const error   = state === "error";
+
+  return (
+    <button
+      type="button"
+      onClick={handleDownload}
+      disabled={loading}
+      style={{
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        gap: small ? 6 : 8,
+        background: done ? "var(--color-emerald)" : error ? "var(--color-stage)" : "var(--color-stage)",
+        color: "var(--color-cream)",
+        border: "2px solid var(--color-ink)",
+        padding: small ? "7px 14px" : "12px 22px",
+        fontFamily: "var(--font-poster)", textTransform: "uppercase",
+        letterSpacing: "0.16em", fontSize: small ? 9 : 11,
+        cursor: loading ? "not-allowed" : "pointer",
+        opacity: loading ? 0.7 : 1,
+        boxShadow: small ? "none" : "3px 3px 0 var(--color-ink)",
+        transition: "background 0.2s",
+        width: small ? "100%" : "auto",
+      }}
+    >
+      {loading ? (
+        <Loader2 style={{ width: small ? 12 : 14, height: small ? 12 : 14, animation: "spin 1s linear infinite" }} aria-hidden />
+      ) : (
+        <Download style={{ width: small ? 11 : 14, height: small ? 11 : 14 }} aria-hidden />
+      )}
+      {loading ? "Generando…" : done ? "¡Descargado!" : error ? "Error — reintentar" : `Descargar ${label}`}
+    </button>
+  );
+}
 
 /* ─── Main page ────────────────────────────────────────────────────────────── */
 export default function KitPage() {
   const [active, setActive] = useState<string | null>(null);
+
+  // Refs a los artboards a tamaño real (ocultos fuera de pantalla)
+  const hiddenRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  // Crear un ref por artboard para pasarlo al botón
+  const refFor = (id: string) => ({
+    current: hiddenRefs.current[id] ?? null,
+  } as React.RefObject<HTMLDivElement | null>);
 
   const focused = active ? ARTBOARDS.find((a) => a.id === active) : null;
 
   return (
     <div style={{ minHeight: "100vh", background: "#1a1a1a", fontFamily: "var(--font-poster)" }}>
 
-      {/* Top bar */}
+      {/* ── Artboards ocultos a tamaño real para descarga ── */}
+      <div
+        aria-hidden
+        style={{
+          position: "fixed", top: 0, left: "-9999px",
+          zIndex: -1, pointerEvents: "none",
+        }}
+      >
+        {ARTBOARDS.map(({ id, Component }) => (
+          <div
+            key={id}
+            ref={(el) => { hiddenRefs.current[id] = el; }}
+          >
+            <Component />
+          </div>
+        ))}
+      </div>
+
+      {/* ── Top bar ── */}
       <div style={{
         background: "#111", borderBottom: "2px solid #333",
-        padding: "16px 24px",
+        padding: "14px 24px",
         display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16,
         position: "sticky", top: 0, zIndex: 50,
       }}>
-        <div>
-          <p style={{ fontFamily: "var(--font-display)", fontSize: 20, color: "var(--color-cream)", lineHeight: 1 }}>
-            Chess<em style={{ fontFamily: "var(--font-chess)", fontStyle: "italic", color: "var(--color-stage)" }}>itos</em>
-            {" "}
-            <span style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.2em", fontSize: 10, color: "rgba(255,253,208,0.4)", verticalAlign: "middle" }}>
-              Kit de redes sociales
-            </span>
-          </p>
-        </div>
-        <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "rgba(255,253,208,0.4)", textAlign: "right" }}>
-          Haz clic en un artboard para ver a tamaño completo · luego captura pantalla
+        <p style={{ fontFamily: "var(--font-display)", fontSize: 20, color: "var(--color-cream)", lineHeight: 1 }}>
+          Chess<em style={{ fontFamily: "var(--font-chess)", fontStyle: "italic", color: "var(--color-stage)" }}>itos</em>
+          {" "}
+          <span style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.2em", fontSize: 10, color: "rgba(255,253,208,0.4)", verticalAlign: "middle" }}>
+            Kit de redes sociales
+          </span>
+        </p>
+        <p style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "rgba(255,253,208,0.35)", textAlign: "right" }}>
+          Descarga cada imagen con el botón o haz clic para ver completo
         </p>
       </div>
 
-      {/* Gallery grid */}
+      {/* ── Galería ── */}
       {!focused && (
         <div style={{ padding: "40px 32px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 40 }}>
           {ARTBOARDS.map(({ id, label, w, h, Component }) => {
@@ -421,6 +519,8 @@ export default function KitPage() {
                 <p style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.2em", fontSize: 10, color: "rgba(255,253,208,0.5)", marginBottom: 10 }}>
                   {label} · {w}×{h}
                 </p>
+
+                {/* Preview escalada */}
                 <div
                   style={{
                     width: 320, height: Math.round(h * scale),
@@ -432,7 +532,6 @@ export default function KitPage() {
                   onClick={() => setActive(id)}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.outlineColor = "var(--color-stage)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.outlineColor = "#333"; }}
-                  title="Clic para ver a tamaño completo"
                 >
                   <div style={{
                     transform: `scale(${scale})`,
@@ -443,38 +542,41 @@ export default function KitPage() {
                     <Component />
                   </div>
                 </div>
-                <button
-                  onClick={() => setActive(id)}
-                  style={{
-                    marginTop: 8, width: "100%",
-                    background: "none", border: "1px solid #333",
-                    color: "rgba(255,253,208,0.6)",
-                    fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.16em", fontSize: 9,
-                    padding: "6px 0", cursor: "pointer",
-                  }}
-                >
-                  Ver completo →
-                </button>
+
+                {/* Botones */}
+                <div style={{ marginTop: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                  <button
+                    onClick={() => setActive(id)}
+                    style={{
+                      background: "none", border: "1px solid #444",
+                      color: "rgba(255,253,208,0.6)",
+                      fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.14em", fontSize: 9,
+                      padding: "8px 0", cursor: "pointer",
+                    }}
+                  >
+                    Ver completo
+                  </button>
+                  <DownloadBtn artboardId={id} label="PNG" nodeRef={refFor(id)} small />
+                </div>
               </div>
             );
           })}
         </div>
       )}
 
-      {/* Full-size view */}
+      {/* ── Vista completa ── */}
       {focused && (
         <div>
-          {/* Back bar */}
           <div style={{
             background: "#111", padding: "12px 24px",
-            display: "flex", alignItems: "center", gap: 16,
-            borderBottom: "1px solid #333",
+            display: "flex", alignItems: "center", gap: 14,
+            borderBottom: "1px solid #333", flexWrap: "wrap",
           }}>
             <button
               onClick={() => setActive(null)}
               style={{
                 background: "none", border: "1px solid #444",
-                color: "var(--color-marquee)",
+                color: "rgba(255,253,208,0.6)",
                 fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.16em", fontSize: 10,
                 padding: "8px 14px", cursor: "pointer",
               }}
@@ -484,12 +586,11 @@ export default function KitPage() {
             <p style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.2em", fontSize: 10, color: "rgba(255,253,208,0.5)" }}>
               {focused.label} · {focused.w}×{focused.h}px
             </p>
-            <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "rgba(255,253,208,0.35)", marginLeft: "auto" }}>
-              Haz zoom al 100% y captura pantalla · o usa la extensión de tu navegador
-            </p>
+            <div style={{ marginLeft: "auto" }}>
+              <DownloadBtn artboardId={focused.id} label={focused.label} nodeRef={refFor(focused.id)} />
+            </div>
           </div>
 
-          {/* Artboard centered, scrollable */}
           <div style={{ padding: 40, display: "flex", justifyContent: "center", overflowX: "auto" }}>
             <div style={{ flexShrink: 0 }}>
               <focused.Component />
