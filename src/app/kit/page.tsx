@@ -129,25 +129,27 @@ function IgStory() {
         position: "relative", overflow: "hidden",
         borderBottom: "6px solid var(--color-stage)",
       }}>
-        {/* Disc decoration */}
+        {/* Disc decoration — detrás del texto */}
         <div aria-hidden style={{
           position: "absolute", right: -150, top: -150,
           width: 520, height: 520, borderRadius: "50%",
-          border: "3px solid #C9A84C", opacity: 0.4,
+          border: "3px solid #C9A84C", opacity: 0.25,
+          zIndex: 0,
         }} />
         <span style={{
           fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.2em",
           fontSize: 30, color: "var(--color-marquee)",
           display: "inline-flex", alignItems: "center", gap: "0.7em",
+          position: "relative", zIndex: 1,
         }}>
           Clases para niños
           <span style={{ display: "inline-block", width: 60, height: 3, background: "var(--color-stage)" }} />
         </span>
-        <div style={{ marginTop: 34, lineHeight: 0.78 }}>
+        <div style={{ marginTop: 34, lineHeight: 0.78, position: "relative", zIndex: 1 }}>
           <span style={{ fontFamily: "var(--font-display)", fontSize: 212, display: "inline-block", color: "var(--color-cream)" }}>Chess</span>
           <span style={{ fontFamily: "var(--font-chess)", fontStyle: "italic", fontWeight: 900, fontSize: 212 * 0.84, display: "inline-block", color: "var(--color-stage)", marginLeft: "0.04em" }}>itos</span>
         </div>
-        <p style={{ fontFamily: "var(--font-body)", fontSize: 38, color: "var(--color-cream)", opacity: 0.85, marginTop: 18 }}>
+        <p style={{ fontFamily: "var(--font-body)", fontSize: 38, color: "var(--color-cream)", opacity: 0.85, marginTop: 18, position: "relative", zIndex: 1 }}>
           Ajedrez infantil en <b style={{ color: "var(--color-marquee)" }}>Azotea Salcajá</b> · todos los lunes
         </p>
       </div>
