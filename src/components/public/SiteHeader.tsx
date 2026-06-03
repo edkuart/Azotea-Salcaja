@@ -8,9 +8,11 @@ import { ChevronDown } from "lucide-react";
 import { restaurantInfo } from "@/modules/restaurant/public-data";
 
 const chessSubItems = [
-  { href: "/ajedrez/clases",   label: "Clases",     exact: false },
-  { href: "/ajedrez/torneos",  label: "Torneos",    exact: false },
-  { href: "/ajedrez",          label: "Comunidad",  exact: true  },
+  { href: "/ajedrez/clases",   label: "Clases",         exact: false },
+  { href: "/ajedrez/torneos",  label: "Torneos",         exact: false },
+  { href: "/ajedrez/agenda",   label: "Agenda",          exact: false },
+  { href: "/ajedrez/ranking",  label: "Clasificación",   exact: false },
+  { href: "/ajedrez",          label: "Comunidad",       exact: true  },
 ];
 
 const mobileExtras = [
