@@ -154,17 +154,13 @@ export default function ClasesPage() {
                 marginBottom: "20px",
               }}
             >
-              Chess
-              <em
+              Chess<em
                 style={{
                   fontFamily: "var(--font-chess)",
                   fontStyle: "italic",
                   color: "var(--color-stage)",
-                  display: "block",
                 }}
-              >
-                itos
-              </em>
+              >itos</em>
             </h1>
 
             <p
