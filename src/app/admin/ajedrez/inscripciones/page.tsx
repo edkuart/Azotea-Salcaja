@@ -26,9 +26,6 @@ const STATUS_ORDER: EnrollmentStatus[] = ["pending", "contacted", "enrolled", "c
 export default async function InscripcionesPage() {
   const enrollments = await db().chessEnrollment.findMany({
     orderBy: { createdAt: "desc" },
-  }).catch((err: unknown) => {
-    console.error("[inscripciones] DB error:", String(err));
-    return [];
   });
 
   const counts = {

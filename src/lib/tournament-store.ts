@@ -1,17 +1,5 @@
-import { PrismaClient } from "@prisma/client";
 import type { ChessTournament } from "@/modules/chess/types";
-
-declare global {
-  // eslint-disable-next-line no-var
-  var __prisma: PrismaClient | undefined;
-}
-
-function db(): PrismaClient {
-  if (!globalThis.__prisma) {
-    globalThis.__prisma = new PrismaClient();
-  }
-  return globalThis.__prisma;
-}
+import { db } from "@/lib/db";
 
 export async function storeTournament(t: ChessTournament): Promise<void> {
   await db().tournamentBlob.upsert({
