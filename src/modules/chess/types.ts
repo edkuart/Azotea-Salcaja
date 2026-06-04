@@ -74,10 +74,7 @@ export type ChessTournament = {
   description: string;
   recap?: string;
   coverImage?: string;
-  gallery?: Array<{
-    src: string;
-    alt: string;
-  }>;
+  gallery?: Array<{ src: string; alt: string }>;
   system: TournamentSystem;
   roundsPlanned: number;
   currentRoundNumber: number;
@@ -87,6 +84,8 @@ export type ChessTournament = {
   tieBreakOrder: TieBreakCode[];
   regulations?: string;
   prizes?: Array<{ place: string; award: string }>;
+  entryFee?: string;
+  timeControl?: string;
   players: ChessPlayer[];
   rounds: ChessRound[];
 };

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Event } from "@prisma/client";
 import type { TournamentStatus } from "@/modules/chess/types";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 type TournamentOption = { id: string; title: string; status: TournamentStatus };
 
@@ -127,31 +128,23 @@ export function EventForm({ action, tournaments, event }: Props) {
       {/* Ubicación */}
       <div className="grid gap-1.5">
         <label className="text-sm font-semibold text-stone-700" htmlFor="locationLabel">
-          Ubicación <span className="font-normal text-stone-400">(opcional)</span>
+          Ubicación
         </label>
         <input
           id="locationLabel"
           name="locationLabel"
-          defaultValue={event?.locationLabel ?? ""}
-          placeholder="Ej. Azotea Salcajá"
+          defaultValue={event?.locationLabel ?? "Restaurante Azotea Salcajá"}
           className="h-10 rounded-md border border-stone-300 px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-950"
         />
       </div>
 
-      {/* Imagen */}
-      <div className="grid gap-1.5">
-        <label className="text-sm font-semibold text-stone-700" htmlFor="coverImageUrl">
-          URL de imagen <span className="font-normal text-stone-400">(opcional)</span>
-        </label>
-        <input
-          id="coverImageUrl"
-          name="coverImageUrl"
-          type="url"
-          defaultValue={event?.coverImageUrl ?? ""}
-          placeholder="https://..."
-          className="h-10 rounded-md border border-stone-300 px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-950"
-        />
-      </div>
+      {/* Imagen portada */}
+      <ImageUpload
+        name="coverImageUrl"
+        label="Imagen de portada"
+        defaultValue={event?.coverImageUrl}
+        folder="events"
+      />
 
       {/* Vincular torneo (solo para chess) */}
       {type === "chess" && (

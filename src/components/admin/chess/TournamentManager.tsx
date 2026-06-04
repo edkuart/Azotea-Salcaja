@@ -952,26 +952,55 @@ function StandingsTab({
 
 function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partial<ChessTournament>) => void }) {
   const rows: { label: string; value: string }[] = [
-    { label: "Sistema",      value: formatTournamentSystem(t.system) },
-    { label: "Estado",       value: formatTournamentStatus(t.status) },
-    { label: "Rondas",       value: `${t.rounds.length} de ${t.roundsPlanned}` },
-    { label: "Inicio",       value: t.startsAt },
-    { label: "Lugar",        value: t.locationLabel },
-    { label: "Desempates",   value: t.tieBreakOrder.map(formatTieBreakLabel).join(" › ") },
-    { label: "Visibilidad",  value: t.visibility },
+    { label: "Sistema",     value: formatTournamentSystem(t.system) },
+    { label: "Estado",      value: formatTournamentStatus(t.status) },
+    { label: "Rondas",      value: `${t.rounds.length} de ${t.roundsPlanned}` },
+    { label: "Inicio",      value: t.startsAt },
+    { label: "Lugar",       value: t.locationLabel },
+    { label: "Desempates",  value: t.tieBreakOrder.map(formatTieBreakLabel).join(" › ") },
+    { label: "Visibilidad", value: t.visibility },
   ];
 
   function addPrize() {
     onChange({ prizes: [...(t.prizes ?? []), { place: "", award: "" }] });
   }
-
   function updatePrize(i: number, field: "place" | "award", val: string) {
-    const next = (t.prizes ?? []).map((p, idx) => idx === i ? { ...p, [field]: val } : p);
-    onChange({ prizes: next });
+    onChange({ prizes: (t.prizes ?? []).map((p, idx) => idx === i ? { ...p, [field]: val } : p) });
   }
-
   function removePrize(i: number) {
     onChange({ prizes: (t.prizes ?? []).filter((_, idx) => idx !== i) });
+  }
+
+  function addGalleryImage(url: string) {
+    if (!url.trim()) return;
+    onChange({ gallery: [...(t.gallery ?? []), { src: url.trim(), alt: "" }] });
+  }
+  function updateGalleryAlt(i: number, alt: string) {
+    onChange({ gallery: (t.gallery ?? []).map((g, idx) => idx === i ? { ...g, alt } : g) });
+  }
+  function removeGalleryImage(i: number) {
+    onChange({ gallery: (t.gallery ?? []).filter((_, idx) => idx !== i) });
+  }
+
+  const [galleryInput, setGalleryInput] = useState("");
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const galleryFileRef = useRef<HTMLInputElement>(null);
+
+  async function handleGalleryFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setGalleryUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "tournaments/gallery");
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const json = await res.json();
+      if (res.ok) addGalleryImage(json.url);
+    } finally {
+      setGalleryUploading(false);
+      if (galleryFileRef.current) galleryFileRef.current.value = "";
+    }
   }
 
   return (
@@ -980,9 +1009,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
       <div className="rounded-lg border border-stone-200 bg-white">
         <div className="border-b border-stone-100 px-5 py-4">
           <h2 className="font-semibold text-stone-950">{t.title}</h2>
-          {t.description && (
-            <p className="mt-1 text-sm text-stone-500">{t.description}</p>
-          )}
+          {t.description && <p className="mt-1 text-sm text-stone-500">{t.description}</p>}
         </div>
         <dl className="divide-y divide-stone-100">
           {rows.map(({ label, value }) => (
@@ -994,10 +1021,41 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
         </dl>
       </div>
 
+      {/* Inscripción y tiempo */}
+      <div className="rounded-lg border border-stone-200 bg-white">
+        <div className="border-b border-stone-100 px-5 py-4">
+          <h3 className="font-semibold text-stone-950">Inscripción y tiempo de juego</h3>
+        </div>
+        <div className="grid gap-4 p-5 sm:grid-cols-2">
+          <div className="grid gap-1.5">
+            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+              Costo de inscripción
+            </label>
+            <input
+              value={t.entryFee ?? ""}
+              onChange={(e) => onChange({ entryFee: e.target.value })}
+              placeholder="Ej. Q 35 (incluye papas y soda)"
+              className="h-9 rounded-md border border-stone-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
+            />
+          </div>
+          <div className="grid gap-1.5">
+            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+              Tiempo de reloj
+            </label>
+            <input
+              value={t.timeControl ?? ""}
+              onChange={(e) => onChange({ timeControl: e.target.value })}
+              placeholder="Ej. 10 min + 5 seg por jugada"
+              className="h-9 rounded-md border border-stone-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Premios */}
       <div className="rounded-lg border border-stone-200 bg-white">
         <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
-          <h3 className="font-semibold text-stone-950">Premios</h3>
+          <h3 className="font-semibold text-stone-950">Premios y reconocimientos</h3>
           <button
             type="button"
             onClick={addPrize}
@@ -1016,26 +1074,101 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
                 <input
                   value={prize.place}
                   onChange={(e) => updatePrize(i, "place", e.target.value)}
-                  placeholder="1.º lugar"
-                  className="h-8 w-28 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+                  placeholder="1.º Libre"
+                  className="h-8 w-32 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
                 />
                 <input
                   value={prize.award}
                   onChange={(e) => updatePrize(i, "award", e.target.value)}
-                  placeholder="Q 200 + trofeo"
+                  placeholder="Trofeo + Q 100"
                   className="h-8 flex-1 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
                 />
-                <button
-                  type="button"
-                  onClick={() => removePrize(i)}
-                  className="text-stone-400 hover:text-red-500"
-                >
+                <button type="button" onClick={() => removePrize(i)} className="text-stone-400 hover:text-red-500">
                   <X className="h-4 w-4" />
                 </button>
               </div>
             ))}
           </div>
         )}
+      </div>
+
+      {/* Galería */}
+      <div className="rounded-lg border border-stone-200 bg-white">
+        <div className="border-b border-stone-100 px-5 py-4">
+          <h3 className="font-semibold text-stone-950">Galería de imágenes</h3>
+          <p className="mt-0.5 text-xs text-stone-400">Fotos del lugar, trofeos, ambiente. Se muestran en la página pública.</p>
+        </div>
+        <div className="p-5 grid gap-4">
+          {/* Subir imagen */}
+          <div className="flex gap-2">
+            <input
+              ref={galleryFileRef}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={handleGalleryFile}
+            />
+            <button
+              type="button"
+              onClick={() => galleryFileRef.current?.click()}
+              disabled={galleryUploading}
+              className="inline-flex items-center gap-2 rounded-md border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-50"
+            >
+              {galleryUploading ? (
+                <RotateCcw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+              Subir foto
+            </button>
+            <input
+              value={galleryInput}
+              onChange={(e) => setGalleryInput(e.target.value)}
+              placeholder="o pega una URL de imagen…"
+              className="h-9 flex-1 rounded-md border border-stone-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addGalleryImage(galleryInput);
+                  setGalleryInput("");
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => { addGalleryImage(galleryInput); setGalleryInput(""); }}
+              className="inline-flex h-9 items-center rounded-md border border-stone-300 px-3 text-sm text-stone-600 hover:bg-stone-50"
+            >
+              +
+            </button>
+          </div>
+          {/* Grid de imágenes */}
+          {(t.gallery ?? []).length > 0 && (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {(t.gallery ?? []).map((img, i) => (
+                <div key={i} className="group relative overflow-hidden rounded-md border border-stone-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img.src} alt={img.alt || "Galería"} className="h-28 w-full object-cover" />
+                  <div className="absolute inset-x-0 bottom-0 bg-black/50 p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <input
+                      value={img.alt}
+                      onChange={(e) => updateGalleryAlt(i, e.target.value)}
+                      placeholder="Descripción…"
+                      className="w-full rounded bg-white/20 px-1.5 py-0.5 text-xs text-white placeholder-white/60 focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeGalleryImage(i)}
+                    className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Reglamento */}
@@ -1049,7 +1182,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
             value={t.regulations ?? ""}
             onChange={(e) => onChange({ regulations: e.target.value })}
             rows={8}
-            placeholder={"Ej:\n• Ritmo de juego: 10 min + 5 seg\n• Sistema suizo con desempate Buchholz\n• Los jugadores deben presentarse 10 min antes\n• Premios entregados al finalizar la última ronda"}
+            placeholder={"Ej:\n• Tiempo de juego: 10 min + 5 seg por jugada\n• Sistema suizo con desempate Buchholz\n• Los jugadores deben presentarse 10 min antes\n• Categorías: Libre (1.º–3.º) y Sub-18\n• Premios entregados al finalizar la última ronda"}
             className="w-full rounded-md border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-400"
           />
         </div>

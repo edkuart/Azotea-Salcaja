@@ -1,0 +1,15 @@
+import { createClient } from "@supabase/supabase-js";
+
+export const STORAGE_BUCKET = "event-media";
+
+export function getStorageClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error("Supabase storage credentials not configured");
+  return createClient(url, key);
+}
+
+export function getPublicUrl(path: string) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return `${url}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`;
+}

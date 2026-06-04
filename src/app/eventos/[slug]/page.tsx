@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { CalendarDays, MapPin, Trophy, ScrollText, Medal } from "lucide-react";
+import { CalendarDays, MapPin, Trophy, ScrollText, Medal, Clock, Ticket } from "lucide-react";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Section } from "@/components/public/Section";
@@ -113,6 +113,30 @@ export default async function EventDetailPage({
                 </h2>
               </div>
 
+              {/* Inscripción y tiempo — destacados */}
+              {(tournament.entryFee || tournament.timeControl) && (
+                <div className="mb-5 grid gap-3 sm:grid-cols-2">
+                  {tournament.entryFee && (
+                    <div className="flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+                      <Ticket className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">Inscripción</p>
+                        <p className="mt-0.5 text-sm font-medium text-stone-900">{tournament.entryFee}</p>
+                      </div>
+                    </div>
+                  )}
+                  {tournament.timeControl && (
+                    <div className="flex items-start gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-3">
+                      <Clock className="mt-0.5 h-5 w-5 shrink-0 text-stone-500" />
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">Tiempo de juego</p>
+                        <p className="mt-0.5 text-sm font-medium text-stone-900">{tournament.timeControl}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Ficha técnica */}
               <div className="rounded-lg border border-stone-200 bg-white overflow-hidden">
                 <div className="border-b border-stone-100 bg-stone-50 px-5 py-3">
@@ -123,21 +147,13 @@ export default async function EventDetailPage({
                 <dl className="divide-y divide-stone-100">
                   {[
                     { label: "Nombre", value: tournament.title },
-                    {
-                      label: "Sistema",
-                      value: tournament.system === "swiss" ? "Sistema suizo" : "Todos contra todos",
-                    },
+                    { label: "Sistema", value: tournament.system === "swiss" ? "Sistema suizo" : "Todos contra todos" },
                     { label: "Rondas", value: String(tournament.roundsPlanned) },
-                    {
-                      label: "Desempates",
-                      value: tournament.tieBreakOrder.map(formatTieBreakLabel).join(" › "),
-                    },
+                    { label: "Desempates", value: tournament.tieBreakOrder.map(formatTieBreakLabel).join(" › ") },
                   ].map(({ label, value }) => (
                     <div key={label} className="flex justify-between gap-3 px-5 py-3.5">
                       <dt className="text-sm text-stone-500">{label}</dt>
-                      <dd className="text-right text-sm font-medium text-stone-950">
-                        {value}
-                      </dd>
+                      <dd className="text-right text-sm font-medium text-stone-950">{value}</dd>
                     </div>
                   ))}
                 </dl>
@@ -182,6 +198,28 @@ export default async function EventDetailPage({
                 </div>
               )}
             </div>
+
+            {/* Galería */}
+            {tournament.gallery && tournament.gallery.length > 0 && (
+              <div className="mt-8 max-w-3xl">
+                <h3 className="mb-4 text-lg font-semibold text-stone-950">Galería</h3>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {tournament.gallery.map((img, i) => (
+                    <div key={i} className="overflow-hidden rounded-lg border border-stone-200">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={img.src}
+                        alt={img.alt || "Galería del torneo"}
+                        className="h-40 w-full object-cover"
+                      />
+                      {img.alt && (
+                        <p className="px-3 py-2 text-xs text-stone-500">{img.alt}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </Section>
         )}
       </main>
