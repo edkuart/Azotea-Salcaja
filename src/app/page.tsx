@@ -3,14 +3,21 @@ import { ArrowRight, CalendarDays } from "lucide-react";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { chessCommunity } from "@/modules/chess/public-data";
-import { publicEvents } from "@/modules/events/public-data";
+import { db } from "@/lib/db";
 import {
   featuredProducts,
   menuCategories,
   restaurantInfo,
 } from "@/modules/restaurant/public-data";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const upcomingEvents = await db().event.findMany({
+    where: { status: "published" },
+    orderBy: { startsAt: "asc" },
+    take: 2,
+  });
   return (
     <PublicLayout>
       <main>
@@ -344,33 +351,47 @@ export default function Home() {
                 </div>
               </article>
 
-              {/* Regular event cards */}
-              {publicEvents.slice(0, 2).map((event, i) => (
-                <article
-                  key={event.title}
-                  className="event-card reveal"
-                  data-reveal-delay={String((i + 1) * 80)}
-                >
-                  {event.image && (
-                    <div
-                      className="h-48 border-b-2 border-[var(--color-ink)]"
-                      style={{
-                        backgroundImage: `url(${event.image})`,
-                        backgroundPosition: "center",
-                        backgroundSize: "cover",
-                        marginBottom: "4px",
-                      }}
-                    />
-                  )}
-                  <span className="eyebrow">{event.type}</span>
-                  <h3 className="card-title">{event.title}</h3>
-                  <span className="card-when flex items-center gap-2">
-                    <CalendarDays className="h-3.5 w-3.5" aria-hidden />
-                    {event.date} · {event.time}
-                  </span>
-                  <p className="card-desc">{event.description}</p>
-                </article>
-              ))}
+              {/* DB events */}
+              {upcomingEvents.map((event, i) => {
+                const dateStr = event.startsAt.toLocaleDateString("es", {
+                  weekday: "long", day: "numeric", month: "short",
+                });
+                const timeStr = event.startsAt.toLocaleTimeString("es", {
+                  hour: "2-digit", minute: "2-digit",
+                });
+                return (
+                  <Link
+                    key={event.id}
+                    href={`/eventos/${event.slug}`}
+                    className="event-card reveal no-underline"
+                    data-reveal-delay={String((i + 1) * 80)}
+                    style={{ display: "block" }}
+                  >
+                    {event.coverImageUrl && (
+                      <div
+                        className="h-48 border-b-2 border-[var(--color-ink)]"
+                        style={{
+                          backgroundImage: `url(${event.coverImageUrl})`,
+                          backgroundPosition: "center",
+                          backgroundSize: "cover",
+                          marginBottom: "4px",
+                        }}
+                      />
+                    )}
+                    <span className="eyebrow" style={{ textTransform: "uppercase" }}>
+                      {event.type === "chess" ? "Ajedrez" : event.type === "restaurant" ? "Restaurante" : "Comunidad"}
+                    </span>
+                    <h3 className="card-title">{event.title}</h3>
+                    <span className="card-when flex items-center gap-2">
+                      <CalendarDays className="h-3.5 w-3.5" aria-hidden />
+                      <span className="capitalize">{dateStr}</span> · {timeStr}
+                    </span>
+                    {event.description && (
+                      <p className="card-desc line-clamp-3">{event.description}</p>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
 
             <div className="mt-4 text-right">

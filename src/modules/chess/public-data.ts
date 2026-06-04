@@ -1,10 +1,10 @@
 import type { ChessTournament } from "./types";
 
 export const chessCommunity = {
-  title: "Ajedrez en Azotea",
+  title: "Chessitos",
   schedule: "Lunes, 7:30 p.m.",
   description:
-    "Una comunidad local se reune cada lunes para jugar, aprender y organizar torneos casuales.",
+    "Comunidad de ajedrez en Salcajá. Nos reunimos cada lunes para jugar, aprender y organizar torneos.",
   image:
     "https://images.unsplash.com/photo-1586165368502-1bad197a6461?auto=format&fit=crop&w=1400&q=80",
   features: [
