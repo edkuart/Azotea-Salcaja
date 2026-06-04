@@ -59,10 +59,12 @@ export function SiteHeader() {
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  // Click-outside closes chess desktop dropdown
+  // Click-outside closes chess desktop dropdown (not when clicking inside mobile menu)
   useEffect(() => {
     if (!chessOpen) return;
     const fn = (e: MouseEvent) => {
+      const inMobileMenu = menuRef.current?.contains(e.target as Node);
+      if (inMobileMenu) return;
       if (chessRef.current && !chessRef.current.contains(e.target as Node)) {
         setChessOpen(false);
       }
