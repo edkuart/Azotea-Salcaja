@@ -1,80 +1,148 @@
-import { Plus } from "lucide-react";
+import Link from "next/link";
+import { CalendarDays, Plus, Trash2, Trophy } from "lucide-react";
 
-import { AdminCard } from "@/components/admin/AdminCard";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { StatusPill } from "@/components/admin/StatusPill";
-import { TextAreaField } from "@/components/admin/TextAreaField";
-import { TextField } from "@/components/admin/TextField";
-import { adminEvents } from "@/modules/admin/restaurant-data";
+import { db } from "@/lib/db";
+import { deleteEvent, toggleEventStatus } from "@/app/actions/events";
 
-export default function AdminEventsPage() {
+export const dynamic = "force-dynamic";
+
+const TYPE_LABEL: Record<string, string> = {
+  restaurant: "Restaurante",
+  chess: "Ajedrez",
+  community: "Comunidad",
+};
+
+const STATUS_COLOR: Record<string, string> = {
+  published: "var(--color-emerald, #15803d)",
+  draft: "#888",
+  archived: "#aaa",
+};
+
+export default async function AdminEventsPage() {
+  const events = await db().event.findMany({
+    orderBy: { startsAt: "desc" },
+  });
+
   return (
     <AdminShell>
       <AdminPageHeader
-        action={
-          <button className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-stone-950 px-4 text-sm font-semibold text-white transition hover:bg-stone-800">
-            <Plus className="h-4 w-4" aria-hidden />
-            Nuevo evento
-          </button>
-        }
-        description="Publica actividades especiales, promociones y eventos comunitarios."
         eyebrow="Restaurante"
         title="Eventos"
+        description="Publica actividades especiales, torneos y eventos comunitarios."
+        action={
+          <Link
+            href="/admin/eventos/nuevo"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-stone-950 px-4 text-sm font-semibold text-white transition hover:bg-stone-800"
+          >
+            <Plus className="h-4 w-4" aria-hidden />
+            Nuevo evento
+          </Link>
+        }
       />
 
-      <div className="mt-8 grid gap-5 lg:grid-cols-[1fr_380px]">
-        <AdminCard>
-          <div className="grid gap-4">
-            {adminEvents.map((event) => (
-              <article
-                className="grid gap-4 rounded-lg border border-stone-200 p-4 md:grid-cols-[160px_1fr_auto] md:items-center"
-                key={event.id}
-              >
+      <div className="mt-8 grid gap-4">
+        {events.length === 0 && (
+          <div className="rounded-lg border-2 border-dashed border-stone-200 p-12 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-stone-400">
+              Sin eventos
+            </p>
+            <p className="mt-2 text-sm text-stone-500">
+              Crea el primer evento para empezar.
+            </p>
+          </div>
+        )}
+
+        {events.map((event) => {
+          const dateStr = event.startsAt.toLocaleDateString("es", {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          });
+
+          return (
+            <article
+              key={event.id}
+              className="grid gap-4 rounded-lg border border-stone-200 bg-white p-4 md:grid-cols-[140px_1fr_auto] md:items-center"
+            >
+              {event.coverImageUrl ? (
                 <div
-                  className="min-h-32 rounded-md bg-stone-200"
+                  className="h-24 rounded-md bg-stone-100 md:h-full md:min-h-[88px]"
                   style={{
-                    backgroundImage: `url(${event.image})`,
+                    backgroundImage: `url(${event.coverImageUrl})`,
                     backgroundPosition: "center",
                     backgroundSize: "cover",
                   }}
                 />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rose-700">
-                    {event.type}
+              ) : (
+                <div className="flex h-24 items-center justify-center rounded-md bg-stone-100 md:h-full md:min-h-[88px]">
+                  <CalendarDays className="h-8 w-8 text-stone-300" />
+                </div>
+              )}
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rose-700">
+                  {TYPE_LABEL[event.type] ?? event.type}
+                </p>
+                <h2 className="mt-1 text-lg font-semibold text-stone-950">
+                  {event.title}
+                </h2>
+                <p className="mt-0.5 text-sm text-stone-500">{dateStr}</p>
+                {event.linkedTournamentId && (
+                  <p className="mt-1 flex items-center gap-1.5 text-xs text-stone-500">
+                    <Trophy className="h-3 w-3" aria-hidden />
+                    Torneo vinculado
                   </p>
-                  <h2 className="mt-2 text-lg font-semibold text-stone-950">
-                    {event.title}
-                  </h2>
-                  <p className="mt-1 text-sm text-stone-600">
-                    {event.date} - {event.time}
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-stone-600">
+                )}
+                {event.description && (
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-stone-600">
                     {event.description}
                   </p>
-                </div>
-                <StatusPill label={event.status} />
-              </article>
-            ))}
-          </div>
-        </AdminCard>
+                )}
+              </div>
 
-        <AdminCard>
-          <h2 className="text-lg font-semibold">Crear o editar evento</h2>
-          <form className="mt-4 grid gap-4">
-            <TextField label="Titulo" placeholder="Ej. Lunes de ajedrez" />
-            <TextField label="Fecha" placeholder="Todos los lunes" />
-            <TextField label="Hora" placeholder="7:30 p.m." />
-            <TextAreaField
-              label="Descripcion"
-              placeholder="Resumen publico del evento."
-            />
-            <TextField label="URL de imagen" placeholder="https://..." />
-            <button className="h-11 rounded-md bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800">
-              Guardar evento
-            </button>
-          </form>
-        </AdminCard>
+              <div className="flex items-center gap-2">
+                <StatusPill label={event.status} />
+                <Link
+                  href={`/admin/eventos/${event.id}`}
+                  className="inline-flex h-9 items-center justify-center rounded-md border border-stone-300 px-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-50"
+                >
+                  Editar
+                </Link>
+                <form
+                  action={toggleEventStatus.bind(null, event.id, event.status)}
+                >
+                  <button
+                    type="submit"
+                    className="inline-flex h-9 items-center justify-center rounded-md border px-3 text-xs font-semibold transition"
+                    style={{
+                      borderColor: STATUS_COLOR[event.status],
+                      color: STATUS_COLOR[event.status],
+                    }}
+                  >
+                    {event.status === "published" ? "Despublicar" : "Publicar"}
+                  </button>
+                </form>
+                <form action={deleteEvent.bind(null, event.id)}>
+                  <button
+                    type="submit"
+                    title="Eliminar evento"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-red-200 text-red-500 transition hover:bg-red-50"
+                    onClick={(e) => {
+                      if (!confirm(`¿Eliminar "${event.title}"?`))
+                        e.preventDefault();
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" aria-hidden />
+                  </button>
+                </form>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </AdminShell>
   );

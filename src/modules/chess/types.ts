@@ -85,6 +85,8 @@ export type ChessTournament = {
   startsAt: string;
   locationLabel: string;
   tieBreakOrder: TieBreakCode[];
+  regulations?: string;
+  prizes?: Array<{ place: string; award: string }>;
   players: ChessPlayer[];
   rounds: ChessRound[];
 };

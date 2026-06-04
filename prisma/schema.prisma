@@ -199,18 +199,20 @@ model Promotion {
 }
 
 model Event {
-  id            String        @id @default(cuid())
-  title         String
-  slug          String        @unique
-  type          EventType
-  description   String?
-  startsAt      DateTime      @map("starts_at")
-  endsAt        DateTime?     @map("ends_at")
-  locationLabel String?       @map("location_label")
-  imageId       String?       @map("image_id")
-  status        PublishStatus @default(draft)
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
+  id                 String        @id @default(cuid())
+  title              String
+  slug               String        @unique
+  type               EventType
+  description        String?
+  startsAt           DateTime      @map("starts_at")
+  endsAt             DateTime?     @map("ends_at")
+  locationLabel      String?       @map("location_label")
+  imageId            String?       @map("image_id")
+  coverImageUrl      String?       @map("cover_image_url")
+  status             PublishStatus @default(draft)
+  linkedTournamentId String?       @map("linked_tournament_id")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
 
   image MediaAsset? @relation("EventImage", fields: [imageId], references: [id], onDelete: SetNull)
 
@@ -262,6 +264,8 @@ model ChessTournament {
   winPoints          Decimal              @default(1) @map("win_points")
   lossPoints         Decimal              @default(0) @map("loss_points")
   tieBreakOrderJson  Json                 @map("tie_break_order_json")
+  regulations        String?
+  prizesJson         Json?                @map("prizes_json")
   publicTokenHash    String?              @map("public_token_hash")
   manageTokenHash    String?              @map("manage_token_hash")
   createdByUserId    String?              @map("created_by_user_id")

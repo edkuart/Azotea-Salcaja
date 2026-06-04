@@ -270,7 +270,7 @@ export function TournamentManager({
         {tab === "players"   && <PlayersTab   t={t} hasRounds={hasRounds} onAdd={addPlayer} onRemove={removePlayer} onStatus={setPlayerStatus} />}
         {tab === "rounds"    && <RoundsTab    t={t} blocker={blocker} isFinished={isFinished} allRoundsGenerated={allRoundsGenerated} onGenerate={generateRound} onResult={applyResult} onUndo={undoResult} />}
         {tab === "standings" && <StandingsTab t={t} standings={standings} />}
-        {tab === "info"      && <InfoTab      t={t} />}
+        {tab === "info"      && <InfoTab      t={t} onChange={(patch) => setT((prev) => ({ ...prev, ...patch }))} />}
       </div>
     </div>
   );
@@ -950,36 +950,110 @@ function StandingsTab({
 // TAB: INFO
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function InfoTab({ t }: { t: ChessTournament }) {
+function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partial<ChessTournament>) => void }) {
   const rows: { label: string; value: string }[] = [
-    { label: "Sistema", value: formatTournamentSystem(t.system) },
-    { label: "Estado", value: formatTournamentStatus(t.status) },
-    { label: "Rondas", value: `${t.rounds.length} de ${t.roundsPlanned}` },
-    { label: "Inicio", value: t.startsAt },
-    { label: "Lugar", value: t.locationLabel },
-    {
-      label: "Desempates",
-      value: t.tieBreakOrder.map(formatTieBreakLabel).join(" › "),
-    },
-    { label: "Visibilidad", value: t.visibility },
+    { label: "Sistema",      value: formatTournamentSystem(t.system) },
+    { label: "Estado",       value: formatTournamentStatus(t.status) },
+    { label: "Rondas",       value: `${t.rounds.length} de ${t.roundsPlanned}` },
+    { label: "Inicio",       value: t.startsAt },
+    { label: "Lugar",        value: t.locationLabel },
+    { label: "Desempates",   value: t.tieBreakOrder.map(formatTieBreakLabel).join(" › ") },
+    { label: "Visibilidad",  value: t.visibility },
   ];
 
+  function addPrize() {
+    onChange({ prizes: [...(t.prizes ?? []), { place: "", award: "" }] });
+  }
+
+  function updatePrize(i: number, field: "place" | "award", val: string) {
+    const next = (t.prizes ?? []).map((p, idx) => idx === i ? { ...p, [field]: val } : p);
+    onChange({ prizes: next });
+  }
+
+  function removePrize(i: number) {
+    onChange({ prizes: (t.prizes ?? []).filter((_, idx) => idx !== i) });
+  }
+
   return (
-    <div className="rounded-lg border border-stone-200 bg-white">
-      <div className="border-b border-stone-100 px-5 py-4">
-        <h2 className="font-semibold text-stone-950">{t.title}</h2>
-        {t.description && (
-          <p className="mt-1 text-sm text-stone-500">{t.description}</p>
+    <div className="grid gap-5">
+      {/* Ficha técnica */}
+      <div className="rounded-lg border border-stone-200 bg-white">
+        <div className="border-b border-stone-100 px-5 py-4">
+          <h2 className="font-semibold text-stone-950">{t.title}</h2>
+          {t.description && (
+            <p className="mt-1 text-sm text-stone-500">{t.description}</p>
+          )}
+        </div>
+        <dl className="divide-y divide-stone-100">
+          {rows.map(({ label, value }) => (
+            <div key={label} className="flex justify-between gap-3 px-5 py-3.5">
+              <dt className="text-sm text-stone-500">{label}</dt>
+              <dd className="text-right text-sm font-medium text-stone-950">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      {/* Premios */}
+      <div className="rounded-lg border border-stone-200 bg-white">
+        <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
+          <h3 className="font-semibold text-stone-950">Premios</h3>
+          <button
+            type="button"
+            onClick={addPrize}
+            className="inline-flex items-center gap-1.5 rounded-md bg-stone-950 px-3 py-1.5 text-xs font-semibold text-white hover:bg-stone-800"
+          >
+            <Plus className="h-3 w-3" />
+            Agregar
+          </button>
+        </div>
+        {(t.prizes ?? []).length === 0 ? (
+          <p className="px-5 py-4 text-sm text-stone-400">Sin premios definidos.</p>
+        ) : (
+          <div className="divide-y divide-stone-100">
+            {(t.prizes ?? []).map((prize, i) => (
+              <div key={i} className="flex items-center gap-3 px-5 py-3">
+                <input
+                  value={prize.place}
+                  onChange={(e) => updatePrize(i, "place", e.target.value)}
+                  placeholder="1.º lugar"
+                  className="h-8 w-28 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+                />
+                <input
+                  value={prize.award}
+                  onChange={(e) => updatePrize(i, "award", e.target.value)}
+                  placeholder="Q 200 + trofeo"
+                  className="h-8 flex-1 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => removePrize(i)}
+                  className="text-stone-400 hover:text-red-500"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
         )}
       </div>
-      <dl className="divide-y divide-stone-100">
-        {rows.map(({ label, value }) => (
-          <div key={label} className="flex justify-between gap-3 px-5 py-3.5">
-            <dt className="text-sm text-stone-500">{label}</dt>
-            <dd className="text-right text-sm font-medium text-stone-950">{value}</dd>
-          </div>
-        ))}
-      </dl>
+
+      {/* Reglamento */}
+      <div className="rounded-lg border border-stone-200 bg-white">
+        <div className="border-b border-stone-100 px-5 py-4">
+          <h3 className="font-semibold text-stone-950">Reglamento y bases</h3>
+          <p className="mt-0.5 text-xs text-stone-400">Visible en la página pública del evento vinculado.</p>
+        </div>
+        <div className="p-5">
+          <textarea
+            value={t.regulations ?? ""}
+            onChange={(e) => onChange({ regulations: e.target.value })}
+            rows={8}
+            placeholder={"Ej:\n• Ritmo de juego: 10 min + 5 seg\n• Sistema suizo con desempate Buchholz\n• Los jugadores deben presentarse 10 min antes\n• Premios entregados al finalizar la última ronda"}
+            className="w-full rounded-md border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-400"
+          />
+        </div>
+      </div>
     </div>
   );
 }
