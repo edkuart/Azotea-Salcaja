@@ -289,7 +289,6 @@ export function SiteHeader() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={() => setOpen(false)}
                     style={{
                       display: "block",
                       padding: "9px 0",
