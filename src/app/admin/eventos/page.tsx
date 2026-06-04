@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { CalendarDays, Plus, Trash2, Trophy } from "lucide-react";
+import { CalendarDays, Plus, Trophy } from "lucide-react";
+import { DeleteButton } from "@/components/admin/DeleteButton";
 
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminShell } from "@/components/admin/AdminShell";
@@ -126,19 +127,11 @@ export default async function AdminEventsPage() {
                     {event.status === "published" ? "Despublicar" : "Publicar"}
                   </button>
                 </form>
-                <form action={deleteEvent.bind(null, event.id)}>
-                  <button
-                    type="submit"
-                    title="Eliminar evento"
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-red-200 text-red-500 transition hover:bg-red-50"
-                    onClick={(e) => {
-                      if (!confirm(`¿Eliminar "${event.title}"?`))
-                        e.preventDefault();
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" aria-hidden />
-                  </button>
-                </form>
+                <DeleteButton
+                  action={deleteEvent.bind(null, event.id)}
+                  confirm={`¿Eliminar "${event.title}"?`}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-red-200 text-red-500 transition hover:bg-red-50"
+                />
               </div>
             </article>
           );

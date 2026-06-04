@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { CalendarDays, Plus, Trash2 } from "lucide-react";
+import { CalendarDays, Plus } from "lucide-react";
 
 import { AdminCard } from "@/components/admin/AdminCard";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { StatusPill } from "@/components/admin/StatusPill";
+import { DeleteButton } from "@/components/admin/DeleteButton";
 import {
   getActiveOfficialTournaments,
   getHistoricalOfficialTournaments,
@@ -86,20 +87,10 @@ export default async function AdminChessTournamentsPage() {
                     >
                       Administrar
                     </Link>
-                    <form action={deleteWithId}>
-                      <button
-                        type="submit"
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-red-200 text-red-500 transition hover:bg-red-50 hover:border-red-300"
-                        title="Eliminar torneo"
-                        onClick={(e) => {
-                          if (!confirm(`¿Eliminar "${tournament.title}"? Esta acción no se puede deshacer.`)) {
-                            e.preventDefault();
-                          }
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" aria-hidden />
-                      </button>
-                    </form>
+                    <DeleteButton
+                      action={deleteWithId}
+                      confirm={`¿Eliminar "${tournament.title}"? Esta acción no se puede deshacer.`}
+                    />
                   </div>
                 </div>
               </AdminCard>
