@@ -8,7 +8,7 @@ export function SiteFooter() {
       <div className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         {/* Big display name */}
         <p
-          aria-label={restaurantInfo.name}
+          aria-label="Chessitos"
           style={{
             fontFamily: "var(--font-display)",
             fontSize: "clamp(4rem, 12vw, 10rem)",
@@ -17,8 +17,7 @@ export function SiteFooter() {
             margin: "0 0 36px",
           }}
         >
-          Azotea
-          <br />
+          Chess
           <em
             style={{
               fontFamily: "var(--font-chess)",
@@ -26,7 +25,7 @@ export function SiteFooter() {
               color: "var(--color-marquee)",
             }}
           >
-            Salcajá
+            itos
           </em>
           .
         </p>
@@ -184,9 +183,9 @@ export function SiteFooter() {
             fontSize: "10px",
           }}
         >
-          <span>© 2026 Azotea Salcajá</span>
+          <span>© 2026 Chessitos · Salcajá, Guatemala</span>
           <span className="hidden sm:inline">
-            Diseñado con vinilo, café y tablero
+            Con el apoyo de Azotea Salcajá
           </span>
         </div>
       </div>

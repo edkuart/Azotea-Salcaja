@@ -85,7 +85,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           }}
         >
           <VinylDisc size={20} />
-          Azotea
+          Chess
           <em
             style={{
               fontFamily: "var(--font-chess)",
@@ -94,7 +94,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               fontSize: 19,
             }}
           >
-            Salcajá
+            itos
           </em>
         </Link>
 
@@ -222,7 +222,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                   marginTop: 6,
                 }}
               >
-                Azotea{" "}
+                Chess
                 <em
                   style={{
                     fontFamily: "var(--font-chess)",
@@ -230,7 +230,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                     color: "var(--color-stage)",
                   }}
                 >
-                  Salcajá
+                  itos
                 </em>
               </p>
             </div>

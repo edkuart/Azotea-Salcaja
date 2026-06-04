@@ -43,16 +43,16 @@ export const metadata: Metadata = {
     process.env.APP_URL ?? "https://azotea-salcaja.vercel.app",
   ),
   title: {
-    default: "Azotea Salcajá",
-    template: "%s | Azotea Salcajá",
+    default: "Chessitos",
+    template: "%s | Chessitos",
   },
   description:
-    "Catalogo digital, eventos y comunidad de ajedrez de Azotea Salcajá.",
+    "Comunidad de ajedrez en Salcajá, Guatemala. Torneos, clases, rankings y eventos.",
   openGraph: {
-    title: "Azotea Salcajá",
+    title: "Chessitos",
     description:
-      "Catalogo digital, eventos y comunidad de ajedrez de Azotea Salcajá.",
-    siteName: "Azotea Salcajá",
+      "Comunidad de ajedrez en Salcajá, Guatemala. Torneos, clases, rankings y eventos.",
+    siteName: "Chessitos",
     locale: "es_GT",
     type: "website",
   },

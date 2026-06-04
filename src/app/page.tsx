@@ -42,7 +42,7 @@ export default function Home() {
               userSelect: "none",
             }}
           >
-            AZOTEA
+            CHESS
           </div>
 
           {/* Spinning vinyl disc */}
@@ -67,7 +67,7 @@ export default function Home() {
               className="section-label reveal"
               style={{ color: "var(--color-marquee)" }}
             >
-              Restaurante local en Salcajá
+              Comunidad de ajedrez · Salcajá, Guatemala
             </span>
 
             <h1
@@ -81,7 +81,7 @@ export default function Home() {
                 maxWidth: "18ch",
               }}
             >
-              Sabores para compartir{" "}
+              Chess
               <em
                 style={{
                   fontFamily: "var(--font-chess)",
@@ -89,9 +89,8 @@ export default function Home() {
                   color: "var(--color-stage)",
                 }}
               >
-                sobre
-              </em>{" "}
-              Salcajá.
+                itos
+              </em>
             </h1>
 
             <p
@@ -106,8 +105,8 @@ export default function Home() {
                 opacity: 0.88,
               }}
             >
-              {restaurantInfo.description} Abiertos toda la semana, con la
-              cocina hasta las diez.
+              Torneos, clases y comunidad de ajedrez en Salcajá. Organizamos
+              eventos cada lunes con categorías libre y sub-18.
             </p>
 
             <div
@@ -115,19 +114,15 @@ export default function Home() {
               data-reveal-delay="240"
               style={{ marginTop: "30px" }}
             >
-              <Link href="/menu" className="btn btn-primary">
-                Ver menú
+              <Link href="/ajedrez" className="btn btn-primary">
+                Conoce la comunidad
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
-              <a
-                href={`https://wa.me/${restaurantInfo.whatsapp}`}
-                className="btn btn-secondary"
-                rel="noreferrer"
-                target="_blank"
+              <Link href="/ajedrez/clases" className="btn btn-secondary"
                 style={{ color: "var(--color-cream)", borderColor: "var(--color-cream)" }}
               >
-                WhatsApp
-              </a>
+                Clases Chessitos
+              </Link>
             </div>
 
             {/* Meta strip */}
@@ -136,45 +131,27 @@ export default function Home() {
               data-reveal-delay="320"
             >
               <div>
-                <p
-                  className="eyebrow"
-                  style={{ color: "var(--color-marquee)" }}
-                >
-                  Dirección
+                <p className="eyebrow" style={{ color: "var(--color-marquee)" }}>
+                  Torneos
                 </p>
-                <p
-                  className="mt-1.5"
-                  style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)" }}
-                >
-                  {restaurantInfo.address}
+                <p className="mt-1.5" style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)" }}>
+                  Sistema suizo · Categorías libre y sub-18
                 </p>
               </div>
               <div>
-                <p
-                  className="eyebrow"
-                  style={{ color: "var(--color-marquee)" }}
-                >
-                  Esta semana
+                <p className="eyebrow" style={{ color: "var(--color-marquee)" }}>
+                  Clases
                 </p>
-                <p
-                  className="mt-1.5"
-                  style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)" }}
-                >
-                  Lunes a Domingo
+                <p className="mt-1.5" style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)" }}>
+                  Programa Chessitos para niños
                 </p>
               </div>
               <div>
-                <p
-                  className="eyebrow"
-                  style={{ color: "var(--color-marquee)" }}
-                >
-                  Ajedrez
+                <p className="eyebrow" style={{ color: "var(--color-marquee)" }}>
+                  Sede
                 </p>
-                <p
-                  className="mt-1.5"
-                  style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)" }}
-                >
-                  Lunes 7:30 p.m.
+                <p className="mt-1.5" style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)" }}>
+                  Restaurante Azotea · Salcajá
                 </p>
               </div>
             </div>
@@ -192,7 +169,7 @@ export default function Home() {
                   className="section-label reveal"
                   style={{ color: "var(--color-stage)" }}
                 >
-                  Menú destacado
+                  Azotea Salcajá · Patrocinador
                 </span>
                 <h2
                   className="reveal mt-4"
@@ -331,7 +308,7 @@ export default function Home() {
               className="section-label reveal"
               style={{ color: "var(--color-stage)" }}
             >
-              Esta semana en la azotea
+              Próximos eventos
             </span>
             <h2
               className="reveal mt-4"

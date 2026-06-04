@@ -87,9 +87,9 @@ export function SiteHeader() {
         >
           <div className="vinyl-disc-sm shrink-0" style={{ width: "32px", height: "32px" }} aria-hidden="true" />
           <span>
-            Azotea{" "}
+            Chess
             <em style={{ fontFamily: "var(--font-chess)", fontStyle: "italic", color: "var(--color-stage)" }}>
-              Salcajá
+              itos
             </em>
           </span>
         </Link>
