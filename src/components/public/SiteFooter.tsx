@@ -69,11 +69,30 @@ export function SiteFooter() {
                 color: "var(--color-marquee)",
               }}
             >
-              Horario
+              Chessitos
             </p>
             <div
               className="grid gap-1 opacity-85"
               style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)" }}
+            >
+              <p>Torneos · Lunes 7:30 PM</p>
+              <p>Clases · Lunes 5:30 – 7:30 PM</p>
+            </div>
+            <p
+              className="mt-4 mb-2"
+              style={{
+                fontFamily: "var(--font-poster)",
+                textTransform: "uppercase",
+                letterSpacing: "0.22em",
+                fontSize: "var(--text-xs)",
+                color: "rgba(255,253,208,0.4)",
+              }}
+            >
+              Restaurante Azotea
+            </p>
+            <div
+              className="grid gap-1"
+              style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", opacity: 0.5 }}
             >
               {restaurantInfo.hours.map((h) => (
                 <p key={h.day}>
