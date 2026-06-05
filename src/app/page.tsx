@@ -365,30 +365,31 @@ export default async function Home() {
                     href={`/eventos/${event.slug}`}
                     className="event-card reveal no-underline"
                     data-reveal-delay={String((i + 1) * 80)}
-                    style={{ display: "block" }}
+                    style={{ display: "flex", flexDirection: "column", padding: 0 }}
                   >
                     {event.coverImageUrl && (
                       <div
-                        className="h-48 border-b-2 border-[var(--color-ink)]"
+                        className="h-48 shrink-0 border-b-2 border-[var(--color-ink)]"
                         style={{
                           backgroundImage: `url(${event.coverImageUrl})`,
                           backgroundPosition: "center",
                           backgroundSize: "cover",
-                          marginBottom: "4px",
                         }}
                       />
                     )}
-                    <span className="eyebrow" style={{ textTransform: "uppercase" }}>
-                      {event.type === "chess" ? "Ajedrez" : event.type === "restaurant" ? "Restaurante" : "Comunidad"}
-                    </span>
-                    <h3 className="card-title">{event.title}</h3>
-                    <span className="card-when flex items-center gap-2">
-                      <CalendarDays className="h-3.5 w-3.5" aria-hidden />
-                      <span className="capitalize">{dateStr}</span> · {timeStr}
-                    </span>
-                    {event.description && (
-                      <p className="card-desc line-clamp-3">{event.description}</p>
-                    )}
+                    <div style={{ padding: "22px 26px", display: "grid", gap: "12px", flex: 1 }}>
+                      <span className="eyebrow" style={{ textTransform: "uppercase" }}>
+                        {event.type === "chess" ? "Ajedrez" : event.type === "restaurant" ? "Restaurante" : "Comunidad"}
+                      </span>
+                      <h3 className="card-title" style={{ margin: 0 }}>{event.title}</h3>
+                      <span className="card-when flex items-center gap-2">
+                        <CalendarDays className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                        <span className="capitalize">{dateStr}</span> · {timeStr}
+                      </span>
+                      {event.description && (
+                        <p className="card-desc line-clamp-3" style={{ margin: 0 }}>{event.description}</p>
+                      )}
+                    </div>
                   </Link>
                 );
               })}
