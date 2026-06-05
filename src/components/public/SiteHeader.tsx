@@ -101,14 +101,6 @@ export function SiteHeader() {
             Inicio
           </Link>
 
-          <Link
-            href="/menu"
-            style={NAV_LINK(pathname.startsWith("/menu") || pathname.startsWith("/eventos"))}
-            className="no-underline"
-          >
-            Restaurante
-          </Link>
-
           {/* Ajedrez dropdown */}
           <div ref={chessRef} style={{ position: "relative" }}>
             <button
@@ -189,6 +181,14 @@ export function SiteHeader() {
             )}
           </div>
 
+          <Link
+            href="/menu"
+            style={NAV_LINK(pathname.startsWith("/menu") || pathname.startsWith("/eventos"))}
+            className="no-underline"
+          >
+            Restaurante
+          </Link>
+
           <Link href="/contacto" style={NAV_LINK(pathname.startsWith("/contacto"))} className="no-underline">
             Contacto
           </Link>
@@ -248,7 +248,6 @@ export function SiteHeader() {
           aria-label="Menú de navegación"
         >
           <MobileNavLink href="/" label="Inicio" active={pathname === "/"} onClick={() => setOpen(false)} />
-          <MobileNavLink href="/menu" label="Restaurante" active={pathname.startsWith("/menu") || pathname.startsWith("/eventos")} onClick={() => setOpen(false)} />
 
           {/* Ajedrez accordion */}
           <div>
@@ -310,6 +309,7 @@ export function SiteHeader() {
             )}
           </div>
 
+          <MobileNavLink href="/menu" label="Restaurante" active={pathname.startsWith("/menu") || pathname.startsWith("/eventos")} onClick={() => setOpen(false)} />
           <MobileNavLink href="/contacto" label="Contacto" active={pathname.startsWith("/contacto")} onClick={() => setOpen(false)} />
 
           {/* Divider */}

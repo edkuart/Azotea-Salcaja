@@ -16,7 +16,7 @@ export default async function Home() {
   const upcomingEvents = await db().event.findMany({
     where: { status: "published" },
     orderBy: { startsAt: "asc" },
-    take: 2,
+    take: 1,
   });
   return (
     <PublicLayout>
@@ -330,7 +330,7 @@ export default async function Home() {
             </h2>
 
             <div className="mt-8 grid gap-5 lg:grid-cols-3">
-              {/* Featured chess event card */}
+              {/* Card 1: Comunidad */}
               <article
                 className="event-card featured reveal"
                 data-reveal-delay="0"
@@ -345,13 +345,60 @@ export default async function Home() {
                     className="btn btn-secondary"
                     style={{ color: "var(--color-cream)", borderColor: "var(--color-cream)" }}
                   >
-                    Ver ajedrez
+                    Ver comunidad
                     <ArrowRight className="h-3.5 w-3.5" aria-hidden />
                   </Link>
                 </div>
               </article>
 
-              {/* DB events */}
+              {/* Card 2: Clases (estático) */}
+              <article
+                className="event-card reveal"
+                data-reveal-delay="80"
+                style={{
+                  background: "var(--color-ink)",
+                  color: "var(--color-cream)",
+                  borderColor: "var(--color-ink)",
+                }}
+              >
+                <span
+                  className="eyebrow"
+                  style={{ color: "var(--color-marquee)" }}
+                >
+                  Clases · Principiantes
+                </span>
+                <h3
+                  className="card-title"
+                  style={{ color: "var(--color-cream)" }}
+                >
+                  Clases Chessitos
+                </h3>
+                <span
+                  className="card-when"
+                  style={{ color: "rgba(255,253,208,0.65)" }}
+                >
+                  Lunes · 5:30 – 7:30 PM
+                </span>
+                <p
+                  className="card-desc"
+                  style={{ color: "rgba(255,253,208,0.75)" }}
+                >
+                  Programa de ajedrez para niños principiantes.
+                  3 meses de fundamentos, táctica y estrategia.
+                </p>
+                <div className="mt-2">
+                  <Link
+                    href="/ajedrez/clases"
+                    className="btn btn-secondary"
+                    style={{ color: "var(--color-marquee)", borderColor: "var(--color-marquee)" }}
+                  >
+                    Ver programa
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                  </Link>
+                </div>
+              </article>
+
+              {/* Card 3: DB events */}
               {upcomingEvents.map((event, i) => {
                 const dateStr = event.startsAt.toLocaleDateString("es", {
                   weekday: "long", day: "numeric", month: "short",
