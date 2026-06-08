@@ -1,8 +1,8 @@
-import { Trash2 } from "lucide-react";
 import type { EnrollmentStatus } from "@prisma/client";
 
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { DeleteButton } from "@/components/admin/DeleteButton";
 import { db } from "@/lib/db";
 import { updateEnrollmentStatus, deleteEnrollment } from "@/app/actions/enrollments";
 
@@ -163,32 +163,17 @@ export default async function InscripcionesPage() {
                       </div>
                       {e.message && (
                         <p style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "#555", marginTop: "6px", fontStyle: "italic" }}>
-                          "{e.message}"
+                          &quot;{e.message}&quot;
                         </p>
                       )}
                     </div>
 
-                    {/* Delete */}
-                    <form action={deleteEnrollment.bind(null, e.id)}>
-                      <button
-                        type="submit"
-                        title="Eliminar solicitud"
-                        style={{
-                          background: "none",
-                          border: "1px solid rgba(204,45,48,0.3)",
-                          color: "var(--color-stage)",
-                          padding: "6px",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                        onClick={(ev) => {
-                          if (!confirm(`¿Eliminar inscripción de ${e.childName}?`)) ev.preventDefault();
-                        }}
-                      >
-                        <Trash2 style={{ width: "14px", height: "14px" }} aria-hidden />
-                      </button>
-                    </form>
+                    <DeleteButton
+                      action={deleteEnrollment.bind(null, e.id)}
+                      confirm={`¿Eliminar inscripción de ${e.childName}?`}
+                      label="Eliminar solicitud"
+                      className="inline-flex items-center border border-red-200 p-1.5 text-red-600 transition hover:border-red-300 hover:bg-red-50"
+                    />
                   </div>
 
                   {/* Status actions */}
