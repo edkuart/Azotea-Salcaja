@@ -194,8 +194,10 @@ export default async function EventDetailPage({
                 </dl>
               </div>
 
-              {/* Premios */}
-              {tournament.prizes && tournament.prizes.length > 0 && (
+              {/* Premios planos — solo para torneos sin premios por categoría (compatibilidad) */}
+              {tournament.prizes &&
+                tournament.prizes.length > 0 &&
+                !(tournament.prizeCategories && tournament.prizeCategories.length > 0) && (
                 <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 overflow-hidden">
                   <div className="border-b border-amber-100 px-5 py-3 flex items-center gap-2">
                     <Medal className="h-4 w-4 text-amber-600" />
@@ -230,7 +232,7 @@ export default async function EventDetailPage({
                       <div className="divide-y divide-amber-100">
                         {category.places.map((prize, pi) => (
                           <div key={pi} className="flex items-center justify-between px-5 py-3 gap-3">
-                            <span className="text-sm font-semibold text-stone-800">{prize.place}</span>
+                            <span className="text-sm font-semibold text-stone-800">{prize.place || `${pi + 1}.º lugar`}</span>
                             <span className="text-right text-sm text-stone-700">{prize.award}</span>
                           </div>
                         ))}

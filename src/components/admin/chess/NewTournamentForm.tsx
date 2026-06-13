@@ -54,6 +54,11 @@ function slugify(text: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+// Etiqueta automática del lugar según su posición (1.º, 2.º, 3.º…).
+function placeOrdinal(index: number) {
+  return `${index + 1}.º lugar`;
+}
+
 function getTodayInputValue() {
   const today = new Date();
   const year = today.getFullYear();
@@ -225,7 +230,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
   function addCategory() {
     setPrizeCategories((cats) => [
       ...cats,
-      { name: "", places: [{ place: "", award: "" }] },
+      { name: "", places: [{ place: placeOrdinal(0), award: "" }] },
     ]);
   }
   function removeCategory(ci: number) {
@@ -239,23 +244,26 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
   function addPlace(ci: number) {
     setPrizeCategories((cats) =>
       cats.map((c, i) =>
-        i === ci ? { ...c, places: [...c.places, { place: "", award: "" }] } : c,
+        i === ci
+          ? {
+              ...c,
+              places: [...c.places, { place: "", award: "" }].map((p, j) => ({
+                ...p,
+                place: placeOrdinal(j),
+              })),
+            }
+          : c,
       ),
     );
   }
-  function updatePlace(
-    ci: number,
-    pi: number,
-    field: "place" | "award",
-    val: string,
-  ) {
+  function updateAward(ci: number, pi: number, val: string) {
     setPrizeCategories((cats) =>
       cats.map((c, i) =>
         i === ci
           ? {
               ...c,
               places: c.places.map((p, j) =>
-                j === pi ? { ...p, [field]: val } : p,
+                j === pi ? { ...p, award: val } : p,
               ),
             }
           : c,
@@ -265,7 +273,14 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
   function removePlace(ci: number, pi: number) {
     setPrizeCategories((cats) =>
       cats.map((c, i) =>
-        i === ci ? { ...c, places: c.places.filter((_, j) => j !== pi) } : c,
+        i === ci
+          ? {
+              ...c,
+              places: c.places
+                .filter((_, j) => j !== pi)
+                .map((p, j) => ({ ...p, place: placeOrdinal(j) })),
+            }
+          : c,
       ),
     );
   }
@@ -655,21 +670,26 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
 
           <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
             {cat.places.map((place, pi) => (
-              <div key={pi} style={{ display: "flex", gap: 6 }}>
-                <input
-                  type="text"
-                  value={place.place}
-                  onChange={(e) => updatePlace(ci, pi, "place", e.currentTarget.value)}
-                  placeholder="1.º lugar"
-                  style={{ ...INPUT, width: 110, flexShrink: 0 }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
-                />
+              <div key={pi} style={{ display: "flex", gap: 6, alignItems: "stretch" }}>
+                <span
+                  style={{
+                    ...INPUT,
+                    width: 96,
+                    flexShrink: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 600,
+                    opacity: 0.85,
+                  }}
+                >
+                  {placeOrdinal(pi)}
+                </span>
                 <input
                   type="text"
                   value={place.award}
-                  onChange={(e) => updatePlace(ci, pi, "award", e.currentTarget.value)}
-                  placeholder="Trofeo"
+                  onChange={(e) => updateAward(ci, pi, e.currentTarget.value)}
+                  placeholder="Premio (ej. Trofeo + Q100)"
                   style={{ ...INPUT, flex: 1 }}
                   onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
                   onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}

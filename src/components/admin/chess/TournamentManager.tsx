@@ -1028,6 +1028,11 @@ function StandingsTab({
 // TAB: INFO
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// Etiqueta automática del lugar según su posición (1.º, 2.º, 3.º…).
+function placeOrdinal(index: number) {
+  return `${index + 1}.º lugar`;
+}
+
 function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partial<ChessTournament>) => void }) {
   const rows: { label: string; value: string }[] = [
     { label: "Sistema",     value: formatTournamentSystem(t.system) },
@@ -1038,16 +1043,6 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
     { label: "Desempates",  value: t.tieBreakOrder.map(formatTieBreakLabel).join(" › ") },
     { label: "Visibilidad", value: t.visibility },
   ];
-
-  function addPrize() {
-    onChange({ prizes: [...(t.prizes ?? []), { place: "", award: "" }] });
-  }
-  function updatePrize(i: number, field: "place" | "award", val: string) {
-    onChange({ prizes: (t.prizes ?? []).map((p, idx) => idx === i ? { ...p, [field]: val } : p) });
-  }
-  function removePrize(i: number) {
-    onChange({ prizes: (t.prizes ?? []).filter((_, idx) => idx !== i) });
-  }
 
   // ── Qué incluye la inscripción ──
   function addInclude(value: string) {
@@ -1064,7 +1059,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
     onChange({
       prizeCategories: [
         ...(t.prizeCategories ?? []),
-        { name: "", places: [{ place: "", award: "" }] },
+        { name: "", places: [{ place: placeOrdinal(0), award: "" }] },
       ],
     });
   }
@@ -1083,23 +1078,26 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
   function addCategoryPlace(ci: number) {
     onChange({
       prizeCategories: (t.prizeCategories ?? []).map((c, i) =>
-        i === ci ? { ...c, places: [...c.places, { place: "", award: "" }] } : c,
+        i === ci
+          ? {
+              ...c,
+              places: [...c.places, { place: "", award: "" }].map((p, j) => ({
+                ...p,
+                place: placeOrdinal(j),
+              })),
+            }
+          : c,
       ),
     });
   }
-  function updateCategoryPlace(
-    ci: number,
-    pi: number,
-    field: "place" | "award",
-    val: string,
-  ) {
+  function updateCategoryAward(ci: number, pi: number, val: string) {
     onChange({
       prizeCategories: (t.prizeCategories ?? []).map((c, i) =>
         i === ci
           ? {
               ...c,
               places: c.places.map((p, j) =>
-                j === pi ? { ...p, [field]: val } : p,
+                j === pi ? { ...p, award: val } : p,
               ),
             }
           : c,
@@ -1109,7 +1107,14 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
   function removeCategoryPlace(ci: number, pi: number) {
     onChange({
       prizeCategories: (t.prizeCategories ?? []).map((c, i) =>
-        i === ci ? { ...c, places: c.places.filter((_, j) => j !== pi) } : c,
+        i === ci
+          ? {
+              ...c,
+              places: c.places
+                .filter((_, j) => j !== pi)
+                .map((p, j) => ({ ...p, place: placeOrdinal(j) })),
+            }
+          : c,
       ),
     });
   }
@@ -1272,46 +1277,6 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
         </div>
       </div>
 
-      {/* Premios */}
-      <div className="rounded-lg border border-stone-200 bg-white">
-        <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
-          <h3 className="font-semibold text-stone-950">Premios y reconocimientos</h3>
-          <button
-            type="button"
-            onClick={addPrize}
-            className="inline-flex items-center gap-1.5 rounded-md bg-stone-950 px-3 py-1.5 text-xs font-semibold text-white hover:bg-stone-800"
-          >
-            <Plus className="h-3 w-3" />
-            Agregar
-          </button>
-        </div>
-        {(t.prizes ?? []).length === 0 ? (
-          <p className="px-5 py-4 text-sm text-stone-400">Sin premios definidos.</p>
-        ) : (
-          <div className="divide-y divide-stone-100">
-            {(t.prizes ?? []).map((prize, i) => (
-              <div key={i} className="flex items-center gap-3 px-5 py-3">
-                <input
-                  value={prize.place}
-                  onChange={(e) => updatePrize(i, "place", e.target.value)}
-                  placeholder="1.º Libre"
-                  className="h-8 w-32 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
-                />
-                <input
-                  value={prize.award}
-                  onChange={(e) => updatePrize(i, "award", e.target.value)}
-                  placeholder="Trofeo + Q 100"
-                  className="h-8 flex-1 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
-                />
-                <button type="button" onClick={() => removePrize(i)} className="text-stone-400 hover:text-red-500">
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* Premios por categoría */}
       <div className="rounded-lg border border-stone-200 bg-white">
         <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
@@ -1352,16 +1317,13 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
                 <div className="mt-2 grid gap-2">
                   {cat.places.map((place, pi) => (
                     <div key={pi} className="flex items-center gap-2">
-                      <input
-                        value={place.place}
-                        onChange={(e) => updateCategoryPlace(ci, pi, "place", e.target.value)}
-                        placeholder="1.º lugar"
-                        className="h-8 w-28 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
-                      />
+                      <span className="inline-flex h-8 w-24 shrink-0 items-center justify-center rounded border border-stone-200 bg-stone-50 px-2 text-sm font-semibold text-stone-600">
+                        {placeOrdinal(pi)}
+                      </span>
                       <input
                         value={place.award}
-                        onChange={(e) => updateCategoryPlace(ci, pi, "award", e.target.value)}
-                        placeholder="Trofeo"
+                        onChange={(e) => updateCategoryAward(ci, pi, e.target.value)}
+                        placeholder="Premio (ej. Trofeo + Q100)"
                         className="h-8 flex-1 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
                       />
                       <button
