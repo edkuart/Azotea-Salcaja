@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { Event } from "@prisma/client";
 import type { TournamentStatus } from "@/modules/chess/types";
 import { ImageUpload } from "@/components/admin/ImageUpload";
@@ -25,8 +26,23 @@ const TYPE_OPTIONS = [
   { value: "community", label: "Comunidad" },
 ];
 
+const TOURNAMENT_STATUS_LABELS: Record<TournamentStatus, string> = {
+  setup: "En preparación",
+  active: "En juego",
+  closed: "Finalizado",
+  cancelled: "Cancelado",
+};
+
 export function EventForm({ action, tournaments, event }: Props) {
   const [type, setType] = useState<"restaurant" | "chess" | "community">(event?.type ?? "restaurant");
+
+  // Para vincular solo ofrecemos torneos activos/en preparación, pero conservamos
+  // el que ya esté vinculado aunque haya terminado, para no desvincularlo sin querer.
+  const linkableTournaments = tournaments.filter(
+    (t) =>
+      (t.status !== "cancelled" && t.status !== "closed") ||
+      t.id === event?.linkedTournamentId,
+  );
 
   const toDatetimeLocal = (d?: Date | null) => {
     if (!d) return "";
@@ -153,7 +169,9 @@ export function EventForm({ action, tournaments, event }: Props) {
             Vincular torneo de ajedrez <span className="font-normal text-amber-700">(opcional)</span>
           </label>
           <p className="text-xs text-amber-700">
-            El torneo vinculado mostrará sus bases, desempates y premios en la página del evento.
+            La descripción de arriba es solo el gancho. Las bases (inscripción, premios,
+            ritmo, reglamento) se administran en el torneo y se muestran automáticamente
+            en la página del evento. No las repitas en la descripción.
           </p>
           <select
             id="linkedTournamentId"
@@ -162,18 +180,18 @@ export function EventForm({ action, tournaments, event }: Props) {
             className="h-10 rounded-md border border-amber-300 bg-white px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
           >
             <option value="">— Sin torneo vinculado —</option>
-            {tournaments.map((t) => (
+            {linkableTournaments.map((t) => (
               <option key={t.id} value={t.id}>
-                {t.title} ({t.status})
+                {t.title} · {TOURNAMENT_STATUS_LABELS[t.status]}
               </option>
             ))}
           </select>
-          {tournaments.length === 0 && (
+          {linkableTournaments.length === 0 && (
             <p className="text-xs text-amber-600">
-              No hay torneos disponibles.{" "}
-              <a href="/admin/ajedrez/torneos/nuevo" className="underline">
+              No hay torneos disponibles para vincular.{" "}
+              <Link href="/admin/ajedrez/torneos/nuevo" className="underline">
                 Crea uno primero
-              </a>.
+              </Link>.
             </p>
           )}
         </div>

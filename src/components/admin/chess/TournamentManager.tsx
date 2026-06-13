@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
   Users,
   Trophy,
@@ -83,7 +83,26 @@ export function TournamentManager({
 }) {
   const [t, setT] = useState<ChessTournament>(initial);
   const [tab, setTab] = useState<Tab>("players");
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const isMounted = useRef(false);
+
+  const saveTournament = useCallback(
+    async (data: ChessTournament) => {
+      if (!apiId) return;
+      setSaveState("saving");
+      try {
+        const res = await fetch(`/api/tournaments/${apiId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        setSaveState(res.ok ? "saved" : "error");
+      } catch {
+        setSaveState("error");
+      }
+    },
+    [apiId],
+  );
 
   useEffect(() => {
     if (!storageKey) return;
@@ -99,15 +118,9 @@ export function TournamentManager({
   useEffect(() => {
     if (!isMounted.current) { isMounted.current = true; return; }
     if (!apiId) return;
-    const timer = setTimeout(() => {
-      fetch(`/api/tournaments/${apiId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(t),
-      }).catch(() => {});
-    }, 400);
+    const timer = setTimeout(() => { saveTournament(t); }, 400);
     return () => clearTimeout(timer);
-  }, [t, apiId]);
+  }, [t, apiId, saveTournament]);
 
   // ─ derived ─
   const standings  = useMemo(() => calculateStandings(t), [t]);
@@ -272,6 +285,71 @@ export function TournamentManager({
         {tab === "standings" && <StandingsTab t={t} standings={standings} />}
         {tab === "info"      && <InfoTab      t={t} onChange={(patch) => setT((prev) => ({ ...prev, ...patch }))} />}
       </div>
+
+      {/* Barra de guardado */}
+      {apiId && (
+        <div
+          className="sticky -mx-4 sm:-mx-6"
+          style={{
+            bottom: 0,
+            zIndex: 10,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            marginTop: 20,
+            padding: "12px 16px",
+            background: "var(--color-cream)",
+            borderTop: "2px solid var(--color-ink)",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--font-poster)",
+              textTransform: "uppercase",
+              letterSpacing: "0.14em",
+              fontSize: 10,
+              color:
+                saveState === "error"
+                  ? "var(--color-stage)"
+                  : saveState === "saved"
+                    ? "var(--color-emerald)"
+                    : "rgba(26,26,26,0.55)",
+            }}
+          >
+            {saveState === "saving"
+              ? "Guardando…"
+              : saveState === "saved"
+                ? "Guardado ✓"
+                : saveState === "error"
+                  ? "Error al guardar — reintenta"
+                  : "Los cambios se guardan automáticamente"}
+          </span>
+          <button
+            type="button"
+            onClick={() => saveTournament(t)}
+            disabled={saveState === "saving"}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              border: "2px solid var(--color-ink)",
+              background: "var(--color-ink)",
+              color: "var(--color-cream)",
+              padding: "9px 18px",
+              fontFamily: "var(--font-poster)",
+              textTransform: "uppercase",
+              letterSpacing: "0.14em",
+              fontSize: 11,
+              cursor: saveState === "saving" ? "default" : "pointer",
+              opacity: saveState === "saving" ? 0.6 : 1,
+              boxShadow: "var(--shadow-card)",
+            }}
+          >
+            {saveState === "saving" ? "Guardando…" : "Guardar ahora"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -971,6 +1049,73 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
     onChange({ prizes: (t.prizes ?? []).filter((_, idx) => idx !== i) });
   }
 
+  // ── Qué incluye la inscripción ──
+  function addInclude(value: string) {
+    const v = value.trim();
+    if (!v) return;
+    onChange({ entryIncludes: [...(t.entryIncludes ?? []), v] });
+  }
+  function removeInclude(i: number) {
+    onChange({ entryIncludes: (t.entryIncludes ?? []).filter((_, idx) => idx !== i) });
+  }
+
+  // ── Premios por categoría ──
+  function addCategory() {
+    onChange({
+      prizeCategories: [
+        ...(t.prizeCategories ?? []),
+        { name: "", places: [{ place: "", award: "" }] },
+      ],
+    });
+  }
+  function removeCategory(ci: number) {
+    onChange({
+      prizeCategories: (t.prizeCategories ?? []).filter((_, i) => i !== ci),
+    });
+  }
+  function updateCategoryName(ci: number, name: string) {
+    onChange({
+      prizeCategories: (t.prizeCategories ?? []).map((c, i) =>
+        i === ci ? { ...c, name } : c,
+      ),
+    });
+  }
+  function addCategoryPlace(ci: number) {
+    onChange({
+      prizeCategories: (t.prizeCategories ?? []).map((c, i) =>
+        i === ci ? { ...c, places: [...c.places, { place: "", award: "" }] } : c,
+      ),
+    });
+  }
+  function updateCategoryPlace(
+    ci: number,
+    pi: number,
+    field: "place" | "award",
+    val: string,
+  ) {
+    onChange({
+      prizeCategories: (t.prizeCategories ?? []).map((c, i) =>
+        i === ci
+          ? {
+              ...c,
+              places: c.places.map((p, j) =>
+                j === pi ? { ...p, [field]: val } : p,
+              ),
+            }
+          : c,
+      ),
+    });
+  }
+  function removeCategoryPlace(ci: number, pi: number) {
+    onChange({
+      prizeCategories: (t.prizeCategories ?? []).map((c, i) =>
+        i === ci ? { ...c, places: c.places.filter((_, j) => j !== pi) } : c,
+      ),
+    });
+  }
+
+  const [includeInput, setIncludeInput] = useState("");
+
   function addGalleryImage(url: string) {
     if (!url.trim()) return;
     onChange({ gallery: [...(t.gallery ?? []), { src: url.trim(), alt: "" }] });
@@ -1045,10 +1190,85 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
             <input
               value={t.timeControl ?? ""}
               onChange={(e) => onChange({ timeControl: e.target.value })}
-              placeholder="Ej. 10 min + 5 seg por jugada"
+              placeholder="Ej. 10+0"
               className="h-9 rounded-md border border-stone-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
             />
           </div>
+          <div className="grid gap-1.5">
+            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+              Fecha límite de inscripción
+            </label>
+            <input
+              type="date"
+              value={t.registrationDeadline ?? ""}
+              onChange={(e) => onChange({ registrationDeadline: e.target.value })}
+              className="h-9 rounded-md border border-stone-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
+            />
+          </div>
+        </div>
+
+        {/* Qué incluye */}
+        <div className="border-t border-stone-100 px-5 py-4">
+          <label className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+            Qué incluye la inscripción
+          </label>
+          <div className="mt-2 flex gap-2">
+            <input
+              value={includeInput}
+              onChange={(e) => setIncludeInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addInclude(includeInput);
+                  setIncludeInput("");
+                }
+              }}
+              placeholder="Ej. Papas"
+              className="h-9 flex-1 rounded-md border border-stone-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
+            />
+            <button
+              type="button"
+              onClick={() => { addInclude(includeInput); setIncludeInput(""); }}
+              className="inline-flex items-center gap-1.5 rounded-md bg-stone-950 px-3 py-1.5 text-xs font-semibold text-white hover:bg-stone-800"
+            >
+              <Plus className="h-3 w-3" />
+              Agregar
+            </button>
+          </div>
+          {(t.entryIncludes ?? []).length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(t.entryIncludes ?? []).map((item, i) => (
+                <span
+                  key={`${item}-${i}`}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs text-stone-700"
+                >
+                  {item}
+                  <button
+                    type="button"
+                    onClick={() => removeInclude(i)}
+                    className="text-stone-400 hover:text-red-500"
+                    aria-label={`Quitar ${item}`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Instrucciones de pago */}
+        <div className="border-t border-stone-100 px-5 py-4">
+          <label className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+            Instrucciones de pago
+          </label>
+          <textarea
+            value={t.paymentInstructions ?? ""}
+            onChange={(e) => onChange({ paymentInstructions: e.target.value })}
+            rows={3}
+            placeholder={"Ej. Banco Industrial\nCuenta: 2230079290\nEnviar comprobante."}
+            className="mt-2 w-full rounded-md border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-400"
+          />
         </div>
       </div>
 
@@ -1090,6 +1310,96 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
             ))}
           </div>
         )}
+      </div>
+
+      {/* Premios por categoría */}
+      <div className="rounded-lg border border-stone-200 bg-white">
+        <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
+          <div>
+            <h3 className="font-semibold text-stone-950">Premios por categoría</h3>
+            <p className="mt-0.5 text-xs text-stone-400">Ej. Libre y Sub-18, cada una con sus lugares.</p>
+          </div>
+          <button
+            type="button"
+            onClick={addCategory}
+            className="inline-flex items-center gap-1.5 rounded-md bg-stone-950 px-3 py-1.5 text-xs font-semibold text-white hover:bg-stone-800"
+          >
+            <Plus className="h-3 w-3" />
+            Categoría
+          </button>
+        </div>
+        {(t.prizeCategories ?? []).length === 0 ? (
+          <p className="px-5 py-4 text-sm text-stone-400">Sin categorías definidas.</p>
+        ) : (
+          <div className="divide-y divide-stone-100">
+            {(t.prizeCategories ?? []).map((cat, ci) => (
+              <div key={ci} className="px-5 py-4">
+                <div className="flex items-center gap-3">
+                  <input
+                    value={cat.name}
+                    onChange={(e) => updateCategoryName(ci, e.target.value)}
+                    placeholder="Categoría (ej. Libre)"
+                    className="h-8 flex-1 rounded border border-stone-200 px-2 text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-stone-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeCategory(ci)}
+                    className="text-xs font-semibold text-stone-400 hover:text-red-500"
+                  >
+                    Quitar categoría
+                  </button>
+                </div>
+                <div className="mt-2 grid gap-2">
+                  {cat.places.map((place, pi) => (
+                    <div key={pi} className="flex items-center gap-2">
+                      <input
+                        value={place.place}
+                        onChange={(e) => updateCategoryPlace(ci, pi, "place", e.target.value)}
+                        placeholder="1.º lugar"
+                        className="h-8 w-28 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+                      />
+                      <input
+                        value={place.award}
+                        onChange={(e) => updateCategoryPlace(ci, pi, "award", e.target.value)}
+                        placeholder="Trofeo"
+                        className="h-8 flex-1 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeCategoryPlace(ci, pi)}
+                        className="text-stone-400 hover:text-red-500"
+                        aria-label="Quitar lugar"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => addCategoryPlace(ci)}
+                  className="mt-2 rounded-md border border-dashed border-stone-300 px-3 py-1 text-xs font-semibold text-stone-500 hover:bg-stone-50"
+                >
+                  + Lugar
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <label className="flex cursor-pointer items-start gap-2 border-t border-stone-100 px-5 py-4 text-sm text-stone-700">
+          <input
+            type="checkbox"
+            checked={t.prizesNonCumulative ?? false}
+            onChange={(e) => onChange({ prizesNonCumulative: e.target.checked })}
+            className="mt-0.5"
+          />
+          <span>
+            Premios no acumulables
+            <span className="mt-0.5 block text-xs text-stone-400">
+              Si un jugador Sub-18 obtiene premio en Libre, el premio Sub-18 pasa al siguiente mejor clasificado.
+            </span>
+          </span>
+        </label>
       </div>
 
       {/* Galería */}

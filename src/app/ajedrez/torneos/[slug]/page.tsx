@@ -4,9 +4,15 @@ import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   CalendarDays,
+  CalendarClock,
+  Check,
+  Clock,
+  CreditCard,
   ListChecks,
   MapPin,
   Medal,
+  ScrollText,
+  Ticket,
   Trophy,
   Users,
 } from "lucide-react";
@@ -173,6 +179,166 @@ export default async function ChessTournamentDetailPage({
             ))}
           </div>
         </Section>
+
+        {/* Bases del torneo */}
+        {(tournament.entryFee ||
+          tournament.timeControl ||
+          tournament.registrationDeadline ||
+          (tournament.entryIncludes && tournament.entryIncludes.length > 0) ||
+          (tournament.prizes && tournament.prizes.length > 0) ||
+          (tournament.prizeCategories && tournament.prizeCategories.length > 0) ||
+          tournament.paymentInstructions ||
+          tournament.regulations) && (
+          <Section>
+            <div className="mb-6 flex items-center gap-3">
+              <Trophy className="h-5 w-5 text-amber-600" />
+              <h2 className="text-2xl font-semibold text-stone-950">Bases del torneo</h2>
+            </div>
+
+            <div className="max-w-2xl">
+              {/* Inscripción y tiempo */}
+              {(tournament.entryFee || tournament.timeControl || tournament.registrationDeadline) && (
+                <div className="mb-5 grid gap-3 sm:grid-cols-2">
+                  {tournament.entryFee && (
+                    <div className="flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+                      <Ticket className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">Inscripción</p>
+                        <p className="mt-0.5 text-sm font-medium text-stone-900">{tournament.entryFee}</p>
+                      </div>
+                    </div>
+                  )}
+                  {tournament.timeControl && (
+                    <div className="flex items-start gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-3">
+                      <Clock className="mt-0.5 h-5 w-5 shrink-0 text-stone-500" />
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">Tiempo de juego</p>
+                        <p className="mt-0.5 text-sm font-medium text-stone-900">{tournament.timeControl}</p>
+                      </div>
+                    </div>
+                  )}
+                  {tournament.registrationDeadline && (
+                    <div className="flex items-start gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-3">
+                      <CalendarClock className="mt-0.5 h-5 w-5 shrink-0 text-stone-500" />
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">Inscripciones hasta</p>
+                        <p className="mt-0.5 text-sm font-medium text-stone-900 capitalize">
+                          {new Date(`${tournament.registrationDeadline}T12:00:00`).toLocaleDateString("es", {
+                            weekday: "long",
+                            day: "numeric",
+                            month: "long",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Qué incluye */}
+              {tournament.entryIncludes && tournament.entryIncludes.length > 0 && (
+                <div className="mb-5 rounded-lg border border-stone-200 bg-white px-5 py-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+                    La inscripción incluye
+                  </p>
+                  <ul className="mt-3 flex flex-wrap gap-2">
+                    {tournament.entryIncludes.map((item, i) => (
+                      <li
+                        key={i}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm text-emerald-800"
+                      >
+                        <Check className="h-3.5 w-3.5 shrink-0" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Premios planos (blobs antiguos) */}
+              {tournament.prizes && tournament.prizes.length > 0 && (
+                <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 overflow-hidden">
+                  <div className="border-b border-amber-100 px-5 py-3 flex items-center gap-2">
+                    <Medal className="h-4 w-4 text-amber-600" />
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-700">Premios</p>
+                  </div>
+                  <div className="divide-y divide-amber-100">
+                    {tournament.prizes.map((prize, i) => (
+                      <div key={i} className="flex items-center justify-between px-5 py-3 gap-3">
+                        <span className="text-sm font-semibold text-stone-800">{prize.place}</span>
+                        <span className="text-right text-sm text-stone-700">{prize.award}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Premios por categoría */}
+              {tournament.prizeCategories && tournament.prizeCategories.length > 0 && (
+                <div className="mb-5 grid gap-4 sm:grid-cols-2">
+                  {tournament.prizeCategories.map((category, ci) => (
+                    <div key={ci} className="rounded-lg border border-amber-200 bg-amber-50 overflow-hidden">
+                      <div className="border-b border-amber-100 px-5 py-3 flex items-center gap-2">
+                        <Medal className="h-4 w-4 text-amber-600" />
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-700">
+                          {category.name || "Categoría"}
+                        </p>
+                      </div>
+                      <div className="divide-y divide-amber-100">
+                        {category.places.map((prize, pi) => (
+                          <div key={pi} className="flex items-center justify-between px-5 py-3 gap-3">
+                            <span className="text-sm font-semibold text-stone-800">{prize.place}</span>
+                            <span className="text-right text-sm text-stone-700">{prize.award}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Política de premios no acumulables */}
+              {tournament.prizesNonCumulative && (
+                <p className="mb-5 rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm leading-6 text-stone-600">
+                  <span className="font-semibold text-stone-800">Premios no acumulables:</span>{" "}
+                  si un jugador obtiene premio en una categoría superior, su premio de la categoría menor pasa al siguiente mejor clasificado.
+                </p>
+              )}
+
+              {/* Instrucciones de pago */}
+              {tournament.paymentInstructions && (
+                <div className="mb-5 rounded-lg border border-stone-200 bg-white overflow-hidden">
+                  <div className="border-b border-stone-100 bg-stone-50 px-5 py-3 flex items-center gap-2">
+                    <CreditCard className="h-4 w-4 text-stone-500" />
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+                      Instrucciones de pago
+                    </p>
+                  </div>
+                  <div className="px-5 py-4">
+                    <p className="whitespace-pre-line text-sm leading-7 text-stone-700">
+                      {tournament.paymentInstructions}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Reglamento */}
+              {tournament.regulations && (
+                <div className="rounded-lg border border-stone-200 bg-white overflow-hidden">
+                  <div className="border-b border-stone-100 bg-stone-50 px-5 py-3 flex items-center gap-2">
+                    <ScrollText className="h-4 w-4 text-stone-500" />
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">Reglamento</p>
+                  </div>
+                  <div className="px-5 py-4">
+                    <p className="whitespace-pre-line text-sm leading-7 text-stone-700">
+                      {tournament.regulations}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Section>
+        )}
 
         <div className="bg-white">
           <Section>

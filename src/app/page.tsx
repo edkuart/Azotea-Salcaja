@@ -13,8 +13,10 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const upcomingEvents = await db().event.findMany({
-    where: { status: "published" },
+    where: { status: "published", startsAt: { gte: startOfToday } },
     orderBy: { startsAt: "asc" },
     take: 1,
   });

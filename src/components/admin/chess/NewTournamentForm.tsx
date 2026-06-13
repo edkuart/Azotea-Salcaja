@@ -199,6 +199,77 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
   const [saveRecurringPlayers, setSaveRecurringPlayers] = useState(true);
   const [loadedStoredPlayers, setLoadedStoredPlayers] = useState(false);
 
+  // ── Bases extendidas (todas opcionales) ──
+  const [entryIncludes, setEntryIncludes] = useState<string[]>([]);
+  const [newInclude, setNewInclude] = useState("");
+  const [prizeCategories, setPrizeCategories] = useState<
+    Array<{ name: string; places: Array<{ place: string; award: string }> }>
+  >([]);
+  const [prizesNonCumulative, setPrizesNonCumulative] = useState(false);
+
+  function addInclude() {
+    const value = newInclude.trim();
+    if (!value) return;
+    setEntryIncludes((items) => [...items, value]);
+    setNewInclude("");
+  }
+  function removeInclude(index: number) {
+    setEntryIncludes((items) => items.filter((_, i) => i !== index));
+  }
+  function handleIncludeKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    addInclude();
+  }
+
+  function addCategory() {
+    setPrizeCategories((cats) => [
+      ...cats,
+      { name: "", places: [{ place: "", award: "" }] },
+    ]);
+  }
+  function removeCategory(ci: number) {
+    setPrizeCategories((cats) => cats.filter((_, i) => i !== ci));
+  }
+  function updateCategoryName(ci: number, name: string) {
+    setPrizeCategories((cats) =>
+      cats.map((c, i) => (i === ci ? { ...c, name } : c)),
+    );
+  }
+  function addPlace(ci: number) {
+    setPrizeCategories((cats) =>
+      cats.map((c, i) =>
+        i === ci ? { ...c, places: [...c.places, { place: "", award: "" }] } : c,
+      ),
+    );
+  }
+  function updatePlace(
+    ci: number,
+    pi: number,
+    field: "place" | "award",
+    val: string,
+  ) {
+    setPrizeCategories((cats) =>
+      cats.map((c, i) =>
+        i === ci
+          ? {
+              ...c,
+              places: c.places.map((p, j) =>
+                j === pi ? { ...p, [field]: val } : p,
+              ),
+            }
+          : c,
+      ),
+    );
+  }
+  function removePlace(ci: number, pi: number) {
+    setPrizeCategories((cats) =>
+      cats.map((c, i) =>
+        i === ci ? { ...c, places: c.places.filter((_, j) => j !== pi) } : c,
+      ),
+    );
+  }
+
   useEffect(() => {
     setStartsAtDate(getTodayInputValue());
 
@@ -275,6 +346,27 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
       }
     }
 
+    // Bases extendidas — solo se incluyen si tienen valor, para no ensuciar el blob.
+    const timeControl = ((fd.get("timeControl") as string | null) ?? "").trim();
+    const entryFee = ((fd.get("entryFee") as string | null) ?? "").trim();
+    const registrationDeadline = (
+      (fd.get("registrationDeadline") as string | null) ?? ""
+    ).trim();
+    const paymentInstructions = (
+      (fd.get("paymentInstructions") as string | null) ?? ""
+    ).trim();
+    const cleanedIncludes = entryIncludes
+      .map((item) => item.trim())
+      .filter(Boolean);
+    const cleanedCategories = prizeCategories
+      .map((cat) => ({
+        name: cat.name.trim(),
+        places: cat.places
+          .map((p) => ({ place: p.place.trim(), award: p.award.trim() }))
+          .filter((p) => p.place || p.award),
+      }))
+      .filter((cat) => cat.name || cat.places.length > 0);
+
     const tournament = {
       id,
       kind: "official" as const,
@@ -289,6 +381,13 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
       startsAt: startsAtDate || getTodayInputValue(),
       locationLabel: ((fd.get("location") as string | null) ?? "").trim(),
       tieBreakOrder: TIEBREAK_PRESETS[tiebreaks] ?? TIEBREAK_PRESETS.formal,
+      ...(timeControl ? { timeControl } : {}),
+      ...(entryFee ? { entryFee } : {}),
+      ...(registrationDeadline ? { registrationDeadline } : {}),
+      ...(paymentInstructions ? { paymentInstructions } : {}),
+      ...(cleanedIncludes.length ? { entryIncludes: cleanedIncludes } : {}),
+      ...(cleanedCategories.length ? { prizeCategories: cleanedCategories } : {}),
+      ...(prizesNonCumulative ? { prizesNonCumulative: true } : {}),
       players,
       rounds: [],
     };
@@ -405,6 +504,242 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
           );
         })}
       </div>
+
+      {/* ── Inscripción (opcional) ── */}
+      <p style={SH}>
+        <span style={{ width: 18, height: 2, background: "var(--color-stage)", display: "block", flexShrink: 0 }} />
+        Inscripción <span style={{ fontFamily: "var(--font-body)", textTransform: "none", letterSpacing: 0, fontSize: 11, opacity: 0.55 }}>(opcional)</span>
+      </p>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        <div>
+          <label style={LABEL}>Ritmo de juego</label>
+          <input
+            name="timeControl"
+            style={INPUT}
+            placeholder="Ej. 10+0"
+            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
+          />
+        </div>
+        <div>
+          <label style={LABEL}>Costo de inscripción</label>
+          <input
+            name="entryFee"
+            style={INPUT}
+            placeholder="Ej. Q30"
+            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
+          />
+        </div>
+      </div>
+
+      <div style={{ marginTop: 10 }}>
+        <label style={LABEL}>Fecha límite de inscripción</label>
+        <input
+          name="registrationDeadline"
+          type="date"
+          style={INPUT}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
+        />
+      </div>
+
+      {/* Qué incluye */}
+      <div style={{ marginTop: 10 }}>
+        <label style={LABEL}>Qué incluye la inscripción</label>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            type="text"
+            value={newInclude}
+            onChange={(e) => setNewInclude(e.currentTarget.value)}
+            onKeyDown={handleIncludeKeyDown}
+            placeholder="Ej. Papas"
+            style={{ ...INPUT, flex: 1 }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
+          />
+          <button
+            type="button"
+            onClick={addInclude}
+            style={{
+              background: "var(--color-ink)",
+              color: "var(--color-cream)",
+              border: "2px solid var(--color-ink)",
+              padding: "0 16px",
+              fontFamily: "var(--font-poster)",
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              fontSize: 11,
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            + Agregar
+          </button>
+        </div>
+        {entryIncludes.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+            {entryIncludes.map((item, index) => (
+              <span
+                key={`${item}-${index}`}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "var(--color-grain)",
+                  border: "2px solid var(--color-ink)",
+                  padding: "4px 8px",
+                  fontFamily: "var(--font-body)",
+                  fontSize: 12,
+                  color: "var(--color-ink)",
+                }}
+              >
+                {item}
+                <button
+                  type="button"
+                  onClick={() => removeInclude(index)}
+                  aria-label={`Quitar ${item}`}
+                  style={{ border: "none", background: "transparent", color: "var(--color-stage)", cursor: "pointer", fontSize: 14, lineHeight: 1, padding: 0 }}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Instrucciones de pago */}
+      <div style={{ marginTop: 10 }}>
+        <label style={LABEL}>Instrucciones de pago</label>
+        <textarea
+          name="paymentInstructions"
+          rows={3}
+          placeholder={"Ej. Banco Industrial\nCuenta: 2230079290\nEnviar comprobante."}
+          style={{ ...INPUT, resize: "vertical" as const }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
+        />
+      </div>
+
+      {/* ── Premios por categoría (opcional) ── */}
+      <p style={SH}>
+        <span style={{ width: 18, height: 2, background: "var(--color-stage)", display: "block", flexShrink: 0 }} />
+        Premios <span style={{ fontFamily: "var(--font-body)", textTransform: "none", letterSpacing: 0, fontSize: 11, opacity: 0.55 }}>(opcional)</span>
+      </p>
+
+      {prizeCategories.map((cat, ci) => (
+        <div
+          key={ci}
+          style={{ border: "2px solid var(--color-ink)", background: "var(--color-grain)", padding: 12, marginBottom: 10 }}
+        >
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input
+              type="text"
+              value={cat.name}
+              onChange={(e) => updateCategoryName(ci, e.currentTarget.value)}
+              placeholder="Categoría (ej. Libre, Sub-18)"
+              style={{ ...INPUT, flex: 1, fontWeight: 600 }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
+            />
+            <button
+              type="button"
+              onClick={() => removeCategory(ci)}
+              style={{ border: "1px solid rgba(26,26,26,0.2)", background: "transparent", color: "var(--color-stage)", padding: "8px 10px", fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.12em", fontSize: 10, cursor: "pointer", flexShrink: 0 }}
+            >
+              Quitar
+            </button>
+          </div>
+
+          <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+            {cat.places.map((place, pi) => (
+              <div key={pi} style={{ display: "flex", gap: 6 }}>
+                <input
+                  type="text"
+                  value={place.place}
+                  onChange={(e) => updatePlace(ci, pi, "place", e.currentTarget.value)}
+                  placeholder="1.º lugar"
+                  style={{ ...INPUT, width: 110, flexShrink: 0 }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
+                />
+                <input
+                  type="text"
+                  value={place.award}
+                  onChange={(e) => updatePlace(ci, pi, "award", e.currentTarget.value)}
+                  placeholder="Trofeo"
+                  style={{ ...INPUT, flex: 1 }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
+                />
+                <button
+                  type="button"
+                  onClick={() => removePlace(ci, pi)}
+                  aria-label="Quitar lugar"
+                  style={{ border: "1px solid rgba(26,26,26,0.2)", background: "transparent", color: "var(--color-stage)", padding: "0 10px", cursor: "pointer", fontSize: 16, flexShrink: 0 }}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => addPlace(ci)}
+            style={{ marginTop: 8, background: "transparent", color: "var(--color-ink)", border: "1px dashed rgba(26,26,26,0.4)", padding: "6px 12px", fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.12em", fontSize: 10, cursor: "pointer" }}
+          >
+            + Lugar
+          </button>
+        </div>
+      ))}
+
+      <button
+        type="button"
+        onClick={addCategory}
+        style={{
+          width: "100%",
+          background: "var(--color-stage)",
+          color: "var(--color-cream)",
+          border: "2px solid var(--color-ink)",
+          padding: "10px 16px",
+          fontFamily: "var(--font-poster)",
+          textTransform: "uppercase",
+          letterSpacing: "0.14em",
+          fontSize: 12,
+          cursor: "pointer",
+        }}
+      >
+        + Agregar categoría
+      </button>
+
+      <label
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 8,
+          marginTop: 12,
+          fontFamily: "var(--font-body)",
+          fontSize: 13,
+          color: "var(--color-ink)",
+          cursor: "pointer",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={prizesNonCumulative}
+          onChange={(e) => setPrizesNonCumulative(e.currentTarget.checked)}
+          style={{ marginTop: 3 }}
+        />
+        <span>
+          Premios no acumulables
+          <span style={{ display: "block", fontSize: 11, color: "#666", marginTop: 2 }}>
+            Si un jugador Sub-18 obtiene premio en Libre, el premio Sub-18 pasa al siguiente mejor clasificado.
+          </span>
+        </span>
+      </label>
 
       {/* ── Jugadores recurrentes ── */}
       <p style={SH}>

@@ -20,10 +20,18 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 export default async function EventsPage() {
-  const events = await db().event.findMany({
+  const all = await db().event.findMany({
     where: { status: "published" },
     orderBy: { startsAt: "asc" },
   });
+
+  // Próximos primero (por fecha ascendente); los pasados se conservan al final
+  // (más recientes primero) para no perder el historial publicado.
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const upcoming = all.filter((event) => event.startsAt >= startOfToday);
+  const past = all.filter((event) => event.startsAt < startOfToday).reverse();
+  const events = [...upcoming, ...past];
 
   return (
     <PublicLayout>

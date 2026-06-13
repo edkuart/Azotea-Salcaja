@@ -86,6 +86,15 @@ export type ChessTournament = {
   prizes?: Array<{ place: string; award: string }>;
   entryFee?: string;
   timeControl?: string;
+  // Bases extendidas (todos opcionales; los blobs antiguos pueden no tenerlos)
+  registrationDeadline?: string;
+  entryIncludes?: string[];
+  paymentInstructions?: string;
+  prizeCategories?: Array<{
+    name: string;
+    places: Array<{ place: string; award: string }>;
+  }>;
+  prizesNonCumulative?: boolean;
   players: ChessPlayer[];
   rounds: ChessRound[];
 };
