@@ -105,10 +105,10 @@ export function EventForm({ action, tournaments, event }: Props) {
         <textarea
           id="description"
           name="description"
-          rows={3}
+          rows={12}
           defaultValue={event?.description ?? ""}
           placeholder="Resumen público del evento."
-          className="rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-950"
+          className="min-h-48 resize-y rounded-md border border-stone-300 px-3 py-2 text-sm leading-6 text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-950"
         />
       </div>
 
