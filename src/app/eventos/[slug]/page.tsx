@@ -96,7 +96,7 @@ export default async function EventDetailPage({
           </div>
 
           {event.description && (
-            <p className="mt-6 max-w-2xl text-base leading-7 text-stone-700">
+            <p className="mt-6 max-w-2xl whitespace-pre-line text-base leading-7 text-stone-700">
               {event.description}
             </p>
           )}
