@@ -8,6 +8,7 @@ import { LocalTournamentLoader } from "@/components/admin/chess/LocalTournamentL
 import { officialChessTournaments } from "@/modules/chess/public-data";
 import { getTournament } from "@/lib/tournament-store";
 import type { ChessTournament } from "@/modules/chess/types";
+import { ShareQrCard } from "@/components/admin/ShareQrCard";
 
 export const dynamic = "force-dynamic";
 
@@ -43,11 +44,14 @@ function TournamentShell({
   tournament,
   id,
   extra,
+  shareId,
 }: {
   title: string;
   tournament: ChessTournament;
   id: string;
   extra?: React.ReactNode;
+  /** Si se pasa, muestra el QR/enlace público (vista en vivo) del torneo */
+  shareId?: string;
 }) {
   return (
     <AdminShell>
@@ -62,6 +66,16 @@ function TournamentShell({
           </div>
         }
       />
+      {shareId && (
+        <div className="mt-6">
+          <ShareQrCard
+            path={`/ajedrez/torneos/live/${shareId}`}
+            title="Compartir torneo (QR y enlace)"
+            description="Comparte este código o enlace con los jugadores para que sigan el torneo en vivo: posiciones, pareos y resultados."
+            fileName={`qr-torneo-${tournament.slug ?? shareId}`}
+          />
+        </div>
+      )}
       <div className="mt-6">
         <TournamentManager initial={tournament} apiId={id} />
       </div>
@@ -102,6 +116,7 @@ export default async function AdminChessTournamentDetailPage({
         title={tournament.title}
         tournament={tournament}
         id={id}
+        shareId={id}
         extra={
           <Link
             href={`/ajedrez/torneos/live/${id}`}
