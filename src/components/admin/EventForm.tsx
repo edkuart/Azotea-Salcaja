@@ -93,7 +93,7 @@ export function EventForm({ action, tournaments, event }: Props) {
           required
           defaultValue={event?.title}
           placeholder="Ej. Noche de ajedrez — Junio"
-          className="h-10 rounded-md border border-stone-300 px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-950"
+          className="h-10 rounded-md border-2 border-[var(--color-ink)] px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-stage)]/20 focus:border-[var(--color-stage)]"
         />
       </div>
 
@@ -108,7 +108,7 @@ export function EventForm({ action, tournaments, event }: Props) {
           rows={12}
           defaultValue={event?.description ?? ""}
           placeholder="Resumen público del evento."
-          className="min-h-48 resize-y rounded-md border border-stone-300 px-3 py-2 text-sm leading-6 text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-950"
+          className="min-h-48 resize-y rounded-md border-2 border-[var(--color-ink)] px-3 py-2 text-sm leading-6 text-stone-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-stage)]/20 focus:border-[var(--color-stage)]"
         />
       </div>
 
@@ -124,7 +124,7 @@ export function EventForm({ action, tournaments, event }: Props) {
             type="datetime-local"
             required
             defaultValue={toDatetimeLocal(event?.startsAt)}
-            className="h-10 rounded-md border border-stone-300 px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-950"
+            className="h-10 rounded-md border-2 border-[var(--color-ink)] px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-stage)]/20 focus:border-[var(--color-stage)]"
           />
         </div>
         <div className="grid gap-1.5">
@@ -136,7 +136,7 @@ export function EventForm({ action, tournaments, event }: Props) {
             name="endsAt"
             type="datetime-local"
             defaultValue={toDatetimeLocal(event?.endsAt)}
-            className="h-10 rounded-md border border-stone-300 px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-950"
+            className="h-10 rounded-md border-2 border-[var(--color-ink)] px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-stage)]/20 focus:border-[var(--color-stage)]"
           />
         </div>
       </div>
@@ -150,7 +150,7 @@ export function EventForm({ action, tournaments, event }: Props) {
           id="locationLabel"
           name="locationLabel"
           defaultValue={event?.locationLabel ?? "Restaurante Azotea Salcajá"}
-          className="h-10 rounded-md border border-stone-300 px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-950"
+          className="h-10 rounded-md border-2 border-[var(--color-ink)] px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-stage)]/20 focus:border-[var(--color-stage)]"
         />
       </div>
 
@@ -206,7 +206,7 @@ export function EventForm({ action, tournaments, event }: Props) {
           id="status"
           name="status"
           defaultValue={event?.status ?? "draft"}
-          className="h-10 rounded-md border border-stone-300 px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-950"
+          className="h-10 rounded-md border-2 border-[var(--color-ink)] px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-stage)]/20 focus:border-[var(--color-stage)]"
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>

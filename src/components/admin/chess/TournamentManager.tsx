@@ -492,7 +492,7 @@ function PlayersTab({
       </div>
 
       {/* Player list */}
-      <div className="rounded-lg border border-stone-200 bg-white">
+      <div className="rounded-sm border-2 border-[var(--color-ink)] bg-white">
         {t.players.length === 0 ? (
           <div className="p-8 text-center text-sm text-stone-500">
             Sin jugadores todavía. Agrega al menos 2 para iniciar.
@@ -1156,7 +1156,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
   return (
     <div className="grid gap-5">
       {/* Ficha técnica */}
-      <div className="rounded-lg border border-stone-200 bg-white">
+      <div className="rounded-sm border-2 border-[var(--color-ink)] bg-white">
         <div className="border-b border-stone-100 px-5 py-4">
           <h2 className="font-semibold text-stone-950">{t.title}</h2>
           {t.description && <p className="mt-1 text-sm text-stone-500">{t.description}</p>}
@@ -1172,7 +1172,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
       </div>
 
       {/* Inscripción y tiempo */}
-      <div className="rounded-lg border border-stone-200 bg-white">
+      <div className="rounded-sm border-2 border-[var(--color-ink)] bg-white">
         <div className="border-b border-stone-100 px-5 py-4">
           <h3 className="font-semibold text-stone-950">Inscripción y tiempo de juego</h3>
         </div>
@@ -1278,7 +1278,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
       </div>
 
       {/* Premios por categoría */}
-      <div className="rounded-lg border border-stone-200 bg-white">
+      <div className="rounded-sm border-2 border-[var(--color-ink)] bg-white">
         <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
           <div>
             <h3 className="font-semibold text-stone-950">Premios por categoría</h3>
@@ -1365,7 +1365,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
       </div>
 
       {/* Galería */}
-      <div className="rounded-lg border border-stone-200 bg-white">
+      <div className="rounded-sm border-2 border-[var(--color-ink)] bg-white">
         <div className="border-b border-stone-100 px-5 py-4">
           <h3 className="font-semibold text-stone-950">Galería de imágenes</h3>
           <p className="mt-0.5 text-xs text-stone-400">Fotos del lugar, trofeos, ambiente. Se muestran en la página pública.</p>
@@ -1444,7 +1444,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
       </div>
 
       {/* Reglamento */}
-      <div className="rounded-lg border border-stone-200 bg-white">
+      <div className="rounded-sm border-2 border-[var(--color-ink)] bg-white">
         <div className="border-b border-stone-100 px-5 py-4">
           <h3 className="font-semibold text-stone-950">Reglamento y bases</h3>
           <p className="mt-0.5 text-xs text-stone-400">Visible en la página pública del evento vinculado.</p>

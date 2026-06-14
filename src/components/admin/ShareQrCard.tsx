@@ -56,7 +56,7 @@ export function ShareQrCard({
   }
 
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-5">
+    <div className="rounded-sm border-2 border-[var(--color-ink)] bg-white p-5">
       <div className="flex items-center gap-2">
         <QrCode className="h-5 w-5 text-stone-700" aria-hidden />
         <h2 className="text-lg font-semibold text-stone-950">{title}</h2>

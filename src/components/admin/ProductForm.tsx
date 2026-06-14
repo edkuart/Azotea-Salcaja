@@ -30,7 +30,7 @@ export function ProductForm({ values = {} }: { values?: ProductFormValues }) {
       <label className="grid gap-2 text-sm font-medium text-stone-700">
         Categoria
         <select
-          className="h-11 rounded-md border border-stone-300 bg-white px-3 text-sm font-normal text-stone-950 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15"
+          className="h-11 rounded-md border-2 border-[var(--color-ink)] bg-white px-3 text-sm font-normal text-stone-950 outline-none transition focus:border-[var(--color-stage)] focus:ring-2 focus:ring-[var(--color-stage)]/20"
           defaultValue={values.category}
         >
           {adminCategories.map((category) => (
@@ -55,25 +55,25 @@ export function ProductForm({ values = {} }: { values?: ProductFormValues }) {
 
       <div className="grid gap-3 sm:grid-cols-3">
         <label className="flex items-center gap-2 rounded-md border border-stone-200 bg-white p-3 text-sm font-medium text-stone-700">
-          <input className="h-4 w-4 accent-emerald-700" type="checkbox" />
+          <input className="h-4 w-4 accent-[var(--color-stage)]" type="checkbox" />
           Producto destacado
         </label>
         <label className="flex items-center gap-2 rounded-md border border-stone-200 bg-white p-3 text-sm font-medium text-stone-700">
           <input
-            className="h-4 w-4 accent-emerald-700"
+            className="h-4 w-4 accent-[var(--color-stage)]"
             defaultChecked
             type="checkbox"
           />
           Disponible
         </label>
         <label className="flex items-center gap-2 rounded-md border border-stone-200 bg-white p-3 text-sm font-medium text-stone-700">
-          <input className="h-4 w-4 accent-emerald-700" type="checkbox" />
+          <input className="h-4 w-4 accent-[var(--color-stage)]" type="checkbox" />
           Ocultar del menu
         </label>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
-        <button className="h-11 rounded-md bg-emerald-700 px-5 text-sm font-semibold text-white transition hover:bg-emerald-800">
+        <button className="h-11 rounded-md bg-stone-950 px-5 text-sm font-semibold text-white transition hover:bg-stone-800">
           Guardar producto
         </button>
         <button
