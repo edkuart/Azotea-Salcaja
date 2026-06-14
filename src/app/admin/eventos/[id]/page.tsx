@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { listTournaments } from "@/lib/tournament-store";
 import { updateEvent } from "@/app/actions/events";
 import { EventForm } from "@/components/admin/EventForm";
+import { EventQrCard } from "@/components/admin/EventQrCard";
 
 export const dynamic = "force-dynamic";
 
@@ -52,8 +53,9 @@ export default async function EditEventPage({
           ) : undefined
         }
       />
-      <div className="mt-8 max-w-2xl">
+      <div className="mt-8 grid max-w-2xl gap-6">
         <EventForm action={action} tournaments={tournaments} event={event} />
+        <EventQrCard slug={event.slug} published={event.status === "published"} />
       </div>
     </AdminShell>
   );
