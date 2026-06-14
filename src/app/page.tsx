@@ -26,12 +26,11 @@ export default async function Home() {
 
         {/* ── HERO ── */}
         <section
-          className="relative overflow-hidden border-b-[3px]"
+          className="relative overflow-hidden border-b-[3px] pt-20 pb-28 sm:pt-24 sm:pb-32"
           style={{
             background: "var(--color-ink)",
             color: "var(--color-cream)",
             borderColor: "var(--color-stage)",
-            padding: "96px 0 120px",
           }}
         >
           {/* Ghost typography watermark */}
