@@ -69,8 +69,9 @@ export default async function EventDetailPage({
           <ExpandableImage
             src={event.coverImageUrl}
             alt={event.title}
-            frameClassName="h-72 w-full md:h-96"
+            frameClassName="h-80 w-full sm:h-96 md:h-[28rem]"
             rounded="rounded-none"
+            fit="contain"
           />
         )}
 
