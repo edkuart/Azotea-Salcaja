@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { CalendarDays, MapPin, Trophy, ScrollText, Medal, Clock, Ticket, CalendarClock, CreditCard, Check } from "lucide-react";
+import { CalendarDays, MapPin, Trophy, ScrollText, Medal, Clock, Ticket, CalendarClock, CreditCard, Check, ArrowRight } from "lucide-react";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Section } from "@/components/public/Section";
@@ -99,6 +100,17 @@ export default async function EventDetailPage({
             <p className="mt-6 max-w-2xl whitespace-pre-line text-base leading-7 text-stone-700">
               {event.description}
             </p>
+          )}
+
+          {tournament && (
+            <Link
+              href={`/ajedrez/torneos/live/${event.linkedTournamentId}`}
+              className="mt-7 inline-flex items-center gap-2 rounded-md bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800"
+            >
+              <Trophy className="h-4 w-4" aria-hidden />
+              Ver torneo en vivo · Posiciones y resultados
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
           )}
         </Section>
 
