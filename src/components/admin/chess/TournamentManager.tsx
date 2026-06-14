@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Maximize2,
+  FileText,
 } from "lucide-react";
 
 import type {
@@ -1135,24 +1136,59 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
     onChange({ gallery: (t.gallery ?? []).filter((_, idx) => idx !== i) });
   }
 
+  // ── Documentos (PDF) ──
+  function updateAttachmentName(i: number, name: string) {
+    onChange({ attachments: (t.attachments ?? []).map((a, idx) => idx === i ? { ...a, name } : a) });
+  }
+  function removeAttachment(i: number) {
+    onChange({ attachments: (t.attachments ?? []).filter((_, idx) => idx !== i) });
+  }
+
   const [galleryInput, setGalleryInput] = useState("");
   const [galleryUploading, setGalleryUploading] = useState(false);
   const galleryFileRef = useRef<HTMLInputElement>(null);
+  const [docUploading, setDocUploading] = useState(false);
+  const docFileRef = useRef<HTMLInputElement>(null);
 
   async function handleGalleryFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
     setGalleryUploading(true);
+    const added: { src: string; alt: string }[] = [];
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("folder", "tournaments/gallery");
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const json = await res.json();
-      if (res.ok) addGalleryImage(json.url);
+      for (const file of Array.from(files)) {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("folder", "tournaments/gallery");
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        const json = await res.json();
+        if (res.ok) added.push({ src: json.url, alt: "" });
+      }
+      if (added.length) onChange({ gallery: [...(t.gallery ?? []), ...added] });
     } finally {
       setGalleryUploading(false);
       if (galleryFileRef.current) galleryFileRef.current.value = "";
+    }
+  }
+
+  async function handleDocFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setDocUploading(true);
+    const added: { name: string; url: string }[] = [];
+    try {
+      for (const file of Array.from(files)) {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("folder", "tournaments/docs");
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        const json = await res.json();
+        if (res.ok) added.push({ name: file.name, url: json.url });
+      }
+      if (added.length) onChange({ attachments: [...(t.attachments ?? []), ...added] });
+    } finally {
+      setDocUploading(false);
+      if (docFileRef.current) docFileRef.current.value = "";
     }
   }
 
@@ -1380,6 +1416,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
               ref={galleryFileRef}
               type="file"
               accept="image/*"
+              multiple
               className="sr-only"
               onChange={handleGalleryFile}
             />
@@ -1394,7 +1431,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
               ) : (
                 <Plus className="h-4 w-4" />
               )}
-              Subir foto
+              Subir fotos
             </button>
             <input
               value={galleryInput}
@@ -1447,6 +1484,65 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
                     className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
                   >
                     <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Documentos (PDF) */}
+      <div className="rounded-sm border-2 border-[var(--color-ink)] bg-white">
+        <div className="border-b border-stone-100 px-5 py-4">
+          <h3 className="font-semibold text-stone-950">Documentos (PDF)</h3>
+          <p className="mt-0.5 text-xs text-stone-400">Bases o información formal en PDF. Se muestran como descargas en la página pública del evento vinculado.</p>
+        </div>
+        <div className="grid gap-4 p-5">
+          <div>
+            <input
+              ref={docFileRef}
+              type="file"
+              accept="application/pdf"
+              multiple
+              className="sr-only"
+              onChange={handleDocFile}
+            />
+            <button
+              type="button"
+              onClick={() => docFileRef.current?.click()}
+              disabled={docUploading}
+              className="inline-flex items-center gap-2 rounded-md border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-50"
+            >
+              {docUploading ? (
+                <RotateCcw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+              Subir PDF
+            </button>
+          </div>
+          {(t.attachments ?? []).length > 0 && (
+            <div className="grid gap-2">
+              {(t.attachments ?? []).map((doc, i) => (
+                <div key={i} className="flex items-center gap-2 rounded-sm border border-stone-200 px-3 py-2">
+                  <FileText className="h-4 w-4 shrink-0 text-stone-500" aria-hidden />
+                  <input
+                    value={doc.name}
+                    onChange={(e) => updateAttachmentName(i, e.target.value)}
+                    placeholder="Nombre del documento"
+                    className="h-8 flex-1 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+                  />
+                  <a href={doc.url} target="_blank" rel="noreferrer" className="text-xs font-semibold text-stone-500 underline">
+                    Ver
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => removeAttachment(i)}
+                    className="text-stone-400 hover:text-red-500"
+                    aria-label="Quitar documento"
+                  >
+                    <X className="h-4 w-4" />
                   </button>
                 </div>
               ))}

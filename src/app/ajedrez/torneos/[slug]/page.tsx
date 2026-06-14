@@ -8,6 +8,7 @@ import {
   Check,
   Clock,
   CreditCard,
+  FileText,
   ListChecks,
   MapPin,
   Medal,
@@ -40,6 +41,7 @@ import {
 import { calculateStandings } from "@/modules/chess/standings";
 import { formatTieBreakLabel } from "@/modules/chess/tiebreaks";
 import { ImageGallery } from "@/components/media/ImageGallery";
+import { AttachmentList } from "@/components/media/AttachmentList";
 
 export function generateStaticParams() {
   return getPublishedOfficialTournaments().map((tournament) => ({
@@ -189,7 +191,8 @@ export default async function ChessTournamentDetailPage({
           (tournament.prizes && tournament.prizes.length > 0) ||
           (tournament.prizeCategories && tournament.prizeCategories.length > 0) ||
           tournament.paymentInstructions ||
-          tournament.regulations) && (
+          tournament.regulations ||
+          (tournament.attachments && tournament.attachments.length > 0)) && (
           <Section>
             <div className="mb-6 flex items-center gap-3">
               <Trophy className="h-5 w-5 text-amber-600" />
@@ -337,6 +340,19 @@ export default async function ChessTournamentDetailPage({
                       {tournament.regulations}
                     </p>
                   </div>
+                </div>
+              )}
+
+              {/* Documentos descargables */}
+              {tournament.attachments && tournament.attachments.length > 0 && (
+                <div className="mt-5">
+                  <div className="mb-3 flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-stone-500" />
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+                      Documentos
+                    </p>
+                  </div>
+                  <AttachmentList items={tournament.attachments} />
                 </div>
               )}
             </div>

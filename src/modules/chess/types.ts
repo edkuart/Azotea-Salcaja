@@ -95,6 +95,7 @@ export type ChessTournament = {
     places: Array<{ place: string; award: string }>;
   }>;
   prizesNonCumulative?: boolean;
+  attachments?: Array<{ name: string; url: string }>;
   players: ChessPlayer[];
   rounds: ChessRound[];
 };

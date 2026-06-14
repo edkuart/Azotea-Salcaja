@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { CalendarDays, MapPin, Trophy, ScrollText, Medal, Clock, Ticket, CalendarClock, CreditCard, Check, ArrowRight } from "lucide-react";
+import { CalendarDays, MapPin, Trophy, ScrollText, Medal, Clock, Ticket, CalendarClock, CreditCard, Check, ArrowRight, FileText } from "lucide-react";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Section } from "@/components/public/Section";
 import { ExpandableImage } from "@/components/media/ExpandableImage";
 import { ImageGallery } from "@/components/media/ImageGallery";
+import { AttachmentList } from "@/components/media/AttachmentList";
 import { db } from "@/lib/db";
 import { getTournament } from "@/lib/tournament-store";
 import { formatTieBreakLabel } from "@/modules/chess/tiebreaks";
@@ -294,6 +295,19 @@ export default async function EventDetailPage({
                       {tournament.regulations}
                     </p>
                   </div>
+                </div>
+              )}
+
+              {/* Documentos descargables */}
+              {tournament.attachments && tournament.attachments.length > 0 && (
+                <div className="mt-5">
+                  <div className="mb-3 flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-stone-500" />
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+                      Documentos
+                    </p>
+                  </div>
+                  <AttachmentList items={tournament.attachments} />
                 </div>
               )}
             </div>
