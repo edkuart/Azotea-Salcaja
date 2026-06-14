@@ -1,12 +1,11 @@
 import Link from "next/link";
 
 import { AdminShell } from "@/components/admin/AdminShell";
-import {
-  adminCategories,
-  adminEvents,
-  adminProducts,
-} from "@/modules/admin/restaurant-data";
-import { getActiveOfficialTournaments } from "@/modules/chess/public-data";
+import { db } from "@/lib/db";
+import { listTournaments } from "@/lib/tournament-store";
+import { isTournamentHistorical } from "@/modules/chess/public-data";
+
+export const dynamic = "force-dynamic";
 
 const quickActions = [
   { href: "/admin/productos/nuevo", label: "Nuevo\nproducto", icon: "+",    isChess: false },
@@ -15,12 +14,29 @@ const quickActions = [
   { href: "/",                      label: "Ver sitio\npúblico", icon: "↗", isChess: false },
 ];
 
-export default function AdminPage() {
-  const activeTournaments = getActiveOfficialTournaments();
+export default async function AdminPage() {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const [eventsPublished, eventsUpcoming, products, categories, tournaments] =
+    await Promise.all([
+      db().event.count({ where: { status: "published" } }),
+      db().event.count({
+        where: { status: "published", startsAt: { gte: startOfToday } },
+      }),
+      db().product.count(),
+      db().menuCategory.count(),
+      listTournaments(),
+    ]);
+
+  const activeTournaments = tournaments.filter(
+    (t) => t.kind === "official" && !isTournamentHistorical(t),
+  );
+
   const stats = [
-    { label: "Eventos\nde hoy",     value: adminEvents.length,     delta: "activos",  warn: false },
+    { label: "Eventos\npublicados", value: eventsPublished, delta: `${eventsUpcoming} próximos`, warn: false },
     { label: "Torneos\nactivos",    value: activeTournaments.length, delta: "en curso", warn: false },
-    { label: "Productos\nen carta", value: adminProducts.length,   delta: `${adminCategories.length} categorías`, warn: false },
+    { label: "Productos\nen carta", value: products, delta: `${categories} categorías`, warn: false },
   ];
 
   return (
@@ -187,9 +203,9 @@ export default function AdminPage() {
         </p>
         <div style={{ display: "grid", gap: 6 }}>
           {[
-            { label: "Sitio público",  status: "Activo",            ok: true  },
-            { label: "Datos reales",   status: "Pendiente",         ok: false },
-            { label: "Base de datos",  status: "Próxima conexión",  ok: null  },
+            { label: "Sitio público",  status: "Activo",    ok: true },
+            { label: "Base de datos",  status: "Conectada", ok: true },
+            { label: "Datos",          status: "En vivo",   ok: true },
           ].map((row) => (
             <div
               key={row.label}
