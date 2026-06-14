@@ -75,10 +75,10 @@ export function ShareQrCard({
           <img
             src={dataUrl}
             alt="Código QR"
-            className="h-44 w-44 shrink-0 rounded-md border border-stone-200 bg-white p-2"
+            className="h-36 w-36 shrink-0 rounded-md border border-stone-200"
           />
         ) : (
-          <div className="flex h-44 w-44 shrink-0 items-center justify-center rounded-md border border-dashed border-stone-300 text-xs text-stone-400">
+          <div className="flex h-36 w-36 shrink-0 items-center justify-center rounded-md border border-dashed border-stone-300 text-xs text-stone-400">
             Generando…
           </div>
         )}
