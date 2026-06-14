@@ -39,6 +39,7 @@ import {
 } from "@/modules/chess/publication";
 import { calculateStandings } from "@/modules/chess/standings";
 import { formatTieBreakLabel } from "@/modules/chess/tiebreaks";
+import { ImageGallery } from "@/components/media/ImageGallery";
 
 export function generateStaticParams() {
   return getPublishedOfficialTournaments().map((tournament) => ({
@@ -535,27 +536,11 @@ export default async function ChessTournamentDetailPage({
             <h2 className="mt-3 text-3xl font-semibold text-stone-950">
               Fotos del evento
             </h2>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {tournament.gallery.map((image) => (
-                <figure
-                  className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm"
-                  key={image.src}
-                >
-                  <div
-                    className="h-56 bg-stone-200"
-                    style={{
-                      backgroundImage: `url(${image.src})`,
-                      backgroundPosition: "center",
-                      backgroundSize: "cover",
-                    }}
-                    role="img"
-                    aria-label={image.alt}
-                  />
-                  <figcaption className="p-4 text-sm text-stone-600">
-                    {image.alt}
-                  </figcaption>
-                </figure>
-              ))}
+            <div className="mt-8">
+              <ImageGallery
+                images={tournament.gallery}
+                columns="grid-cols-2 sm:grid-cols-2 lg:grid-cols-3"
+              />
             </div>
           </Section>
         ) : null}

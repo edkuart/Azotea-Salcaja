@@ -12,6 +12,7 @@ import {
   RotateCcw,
   AlertTriangle,
   CheckCircle2,
+  Maximize2,
 } from "lucide-react";
 
 import type {
@@ -30,6 +31,7 @@ import {
   formatTournamentSystem,
   formatTournamentStatus,
 } from "@/modules/chess/public-data";
+import { Lightbox } from "@/components/media/Lightbox";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -1120,6 +1122,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
   }
 
   const [includeInput, setIncludeInput] = useState("");
+  const [galleryZoom, setGalleryZoom] = useState<number | null>(null);
 
   function addGalleryImage(url: string) {
     if (!url.trim()) return;
@@ -1418,9 +1421,9 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
           {(t.gallery ?? []).length > 0 && (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {(t.gallery ?? []).map((img, i) => (
-                <div key={i} className="group relative overflow-hidden rounded-md border border-stone-200">
+                <div key={i} className="group relative overflow-hidden rounded-sm border-2 border-[var(--color-ink)]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img.src} alt={img.alt || "Galería"} className="h-28 w-full object-cover" />
+                  <img src={img.src} alt={img.alt || "Galería"} loading="lazy" decoding="async" className="h-28 w-full object-cover" />
                   <div className="absolute inset-x-0 bottom-0 bg-black/50 p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <input
                       value={img.alt}
@@ -1431,7 +1434,16 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
                   </div>
                   <button
                     type="button"
+                    onClick={() => setGalleryZoom(i)}
+                    aria-label="Ampliar imagen"
+                    className="absolute left-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                  >
+                    <Maximize2 className="h-3 w-3" />
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => removeGalleryImage(i)}
+                    aria-label="Quitar imagen"
                     className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
                   >
                     <X className="h-3 w-3" />
@@ -1459,6 +1471,15 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
           />
         </div>
       </div>
+
+      {galleryZoom !== null && (t.gallery ?? []).length > 0 && (
+        <Lightbox
+          images={(t.gallery ?? []).map((g) => ({ src: g.src, alt: g.alt }))}
+          index={galleryZoom}
+          onClose={() => setGalleryZoom(null)}
+          onNavigate={(n) => setGalleryZoom(n)}
+        />
+      )}
     </div>
   );
 }

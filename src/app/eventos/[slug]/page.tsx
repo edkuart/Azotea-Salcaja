@@ -5,6 +5,8 @@ import { CalendarDays, MapPin, Trophy, ScrollText, Medal, Clock, Ticket, Calenda
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Section } from "@/components/public/Section";
+import { ExpandableImage } from "@/components/media/ExpandableImage";
+import { ImageGallery } from "@/components/media/ImageGallery";
 import { db } from "@/lib/db";
 import { getTournament } from "@/lib/tournament-store";
 import { formatTieBreakLabel } from "@/modules/chess/tiebreaks";
@@ -64,13 +66,11 @@ export default async function EventDetailPage({
       <main>
         {/* Hero */}
         {event.coverImageUrl && (
-          <div
-            className="h-72 w-full bg-stone-200 md:h-96"
-            style={{
-              backgroundImage: `url(${event.coverImageUrl})`,
-              backgroundPosition: "center",
-              backgroundSize: "cover",
-            }}
+          <ExpandableImage
+            src={event.coverImageUrl}
+            alt={event.title}
+            frameClassName="h-72 w-full md:h-96"
+            rounded="rounded-none"
           />
         )}
 
@@ -301,21 +301,7 @@ export default async function EventDetailPage({
             {tournament.gallery && tournament.gallery.length > 0 && (
               <div className="mt-8 max-w-3xl">
                 <h3 className="mb-4 text-lg font-semibold text-stone-950">Galería</h3>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {tournament.gallery.map((img, i) => (
-                    <div key={i} className="overflow-hidden rounded-lg border border-stone-200">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={img.src}
-                        alt={img.alt || "Galería del torneo"}
-                        className="h-40 w-full object-cover"
-                      />
-                      {img.alt && (
-                        <p className="px-3 py-2 text-xs text-stone-500">{img.alt}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                <ImageGallery images={tournament.gallery} />
               </div>
             )}
           </Section>

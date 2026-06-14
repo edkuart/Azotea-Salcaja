@@ -1,7 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Upload, Link, X, ImageIcon, Loader2 } from "lucide-react";
+import { Upload, Link, X, ImageIcon, Loader2, Maximize2 } from "lucide-react";
+
+import { Lightbox } from "@/components/media/Lightbox";
 
 type Props = {
   name: string;
@@ -20,6 +22,7 @@ export function ImageUpload({
   const [mode, setMode] = useState<"file" | "url">("file");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [zoom, setZoom] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -128,17 +131,35 @@ export function ImageUpload({
 
       {/* Preview */}
       {url && (
-        <div className="relative mt-1 overflow-hidden rounded-md border border-stone-200">
+        <div className="relative mt-1 overflow-hidden rounded-md border-2 border-[var(--color-ink)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={url} alt="Preview" className="h-40 w-full object-cover" />
           <button
             type="button"
+            onClick={() => setZoom(true)}
+            aria-label="Ampliar imagen"
+            className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
             onClick={() => setUrl("")}
+            aria-label="Quitar imagen"
             className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
           >
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
+      )}
+
+      {zoom && url && (
+        <Lightbox
+          images={[{ src: url, alt: label }]}
+          index={0}
+          onClose={() => setZoom(false)}
+          onNavigate={() => {}}
+        />
       )}
     </div>
   );
