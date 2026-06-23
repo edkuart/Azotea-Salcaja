@@ -158,10 +158,10 @@ body.grain-overlay::after {
    ============================================================ */
 .hero-emblem {
   position: absolute;
-  top: -32px;
-  right: -110px;
-  width: 320px;
-  max-width: 78vw;
+  top: -70px;
+  right: -150px;
+  width: 620px;
+  max-width: 150vw;
   opacity: 0.14;
   z-index: 0;
   pointer-events: none;
