@@ -54,20 +54,16 @@ export default async function Home() {
             CHESS
           </div>
 
-          {/* Emblema Chessitos */}
+          {/* Emblema Chessitos (decorativo, responsive) */}
           <BrandMark
             size={560}
-            glow
             priority
             aria-hidden
-            className="parallax-slow"
-            style={{
-              position: "absolute",
-              right: "-150px",
-              top: "-90px",
-              opacity: 0.92,
-            }}
+            className="hero-emblem parallax-slow"
           />
+
+          {/* Scrim para garantizar contraste del texto sobre el emblema */}
+          <div className="hero-scrim" aria-hidden="true" />
 
           {/* Content */}
           <div

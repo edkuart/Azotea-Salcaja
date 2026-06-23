@@ -152,6 +152,73 @@ body.grain-overlay::after {
 }
 
 /* ============================================================
+   HERO EMBLEM (logo decorativo del héroe — responsive)
+   Móvil: pequeño, recogido y tenue (marca de agua) para no
+   robar contraste al texto. Desktop: grande a la derecha.
+   ============================================================ */
+.hero-emblem {
+  position: absolute;
+  top: -32px;
+  right: -110px;
+  width: 320px;
+  max-width: 78vw;
+  opacity: 0.14;
+  z-index: 0;
+  pointer-events: none;
+}
+.hero-emblem img {
+  width: 100% !important;
+  height: auto !important;
+}
+.hero-emblem::before {
+  content: "";
+  position: absolute;
+  inset: -14%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 45%,
+    rgba(201, 168, 76, 0.45),
+    rgba(11, 42, 74, 0.18) 55%,
+    transparent 72%
+  );
+  filter: blur(8px);
+  z-index: -1;
+}
+
+/* Scrim: oscurece el héroe sobre el emblema. En móvil cubre todo
+   el ancho (el texto ocupa todo el ancho); en desktop solo la izq. */
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(26, 26, 26, 0.55) 0%,
+    rgba(26, 26, 26, 0.35) 50%,
+    rgba(26, 26, 26, 0.65) 100%
+  );
+}
+
+@media (min-width: 768px) {
+  .hero-emblem {
+    top: -90px;
+    right: -150px;
+    width: 560px;
+    max-width: none;
+    opacity: 0.92;
+  }
+  .hero-scrim {
+    background: linear-gradient(
+      90deg,
+      rgba(26, 26, 26, 0.85) 0%,
+      rgba(26, 26, 26, 0.45) 42%,
+      rgba(26, 26, 26, 0) 68%
+    );
+  }
+}
+
+/* ============================================================
    SECTION THEMES
    ============================================================ */
 .section-restaurant { background: var(--color-cream); color: var(--color-ink); }
