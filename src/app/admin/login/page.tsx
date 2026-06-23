@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { login } from "@/app/actions/auth";
 import type { LoginState } from "@/app/actions/auth";
+import { BrandMark } from "@/components/public/BrandMark";
 
 export default function AdminLoginPage() {
   const [state, action, pending] = useActionState<LoginState, FormData>(
@@ -44,17 +45,14 @@ export default function AdminLoginPage() {
           padding: "36px 32px 32px",
         }}
       >
-        {/* Vinyl disc decoration */}
-        <div
-          aria-hidden="true"
-          className="vinyl-disc-sm"
+        {/* Emblema Chessitos */}
+        <BrandMark
+          size={56}
+          aria-hidden
           style={{
             position: "absolute",
-            top: "-20px",
-            right: "-20px",
-            width: "48px",
-            height: "48px",
-            opacity: 0.9,
+            top: "-24px",
+            right: "-22px",
           }}
         />
 

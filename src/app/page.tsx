@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarDays } from "lucide-react";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
+import { BrandMark } from "@/components/public/BrandMark";
 import { chessCommunity } from "@/modules/chess/public-data";
 import { db } from "@/lib/db";
 import {
@@ -53,17 +54,18 @@ export default async function Home() {
             CHESS
           </div>
 
-          {/* Spinning vinyl disc */}
-          <div
-            aria-hidden="true"
-            className="vinyl-disc animate-vinyl-slow parallax-slow"
+          {/* Emblema Chessitos */}
+          <BrandMark
+            size={560}
+            glow
+            priority
+            aria-hidden
+            className="parallax-slow"
             style={{
-              width: "560px",
-              height: "560px",
               position: "absolute",
-              right: "-160px",
-              top: "-100px",
-              opacity: 0.9,
+              right: "-150px",
+              top: "-90px",
+              opacity: 0.92,
             }}
           />
 

@@ -16,6 +16,11 @@
   --color-board: #F0D9B5;
   --color-gold:  #C9A84C;
 
+  /* Color: Emblem layer (derivado del logo Chessitos) */
+  --color-navy:      #0B2A4A;
+  --color-navy-deep: #06182E;
+  --color-coffee:    #5E3B22;
+
   /* Color: Utility */
   --color-grain: #FAFAF5;
   --color-mist:  #E8E4DC;
@@ -71,6 +76,9 @@
   --color-night:   #4A1C40;
   --color-board:   #F0D9B5;
   --color-gold:    #C9A84C;
+  --color-navy:      #0B2A4A;
+  --color-navy-deep: #06182E;
+  --color-coffee:    #5E3B22;
   --color-grain:   #FAFAF5;
   --color-mist:    #E8E4DC;
 

@@ -6,18 +6,23 @@ import { useState, useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 
 import { restaurantInfo } from "@/modules/restaurant/public-data";
+import { BrandMark } from "@/components/public/BrandMark";
 
 const chessSubItems = [
-  { href: "/ajedrez/clases",   label: "Clases",         exact: false },
-  { href: "/ajedrez/torneos",  label: "Torneos",         exact: false },
-  { href: "/ajedrez/agenda",   label: "Agenda",          exact: false },
-  { href: "/ajedrez/ranking",  label: "Clasificación",   exact: false },
-  { href: "/ajedrez",          label: "Comunidad",       exact: true  },
+  { href: "/ajedrez/clases", label: "Clases", exact: false },
+  { href: "/ajedrez/torneos", label: "Torneos", exact: false },
+  { href: "/ajedrez/agenda", label: "Agenda", exact: false },
+  { href: "/ajedrez/ranking", label: "Clasificación", exact: false },
+  { href: "/ajedrez", label: "Comunidad", exact: true },
 ];
 
 const mobileExtras = [
-  { href: `https://wa.me/${restaurantInfo.whatsapp}`, label: "WhatsApp",         external: true  },
-  { href: "/ajedrez/crear",                           label: "Torneos privados", external: false },
+  {
+    href: `https://wa.me/${restaurantInfo.whatsapp}`,
+    label: "WhatsApp",
+    external: true,
+  },
+  { href: "/ajedrez/crear", label: "Torneos privados", external: false },
 ];
 
 const NAV_LINK = (active: boolean) => ({
@@ -26,7 +31,9 @@ const NAV_LINK = (active: boolean) => ({
   textTransform: "uppercase" as const,
   letterSpacing: "0.2em",
   color: "var(--color-ink)",
-  borderBottom: active ? "2px solid var(--color-stage)" : "2px solid transparent",
+  borderBottom: active
+    ? "2px solid var(--color-stage)"
+    : "2px solid transparent",
   paddingBottom: "2px",
   textDecoration: "none",
   transition: "color 0.15s",
@@ -37,18 +44,23 @@ export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [chessOpen, setChessOpen] = useState(false);
-  const menuRef   = useRef<HTMLDivElement>(null);
-  const chessRef  = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const chessRef = useRef<HTMLDivElement>(null);
 
   const isChessActive = pathname.startsWith("/ajedrez");
 
   // Close everything on route change
-  useEffect(() => { setOpen(false); setChessOpen(false); }, [pathname]);
+  useEffect(() => {
+    setOpen(false);
+    setChessOpen(false);
+  }, [pathname]);
 
   // ESC closes mobile menu
   useEffect(() => {
     if (!open) return;
-    const fn = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    const fn = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
     document.addEventListener("keydown", fn);
     return () => document.removeEventListener("keydown", fn);
   }, [open]);
@@ -56,7 +68,9 @@ export function SiteHeader() {
   // Body scroll lock while mobile menu is open
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [open]);
 
   // Click-outside closes chess desktop dropdown (not when clicking inside mobile menu)
@@ -83,21 +97,37 @@ export function SiteHeader() {
         <Link
           href="/"
           className="flex items-center gap-3 text-[var(--color-ink)] no-underline"
-          style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: 1 }}
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "22px",
+            lineHeight: 1,
+          }}
         >
-          <div className="vinyl-disc-sm shrink-0" style={{ width: "32px", height: "32px" }} aria-hidden="true" />
+          <BrandMark size={38} priority className="shrink-0" aria-hidden />
           <span>
             Chess
-            <em style={{ fontFamily: "var(--font-chess)", fontStyle: "italic", color: "var(--color-stage)" }}>
+            <em
+              style={{
+                fontFamily: "var(--font-chess)",
+                fontStyle: "italic",
+                color: "var(--color-stage)",
+              }}
+            >
               itos
             </em>
           </span>
         </Link>
 
         {/* ── Desktop nav ── */}
-        <nav className="hidden items-center gap-7 md:flex" aria-label="Navegación principal">
-
-          <Link href="/" style={NAV_LINK(pathname === "/")} className="no-underline">
+        <nav
+          className="hidden items-center gap-7 md:flex"
+          aria-label="Navegación principal"
+        >
+          <Link
+            href="/"
+            style={NAV_LINK(pathname === "/")}
+            className="no-underline"
+          >
             Inicio
           </Link>
 
@@ -165,11 +195,14 @@ export function SiteHeader() {
                         fontSize: "10px",
                         textTransform: "uppercase",
                         letterSpacing: "0.2em",
-                        color: subActive ? "var(--color-marquee)" : "var(--color-cream)",
+                        color: subActive
+                          ? "var(--color-marquee)"
+                          : "var(--color-cream)",
                         textDecoration: "none",
-                        borderBottom: i < chessSubItems.length - 1
-                          ? "1px solid rgba(255,253,208,0.12)"
-                          : "none",
+                        borderBottom:
+                          i < chessSubItems.length - 1
+                            ? "1px solid rgba(255,253,208,0.12)"
+                            : "none",
                         transition: "color 0.15s",
                       }}
                     >
@@ -183,13 +216,19 @@ export function SiteHeader() {
 
           <Link
             href="/menu"
-            style={NAV_LINK(pathname.startsWith("/menu") || pathname.startsWith("/eventos"))}
+            style={NAV_LINK(
+              pathname.startsWith("/menu") || pathname.startsWith("/eventos"),
+            )}
             className="no-underline"
           >
             Restaurante
           </Link>
 
-          <Link href="/contacto" style={NAV_LINK(pathname.startsWith("/contacto"))} className="no-underline">
+          <Link
+            href="/contacto"
+            style={NAV_LINK(pathname.startsWith("/contacto"))}
+            className="no-underline"
+          >
             Contacto
           </Link>
         </nav>
@@ -215,9 +254,36 @@ export function SiteHeader() {
           className="flex md:hidden flex-col justify-center items-center gap-[5px] p-2 -mr-1"
           style={{ width: "40px", height: "40px" }}
         >
-          <span style={{ display: "block", width: "22px", height: "2px", background: "var(--color-ink)", transition: "transform 0.2s, opacity 0.2s", transform: open ? "translateY(7px) rotate(45deg)" : "none" }} />
-          <span style={{ display: "block", width: "22px", height: "2px", background: "var(--color-ink)", transition: "opacity 0.2s", opacity: open ? 0 : 1 }} />
-          <span style={{ display: "block", width: "22px", height: "2px", background: "var(--color-ink)", transition: "transform 0.2s, opacity 0.2s", transform: open ? "translateY(-7px) rotate(-45deg)" : "none" }} />
+          <span
+            style={{
+              display: "block",
+              width: "22px",
+              height: "2px",
+              background: "var(--color-ink)",
+              transition: "transform 0.2s, opacity 0.2s",
+              transform: open ? "translateY(7px) rotate(45deg)" : "none",
+            }}
+          />
+          <span
+            style={{
+              display: "block",
+              width: "22px",
+              height: "2px",
+              background: "var(--color-ink)",
+              transition: "opacity 0.2s",
+              opacity: open ? 0 : 1,
+            }}
+          />
+          <span
+            style={{
+              display: "block",
+              width: "22px",
+              height: "2px",
+              background: "var(--color-ink)",
+              transition: "transform 0.2s, opacity 0.2s",
+              transform: open ? "translateY(-7px) rotate(-45deg)" : "none",
+            }}
+          />
         </button>
       </header>
 
@@ -247,7 +313,12 @@ export function SiteHeader() {
           className="mx-auto w-full max-w-6xl px-5 py-8 flex flex-col gap-1"
           aria-label="Menú de navegación"
         >
-          <MobileNavLink href="/" label="Inicio" active={pathname === "/"} onClick={() => setOpen(false)} />
+          <MobileNavLink
+            href="/"
+            label="Inicio"
+            active={pathname === "/"}
+            onClick={() => setOpen(false)}
+          />
 
           {/* Ajedrez accordion */}
           <div>
@@ -258,7 +329,9 @@ export function SiteHeader() {
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2rem, 8vw, 3rem)",
                 lineHeight: 1.1,
-                color: isChessActive ? "var(--color-stage)" : "var(--color-cream)",
+                color: isChessActive
+                  ? "var(--color-stage)"
+                  : "var(--color-cream)",
                 background: "none",
                 border: "none",
                 borderBottom: "1px solid rgba(255,253,208,0.1)",
@@ -309,11 +382,30 @@ export function SiteHeader() {
             )}
           </div>
 
-          <MobileNavLink href="/menu" label="Restaurante" active={pathname.startsWith("/menu") || pathname.startsWith("/eventos")} onClick={() => setOpen(false)} />
-          <MobileNavLink href="/contacto" label="Contacto" active={pathname.startsWith("/contacto")} onClick={() => setOpen(false)} />
+          <MobileNavLink
+            href="/menu"
+            label="Restaurante"
+            active={
+              pathname.startsWith("/menu") || pathname.startsWith("/eventos")
+            }
+            onClick={() => setOpen(false)}
+          />
+          <MobileNavLink
+            href="/contacto"
+            label="Contacto"
+            active={pathname.startsWith("/contacto")}
+            onClick={() => setOpen(false)}
+          />
 
           {/* Divider */}
-          <div style={{ margin: "20px 0 12px", height: "2px", background: "var(--color-stage)", width: "48px" }} />
+          <div
+            style={{
+              margin: "20px 0 12px",
+              height: "2px",
+              background: "var(--color-stage)",
+              width: "48px",
+            }}
+          />
 
           {/* Extras */}
           {mobileExtras.map((item) =>
@@ -324,7 +416,16 @@ export function SiteHeader() {
                 rel="noreferrer"
                 target="_blank"
                 onClick={() => setOpen(false)}
-                style={{ fontFamily: "var(--font-poster)", fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--color-marquee)", textDecoration: "none", padding: "8px 0", display: "block" }}
+                style={{
+                  fontFamily: "var(--font-poster)",
+                  fontSize: "13px",
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                  color: "var(--color-marquee)",
+                  textDecoration: "none",
+                  padding: "8px 0",
+                  display: "block",
+                }}
               >
                 {item.label}
               </a>
@@ -333,15 +434,34 @@ export function SiteHeader() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                style={{ fontFamily: "var(--font-poster)", fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--color-marquee)", textDecoration: "none", padding: "8px 0", display: "block" }}
+                style={{
+                  fontFamily: "var(--font-poster)",
+                  fontSize: "13px",
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                  color: "var(--color-marquee)",
+                  textDecoration: "none",
+                  padding: "8px 0",
+                  display: "block",
+                }}
               >
                 {item.label}
               </Link>
-            )
+            ),
           )}
 
           {/* Bottom strip */}
-          <div style={{ marginTop: "auto", paddingTop: "40px", opacity: 0.45, fontFamily: "var(--font-poster)", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase" }}>
+          <div
+            style={{
+              marginTop: "auto",
+              paddingTop: "40px",
+              opacity: 0.45,
+              fontFamily: "var(--font-poster)",
+              fontSize: "10px",
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+            }}
+          >
             {restaurantInfo.address}
           </div>
         </nav>
@@ -351,7 +471,10 @@ export function SiteHeader() {
 }
 
 function MobileNavLink({
-  href, label, active, onClick,
+  href,
+  label,
+  active,
+  onClick,
 }: {
   href: string;
   label: string;
