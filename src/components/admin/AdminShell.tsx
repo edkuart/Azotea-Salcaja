@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { logout } from "@/app/actions/auth";
+import { BrandMark } from "@/components/public/BrandMark";
 
 const primaryNav = [
   { href: "/admin",               label: "Resumen",          icon: "▦",  isChess: false },
@@ -19,25 +20,6 @@ const primaryNav = [
 const secondaryNav = [
   { href: "/admin/restaurante",   label: "Restaurante",      icon: "⚙",  isChess: false },
 ];
-
-function VinylDisc({ size = 22 }: { size?: number }) {
-  return (
-    <span
-      style={{
-        display: "inline-block",
-        width: size,
-        height: size,
-        borderRadius: "50%",
-        flexShrink: 0,
-        background: `
-          radial-gradient(circle at center, var(--color-stage) 0 ${size * 0.14}px, var(--color-ink) ${size * 0.17}px ${size * 0.22}px, transparent ${size * 0.25}px),
-          repeating-radial-gradient(circle at center, #0a0a0a ${size * 0.25}px, #2a2a2a ${size * 0.28}px, #0a0a0a ${size * 0.3}px)
-        `,
-      }}
-      aria-hidden
-    />
-  );
-}
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -84,7 +66,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             textDecoration: "none",
           }}
         >
-          <VinylDisc size={20} />
+          <BrandMark size={26} aria-hidden />
           Chess
           <em
             style={{
@@ -175,22 +157,17 @@ export function AdminShell({ children }: { children: ReactNode }) {
               flexDirection: "column",
             }}
           >
-            {/* vinyl decoration */}
-            <div
+            {/* emblema (marca de agua) */}
+            <BrandMark
+              size={230}
               aria-hidden
               style={{
                 position: "absolute",
-                width: 240,
-                height: 240,
-                top: -120,
-                right: -120,
-                borderRadius: "50%",
-                opacity: 0.2,
+                top: -86,
+                right: -86,
+                opacity: 0.16,
                 pointerEvents: "none",
-                background: `
-                  radial-gradient(circle at center, var(--color-stage) 0 14px, var(--color-ink) 16px 22px, transparent 24px),
-                  repeating-radial-gradient(circle at center, #0a0a0a 24px, #2a2a2a 26px, #0a0a0a 28px)
-                `,
+                zIndex: 0,
               }}
             />
 
