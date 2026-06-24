@@ -7,7 +7,8 @@ import { restaurantInfo } from "@/modules/restaurant/public-data";
 
 export const metadata: Metadata = {
   title: "Contacto — Azotea Salcajá",
-  description: "Ubicación, horarios y contacto de Azotea Salcajá. Tercer piso, Salcajá, Quetzaltenango.",
+  description:
+    "Ubicación, horarios y contacto de Azotea Salcajá. 3ra Av. 2-77, zona 2, Barrio El Calvario, Salcajá.",
 };
 
 export default function ContactPage() {
@@ -15,17 +16,25 @@ export default function ContactPage() {
     <PublicLayout>
       <main>
         <Section>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
+          <span
+            className="text-xs uppercase"
+            style={{ fontFamily: "var(--font-poster)", letterSpacing: "0.2em", color: "var(--color-stage)" }}
+          >
             Contacto
-          </p>
-          <h1 className="mt-3 text-4xl font-semibold text-stone-950">
+          </span>
+          <h1
+            className="mt-3"
+            style={{ fontFamily: "var(--font-display)", fontSize: "var(--text-4xl)", lineHeight: 0.97 }}
+          >
             Visítanos en Salcajá
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-stone-700">
+          <p
+            className="mt-4 max-w-2xl leading-7"
+            style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)", color: "#3a3a3a" }}
+          >
             Estamos en el{" "}
-            <strong>{restaurantInfo.floor}</strong> en el centro de Salcajá,
-            Quetzaltenango. Encuéntranos fácilmente con el mapa o escríbenos
-            por WhatsApp.
+            <strong>{restaurantInfo.floor}</strong>, {restaurantInfo.shortAddress}.
+            Encuéntranos fácilmente con el mapa o escríbenos por WhatsApp.
           </p>
         </Section>
 
@@ -134,6 +143,49 @@ export default function ContactPage() {
 
             {/* Cards de info */}
             <div className="grid gap-4 content-start">
+              <article
+                style={{
+                  background: "var(--color-grain)",
+                  border: "2px solid var(--color-ink)",
+                  boxShadow: "var(--shadow-card)",
+                  overflow: "hidden",
+                }}
+              >
+                <img
+                  src={restaurantInfo.entranceImage}
+                  alt="Referencia de la entrada de Azotea Salcajá"
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    height: "260px",
+                    objectFit: "cover",
+                  }}
+                />
+                <div style={{ padding: "12px 16px" }}>
+                  <p
+                    style={{
+                      fontFamily: "var(--font-poster)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.16em",
+                      fontSize: 10,
+                      color: "var(--color-stage)",
+                    }}
+                  >
+                    Referencia de entrada
+                  </p>
+                  <p
+                    style={{
+                      marginTop: 4,
+                      fontFamily: "var(--font-body)",
+                      fontSize: 13,
+                      color: "#555",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    Busca el tercer nivel de la construcción; la entrada está señalizada desde la calle.
+                  </p>
+                </div>
+              </article>
 
               {/* Ubicación */}
               <article
@@ -170,6 +222,8 @@ export default function ContactPage() {
                   <strong style={{ color: "var(--color-ink)" }}>
                     {restaurantInfo.floor}
                   </strong>
+                  <br />
+                  {restaurantInfo.shortAddress}
                   <br />
                   Salcajá, Quetzaltenango
                   <br />

@@ -18,13 +18,22 @@ export default function CreatePrivateTournamentPage() {
     <PublicLayout>
       <main>
         <Section>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
+          <span
+            className="text-xs uppercase"
+            style={{ fontFamily: "var(--font-poster)", letterSpacing: "0.2em", color: "var(--color-stage)" }}
+          >
             Torneo casual
-          </p>
-          <h1 className="mt-3 text-4xl font-semibold text-stone-950">
-            Crear torneo rapido
+          </span>
+          <h1
+            className="mt-3"
+            style={{ fontFamily: "var(--font-display)", fontSize: "var(--text-4xl)", lineHeight: 0.97 }}
+          >
+            Crear torneo rápido
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-stone-700">
+          <p
+            className="mt-4 max-w-2xl leading-7"
+            style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)", color: "#3a3a3a" }}
+          >
             Para grupos de amigos: agrega nombres, elige sistema y comparte un
             link. Estos torneos no son oficiales ni aparecen publicados por el
             restaurante.

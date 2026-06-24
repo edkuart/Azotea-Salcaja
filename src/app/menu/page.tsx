@@ -18,19 +18,27 @@ export default function MenuPage() {
     <PublicLayout>
       <main>
         <Section className="pb-8 pt-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
-            Catalogo digital
-          </p>
+          <span
+            className="text-xs uppercase"
+            style={{ fontFamily: "var(--font-poster)", letterSpacing: "0.2em", color: "var(--color-stage)" }}
+          >
+            Catálogo digital
+          </span>
           <div className="mt-3 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-4xl font-semibold text-stone-950">Menu</h1>
-              <p className="mt-3 max-w-2xl text-base leading-7 text-stone-700">
-                Productos organizados por categoria, con precios visibles y
+              <h1 style={{ fontFamily: "var(--font-display)", fontSize: "var(--text-4xl)", lineHeight: 0.95 }}>
+                Menú
+              </h1>
+              <p
+                className="mt-3 max-w-2xl leading-7"
+                style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)", color: "#3a3a3a" }}
+              >
+                Productos organizados por categoría, con precios visibles y
                 contacto directo para consultar disponibilidad.
               </p>
             </div>
             <a
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800"
+              className="btn btn-primary"
               href={`https://wa.me/${restaurantInfo.whatsapp}`}
               rel="noreferrer"
               target="_blank"
@@ -45,7 +53,13 @@ export default function MenuPage() {
           <div className="flex gap-2 overflow-x-auto pb-2">
             {menuCategories.map((category) => (
               <a
-                className="shrink-0 rounded-md border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-700"
+                className="shrink-0 border-2 px-4 py-2 text-sm font-semibold uppercase tracking-[0.12em] no-underline transition-transform hover:-translate-y-0.5"
+                style={{
+                  fontFamily: "var(--font-poster)",
+                  background: "var(--color-cream)",
+                  borderColor: "var(--color-ink)",
+                  color: "var(--color-ink)",
+                }}
                 href={`#${category.name.toLowerCase()}`}
                 key={category.name}
               >
@@ -54,27 +68,33 @@ export default function MenuPage() {
             ))}
           </div>
 
-          <div className="mt-6 grid gap-8">
+          <div className="mt-8 grid gap-10">
             {menuCategories.map((category) => (
               <section id={category.name.toLowerCase()} key={category.name}>
-                <div className="border-b border-stone-200 pb-3">
-                  <h2 className="text-2xl font-semibold text-stone-950">
+                <div className="border-b-2 pb-3" style={{ borderColor: "var(--color-ink)" }}>
+                  <h2 style={{ fontFamily: "var(--font-display)", fontSize: "28px", lineHeight: 1 }}>
                     {category.name}
                   </h2>
-                  <p className="mt-1 text-sm text-stone-600">
+                  <p className="mt-1 text-sm" style={{ color: "#5a5a5a" }}>
                     {category.description}
                   </p>
                 </div>
 
-                <div className="mt-5 grid gap-4 md:grid-cols-2">
+                <div className="mt-5 grid gap-5 md:grid-cols-2">
                   {category.products.map((product) => (
                     <article
-                      className="grid overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm sm:grid-cols-[150px_1fr]"
+                      className="grid overflow-hidden border-2 sm:grid-cols-[150px_1fr]"
                       key={product.name}
+                      style={{
+                        background: "var(--color-cream)",
+                        borderColor: "var(--color-ink)",
+                        boxShadow: "var(--shadow-card)",
+                      }}
                     >
                       <div
-                        className="min-h-40 bg-stone-200"
+                        className="min-h-40 border-b-2 sm:border-b-0 sm:border-r-2"
                         style={{
+                          borderColor: "var(--color-ink)",
                           backgroundImage: `url(${product.image})`,
                           backgroundPosition: "center",
                           backgroundSize: "cover",
@@ -82,18 +102,31 @@ export default function MenuPage() {
                       />
                       <div className="p-4">
                         <div className="flex items-start justify-between gap-3">
-                          <h3 className="text-lg font-semibold text-stone-950">
+                          <h3
+                            style={{ fontFamily: "var(--font-display)", fontSize: "19px", lineHeight: 1.05 }}
+                          >
                             {product.name}
                           </h3>
-                          <p className="text-lg font-semibold text-emerald-800">
+                          <p
+                            className="shrink-0"
+                            style={{
+                              fontFamily: "var(--font-poster)",
+                              fontSize: "18px",
+                              letterSpacing: "0.02em",
+                              color: "var(--color-stage)",
+                            }}
+                          >
                             {product.price}
                           </p>
                         </div>
-                        <p className="mt-2 text-sm leading-6 text-stone-600">
+                        <p className="mt-2 text-sm leading-6" style={{ color: "#3a3a3a" }}>
                           {product.description}
                         </p>
                         {product.featured ? (
-                          <p className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.14em] text-rose-700">
+                          <p
+                            className="mt-3 inline-flex items-center gap-1 text-xs uppercase tracking-[0.14em]"
+                            style={{ fontFamily: "var(--font-poster)", color: "var(--color-marquee)" }}
+                          >
                             <Star className="h-3.5 w-3.5" aria-hidden />
                             Destacado
                           </p>
