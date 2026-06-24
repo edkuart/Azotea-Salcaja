@@ -29,6 +29,10 @@ import {
 } from "@/modules/chess/pairings";
 import { formatTieBreakLabel } from "@/modules/chess/tiebreaks";
 import {
+  mergeTournamentResults,
+  tournamentResultsEqual,
+} from "@/modules/chess/merge";
+import {
   formatTournamentSystem,
   formatTournamentStatus,
 } from "@/modules/chess/public-data";
@@ -124,6 +128,43 @@ export function TournamentManager({
     const timer = setTimeout(() => { saveTournament(t); }, 400);
     return () => clearTimeout(timer);
   }, [t, apiId, saveTournament]);
+
+  // ── Sincronización entre árbitros: recarga periódica del servidor y adopta
+  //    los resultados que registró otro panel, sin borrar lo local. ──
+  const tRef = useRef(t);
+  const saveStateRef = useRef(saveState);
+  useEffect(() => { tRef.current = t; }, [t]);
+  useEffect(() => { saveStateRef.current = saveState; }, [saveState]);
+
+  useEffect(() => {
+    if (!apiId) return;
+    let cancelled = false;
+
+    async function poll() {
+      if (saveStateRef.current === "saving") return; // no pisar un guardado en curso
+      try {
+        const res = await fetch(`/api/tournaments/${apiId}`, { cache: "no-store" });
+        if (!res.ok || cancelled) return;
+        const server = (await res.json()) as ChessTournament;
+        const local = tRef.current;
+        // No retroceder estructura local que todavía no se sincroniza.
+        if (server.rounds.length < local.rounds.length) return;
+        if (server.players.length < local.players.length) return;
+        const merged = mergeTournamentResults(server, local, "overlay");
+        if (!tournamentResultsEqual(merged, local)) {
+          setT(merged);
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+
+    const interval = setInterval(poll, 10_000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [apiId]);
 
   // ─ derived ─
   const standings  = useMemo(() => calculateStandings(t), [t]);

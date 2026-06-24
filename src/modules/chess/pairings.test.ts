@@ -60,7 +60,7 @@ describe("generateSwissNextRound", () => {
     ]);
   });
 
-  it("assigns a bye to the lowest seed without previous bye", () => {
+  it("assigns the bye and places it last, without displacing real boards", () => {
     const result = generateSwissNextRound({
       ...baseTournament,
       players: [
@@ -69,11 +69,55 @@ describe("generateSwissNextRound", () => {
       ],
     });
 
-    expect(result.round.games[0]).toMatchObject({
+    const byeGame = result.round.games.find((game) => game.isBye);
+    expect(byeGame).toMatchObject({
       whitePlayerId: "p5",
       result: "bye",
       isBye: true,
     });
+    // El bye va al final y las partidas reales se numeran 1..N.
+    expect(result.round.games.at(-1)).toBe(byeGame);
+    const realBoards = result.round.games
+      .filter((game) => !game.isBye)
+      .map((game) => game.boardNumber);
+    expect(realBoards).toEqual([1, 2]);
+  });
+
+  it("pairs late entrants with veterans, not only with each other", () => {
+    const result = generateSwissNextRound({
+      ...baseTournament,
+      roundsPlanned: 5,
+      players: [
+        ...baseTournament.players,
+        { id: "p5", name: "New 5", seed: 5, status: "active" },
+        { id: "p6", name: "New 6", seed: 6, status: "active" },
+      ],
+      rounds: [
+        {
+          id: "r1",
+          roundNumber: 1,
+          status: "completed",
+          games: [
+            { id: "g1", boardNumber: 1, whitePlayerId: "p1", blackPlayerId: "p2", result: "white_win" },
+            { id: "g2", boardNumber: 2, whitePlayerId: "p3", blackPlayerId: "p4", result: "white_win" },
+          ],
+        },
+      ],
+    });
+
+    const gameOf = (id: string) =>
+      result.round.games.find(
+        (game) => game.whitePlayerId === id || game.blackPlayerId === id,
+      )!;
+    const opponentOf = (id: string) => {
+      const game = gameOf(id);
+      return game.whitePlayerId === id ? game.blackPlayerId : game.whitePlayerId;
+    };
+    const veterans = new Set(["p1", "p2", "p3", "p4"]);
+
+    expect(opponentOf("p5")).not.toBe("p6");
+    expect(veterans.has(opponentOf("p5")!)).toBe(true);
+    expect(veterans.has(opponentOf("p6")!)).toBe(true);
   });
 
   it("warns when there are not enough active players", () => {

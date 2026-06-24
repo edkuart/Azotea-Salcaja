@@ -128,6 +128,19 @@ export function generateRoundRobinRounds(players: ChessPlayer[]) {
   return rounds;
 }
 
+/** Conjunto de jugadores que ya aparecieron en alguna partida (para detectar
+ *  entradas tardías: quienes se inscribieron con el torneo ya empezado). */
+function playersWhoHavePlayed(tournament: ChessTournament): Set<string> {
+  const played = new Set<string>();
+  for (const round of tournament.rounds) {
+    for (const game of round.games) {
+      if (game.whitePlayerId) played.add(game.whitePlayerId);
+      if (game.blackPlayerId) played.add(game.blackPlayerId);
+    }
+  }
+  return played;
+}
+
 export function generateSwissNextRound(tournament: ChessTournament): PairingResult {
   const blocker = getNextRoundBlocker(tournament);
 
@@ -171,19 +184,16 @@ export function generateSwissNextRound(tournament: ChessTournament): PairingResu
     };
   }
 
+  // ── Bye: se elige aquí pero se agrega al FINAL (última mesa), para que las
+  //    partidas reales queden numeradas 1..N y el bye no desplace una mesa. ──
+  let byePlayerId: string | undefined;
   if (pairingPlayers.length % 2 === 1) {
     const byePlayer = [...pairingPlayers]
       .reverse()
       .find((player) => !hasPlayerHadBye(tournament, player.id));
 
     if (byePlayer) {
-      games.push({
-        ...createGame(roundNumber, 1, byePlayer.id),
-        result: "bye",
-        whiteScore: 1,
-        blackScore: 0,
-        isBye: true,
-      });
+      byePlayerId = byePlayer.id;
       pairingPlayers = pairingPlayers.filter((player) => player.id !== byePlayer.id);
     } else {
       warnings.push({
@@ -193,7 +203,52 @@ export function generateSwissNextRound(tournament: ChessTournament): PairingResu
     }
   }
 
-  let boardNumber = games.length + 1;
+  let boardNumber = 1;
+
+  // ── Integración de entradas tardías ──
+  // Quien se inscribe con el torneo ya empezado entra con 0 puntos y caería al
+  // fondo formando un bloque aislado que solo juega entre nuevos. Para evitarlo,
+  // se empareja a cada nuevo con un VETERANO de bajo puntaje (de menor a mayor).
+  if (tournament.rounds.length > 0) {
+    const played = playersWhoHavePlayed(tournament);
+    const newcomers = pairingPlayers.filter((player) => !played.has(player.id));
+
+    if (newcomers.length > 0 && newcomers.length < pairingPlayers.length) {
+      const veterans = pairingPlayers
+        .filter((player) => played.has(player.id))
+        .sort((a, b) => a.points - b.points || b.seed - a.seed); // bajo puntaje primero
+      const pairedIds = new Set<string>();
+      const orderedNewcomers = [...newcomers].sort((a, b) => a.seed - b.seed);
+
+      for (const newcomer of orderedNewcomers) {
+        const unmetIndex = veterans.findIndex(
+          (vet) => !pairedIds.has(vet.id) && !havePlayersMet(tournament, newcomer.id, vet.id),
+        );
+        const index =
+          unmetIndex >= 0
+            ? unmetIndex
+            : veterans.findIndex((vet) => !pairedIds.has(vet.id));
+
+        if (index < 0) {
+          break; // ya no quedan veteranos libres; el resto se empareja abajo
+        }
+
+        const veteran = veterans[index];
+        pairedIds.add(newcomer.id);
+        pairedIds.add(veteran.id);
+
+        const colors = assignColors(newcomer, veteran);
+        games.push(
+          createGame(roundNumber, boardNumber, colors.whitePlayerId, colors.blackPlayerId),
+        );
+        boardNumber += 1;
+      }
+
+      pairingPlayers = pairingPlayers.filter((player) => !pairedIds.has(player.id));
+    }
+  }
+
+  // ── Pareo Swiss normal del resto ──
   const unpaired = [...pairingPlayers];
 
   while (unpaired.length > 1) {
@@ -224,6 +279,17 @@ export function generateSwissNextRound(tournament: ChessTournament): PairingResu
     warnings.push({
       code: "unpaired_player",
       message: `${unpaired[0].name} quedo sin pareo por configuracion inconsistente.`,
+    });
+  }
+
+  // ── Bye al final (última mesa) ──
+  if (byePlayerId) {
+    games.push({
+      ...createGame(roundNumber, boardNumber, byePlayerId),
+      result: "bye",
+      whiteScore: 1,
+      blackScore: 0,
+      isBye: true,
     });
   }
 

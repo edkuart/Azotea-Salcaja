@@ -6,6 +6,7 @@ import {
   deleteTournament,
 } from "@/lib/tournament-store";
 import { officialChessTournaments } from "@/modules/chess/public-data";
+import { mergeTournamentResults } from "@/modules/chess/merge";
 import type { ChessTournament } from "@/modules/chess/types";
 
 export async function GET(
@@ -27,8 +28,14 @@ export async function PUT(
 ) {
   const { id } = await params;
   const body = (await req.json()) as ChessTournament;
-  await storeTournament({ ...body, id });
-  return NextResponse.json({ ...body, id });
+
+  // Merge con lo ya guardado: si otro árbitro registró un resultado que este
+  // cliente no traía, se conserva (evita que el último en guardar lo borre).
+  const existing = await getTournament(id);
+  const merged = mergeTournamentResults({ ...body, id }, existing, "base");
+
+  await storeTournament(merged);
+  return NextResponse.json(merged);
 }
 
 export async function DELETE(
