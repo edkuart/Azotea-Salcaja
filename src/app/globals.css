@@ -250,7 +250,7 @@ body.grain-overlay::after {
    SECTION THEMES
    ============================================================ */
 .section-restaurant { background: var(--color-cream); color: var(--color-ink); }
-.section-chess      { background: var(--color-ink);   color: var(--color-board); }
+.section-chess      { background: linear-gradient(135deg, var(--color-navy-deep) 0%, var(--color-navy) 48%, var(--color-ink) 100%); color: var(--color-board); }
 .section-chess a    { color: var(--color-gold); }
 .section-events     { background: var(--color-stage); color: var(--color-cream); }
 .section-night      { background: var(--color-night); color: var(--color-cream); }
