@@ -146,11 +146,11 @@ export default function TournamentLivePage() {
           </div>
 
           {/* Status badge */}
-          <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ marginTop: 12, display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px 12px" }}>
             <span
               style={{
                 display: "inline-block",
-                background: isFinished ? "var(--color-emerald)" : "var(--color-stage)",
+                background: isFinished ? "var(--color-navy)" : "var(--color-stage)",
                 color: "var(--color-cream)",
                 fontFamily: "var(--font-poster)",
                 textTransform: "uppercase",
@@ -216,7 +216,7 @@ export default function TournamentLivePage() {
                   fontSize: 10,
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
-                  color: lastRoundDone ? "var(--color-emerald)" : "var(--color-stage)",
+                  color: lastRoundDone ? "var(--color-navy)" : "var(--color-stage)",
                 }}
               >
                 {lastRoundDone ? "Completada" : `${currentRound.games.filter((g) => g.result === "unplayed").length} pendientes`}
