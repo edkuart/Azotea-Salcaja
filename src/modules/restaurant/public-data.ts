@@ -1,5 +1,8 @@
 const LAT = 14.877478976699559;
 const LNG = -91.46062557638479;
+const ADDRESS =
+  "3ra Av. 2-77, zona 2, Barrio El Calvario, tercer nivel de la construcción, Salcajá, Quetzaltenango, Guatemala";
+const MAPS_QUERY = encodeURIComponent(`Azotea Salcajá, ${ADDRESS}`);
 
 export const restaurantInfo = {
   name: "Azotea Salcajá",
@@ -8,13 +11,15 @@ export const restaurantInfo = {
     "Restaurante local con menu casual, eventos de comunidad y noches de ajedrez los lunes.",
   phone: "+502 3526 2791",
   whatsapp: "50235262791",
-  address: "3er piso · Salcajá, Quetzaltenango, Guatemala",
-  floor: "Tercer piso",
+  address: ADDRESS,
+  shortAddress: "3ra Av. 2-77, zona 2, Barrio El Calvario",
+  floor: "Tercer nivel de la construcción",
   latitude: LAT,
   longitude: LNG,
-  mapsUrl: `https://www.google.com/maps?q=${LAT},${LNG}`,
-  directionsUrl: `https://www.google.com/maps/dir/?api=1&destination=${LAT},${LNG}`,
-  embedUrl: `https://maps.google.com/maps?q=${LAT},${LNG}&z=18&output=embed`,
+  mapsUrl: `https://www.google.com/maps/search/?api=1&query=${MAPS_QUERY}`,
+  directionsUrl: `https://www.google.com/maps/dir/?api=1&destination=${MAPS_QUERY}`,
+  embedUrl: `https://maps.google.com/maps?q=${MAPS_QUERY}&z=18&output=embed`,
+  entranceImage: "/images/azotea-entrada.jpg",
   hours: [
     { day: "Lunes", time: "5:00 p.m. - 10:00 p.m." },
     { day: "Martes a viernes", time: "12:00 p.m. - 10:00 p.m." },
