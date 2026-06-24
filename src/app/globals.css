@@ -219,6 +219,34 @@ body.grain-overlay::after {
 }
 
 /* ============================================================
+   EMBLEM WATERMARK (marca de agua del logo en héroes secundarios)
+   Tenue y responsive: no roba contraste al texto.
+   ============================================================ */
+.emblem-watermark {
+  position: absolute;
+  top: 50%;
+  right: -14%;
+  transform: translateY(-50%);
+  width: 300px;
+  max-width: 62vw;
+  opacity: 0.1;
+  z-index: 0;
+  pointer-events: none;
+}
+.emblem-watermark img {
+  width: 100% !important;
+  height: auto !important;
+}
+@media (min-width: 768px) {
+  .emblem-watermark {
+    right: -2%;
+    width: 430px;
+    max-width: none;
+    opacity: 0.16;
+  }
+}
+
+/* ============================================================
    SECTION THEMES
    ============================================================ */
 .section-restaurant { background: var(--color-cream); color: var(--color-ink); }

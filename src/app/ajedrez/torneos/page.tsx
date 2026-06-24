@@ -4,6 +4,7 @@ import { ArrowRight, CalendarDays, ListChecks, Trophy, Users } from "lucide-reac
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Section } from "@/components/public/Section";
+import { BrandMark } from "@/components/public/BrandMark";
 import { listTournaments } from "@/lib/tournament-store";
 import {
   formatTournamentStatus,
@@ -12,7 +13,6 @@ import {
   getTournamentSummary,
   isTournamentHistorical,
 } from "@/modules/chess/public-data";
-import type { ChessTournament } from "@/modules/chess/types";
 import { getTournamentCoverImage } from "@/modules/chess/publication";
 
 export const metadata: Metadata = {
@@ -29,23 +29,35 @@ export default async function ChessTournamentsPage() {
   return (
     <PublicLayout>
       <main>
+        {/* ── HERO ── */}
         <section
-          className="bg-stone-950 text-white"
+          className="relative overflow-hidden border-b-[3px]"
           style={{
-            backgroundImage:
-              "linear-gradient(90deg, rgba(28,25,23,0.88), rgba(28,25,23,0.42)), url(https://images.unsplash.com/photo-1586165368502-1bad197a6461?auto=format&fit=crop&w=1800&q=80)",
-            backgroundPosition: "center",
-            backgroundSize: "cover",
+            background: "var(--color-ink)",
+            color: "var(--color-cream)",
+            borderColor: "var(--color-stage)",
           }}
         >
-          <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-200">
-              Ajedrez oficial
-            </p>
-            <h1 className="mt-4 max-w-3xl text-4xl font-semibold sm:text-6xl">
+          <BrandMark size={430} aria-hidden className="emblem-watermark" />
+
+          <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+            <span className="section-label" style={{ color: "var(--color-marquee)" }}>
+              Ajedrez oficial · Salcajá
+            </span>
+            <h1
+              className="mt-5 max-w-3xl"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "var(--text-5xl)",
+                lineHeight: 0.95,
+              }}
+            >
               Torneos de la comunidad
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-stone-100">
+            <p
+              className="mt-5 max-w-2xl text-base leading-7"
+              style={{ fontFamily: "var(--font-body)", opacity: 0.85 }}
+            >
               Resultados, pareos e historias de las noches de ajedrez en Azotea
               Salcajá, listos para compartir con jugadores y visitantes.
             </p>
@@ -53,92 +65,127 @@ export default async function ChessTournamentsPage() {
         </section>
 
         <Section>
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
             {tournaments.map((tournament) => {
               const summary = getTournamentSummary(tournament);
               const isHistorical = isTournamentHistorical(tournament);
               const status = getEffectiveTournamentStatus(tournament);
+              const href = isHistorical
+                ? `/ajedrez/torneos/${tournament.slug}`
+                : `/ajedrez/torneos/live/${tournament.id}`;
 
               return (
-                <article
-                  className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm"
+                <Link
                   key={tournament.id}
+                  href={href}
+                  className="product-card group no-underline"
+                  style={{ color: "var(--color-ink)" }}
                 >
                   <div
-                    className="h-56 bg-stone-200"
+                    className="card-img"
                     style={{
                       backgroundImage: `url(${getTournamentCoverImage(tournament)})`,
-                      backgroundPosition: "center",
-                      backgroundSize: "cover",
                     }}
                   />
-                  <div className="p-5">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-700">
-                          {formatTournamentSystem(tournament.system)}
-                        </p>
-                        <h2 className="mt-3 text-2xl font-semibold text-stone-950">
-                          {tournament.title}
-                        </h2>
-                      </div>
-                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
+                  <div className="card-body">
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="card-cat">
+                        {formatTournamentSystem(tournament.system)}
+                      </span>
+                      <span
+                        className="shrink-0 rounded-sm px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]"
+                        style={{
+                          fontFamily: "var(--font-poster)",
+                          background: isHistorical
+                            ? "var(--color-navy)"
+                            : "var(--color-stage)",
+                          color: "var(--color-cream)",
+                        }}
+                      >
                         {formatTournamentStatus(status)}
                       </span>
                     </div>
 
-                    <p className="mt-3 text-sm leading-6 text-stone-600">
+                    <h2
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontSize: "28px",
+                        lineHeight: 1.02,
+                        margin: "2px 0 0",
+                      }}
+                    >
+                      {tournament.title}
+                    </h2>
+
+                    <p
+                      className="text-sm leading-6"
+                      style={{ color: "#3a3a3a", margin: "2px 0 0" }}
+                    >
                       {tournament.recap ?? tournament.description}
                     </p>
 
-                    <div className="mt-5 grid gap-3 text-sm text-stone-700 sm:grid-cols-3">
-                      <p className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-emerald-700" />
+                    <div
+                      className="mt-3 grid gap-2 border-t pt-3 text-sm sm:grid-cols-3"
+                      style={{ borderColor: "rgba(26,26,26,0.12)" }}
+                    >
+                      <span className="flex items-center gap-2">
+                        <Users className="h-4 w-4" style={{ color: "var(--color-navy)" }} />
                         {summary.players} jugadores
-                      </p>
-                      <p className="flex items-center gap-2">
-                        <ListChecks className="h-4 w-4 text-emerald-700" />
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <ListChecks className="h-4 w-4" style={{ color: "var(--color-navy)" }} />
                         {tournament.roundsPlanned} rondas
-                      </p>
-                      <p className="flex items-center gap-2">
-                        <CalendarDays className="h-4 w-4 text-emerald-700" />
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <CalendarDays className="h-4 w-4" style={{ color: "var(--color-navy)" }} />
                         {tournament.startsAt}
-                      </p>
+                      </span>
                     </div>
 
-                    <div className="mt-6 flex flex-wrap gap-4">
-                      {isHistorical ? (
-                        <Link
-                          className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-800"
-                          href={`/ajedrez/torneos/${tournament.slug}`}
-                        >
-                          Ver torneo
-                          <ArrowRight className="h-4 w-4" aria-hidden />
-                        </Link>
-                      ) : (
-                        <Link
-                          className="inline-flex items-center gap-2 text-sm font-semibold text-rose-700"
-                          href={`/ajedrez/torneos/live/${tournament.id}`}
-                        >
-                          Ver en vivo
-                          <ArrowRight className="h-4 w-4" aria-hidden />
-                        </Link>
-                      )}
-                    </div>
+                    <span
+                      className="mt-4 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] transition-transform group-hover:gap-3"
+                      style={{
+                        fontFamily: "var(--font-poster)",
+                        color: isHistorical
+                          ? "var(--color-navy)"
+                          : "var(--color-stage)",
+                      }}
+                    >
+                      {isHistorical ? "Ver torneo" : "Ver en vivo"}
+                      <ArrowRight className="h-4 w-4" aria-hidden />
+                    </span>
                   </div>
-                </article>
+                </Link>
               );
             })}
           </div>
 
-          <div className="mt-8 rounded-lg border border-stone-200 bg-white p-6">
-            <Trophy className="h-5 w-5 text-emerald-700" aria-hidden />
-            <h2 className="mt-3 text-2xl font-semibold text-stone-950">
+          {/* Nota institucional */}
+          <div
+            className="mt-8 border-2 p-6 sm:p-7"
+            style={{
+              background: "var(--color-cream)",
+              borderColor: "var(--color-ink)",
+              boxShadow: "var(--shadow-card)",
+            }}
+          >
+            <Trophy className="h-6 w-6" style={{ color: "var(--color-marquee)" }} aria-hidden />
+            <h2
+              className="mt-3"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "26px",
+                lineHeight: 1,
+              }}
+            >
               Lunes de ajedrez
             </h2>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-600">
+            <p
+              className="mt-3 max-w-3xl text-sm leading-6"
+              style={{ fontFamily: "var(--font-body)", color: "#3a3a3a" }}
+            >
               Los torneos oficiales son publicados por el restaurante. Los
-              torneos casuales por link se mantendran separados para no
+              torneos casuales por link se mantendrán separados para no
               confundirse con eventos oficiales de Azotea Salcajá.
             </p>
           </div>
