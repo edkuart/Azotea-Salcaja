@@ -207,6 +207,8 @@ model Event {
   startsAt           DateTime      @map("starts_at")
   endsAt             DateTime?     @map("ends_at")
   locationLabel      String?       @map("location_label")
+  locationAddress    String?       @map("location_address")
+  locationMapsUrl    String?       @map("location_maps_url")
   imageId            String?       @map("image_id")
   coverImageUrl      String?       @map("cover_image_url")
   status             PublishStatus @default(draft)

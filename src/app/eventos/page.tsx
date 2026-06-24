@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, Trophy } from "lucide-react";
+import { CalendarDays, MapPin, Trophy } from "lucide-react";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Section } from "@/components/public/Section";
 import { db } from "@/lib/db";
+import { restaurantInfo } from "@/modules/restaurant/public-data";
 
 export const dynamic = "force-dynamic";
 
@@ -37,25 +38,37 @@ export default async function EventsPage() {
     <PublicLayout>
       <main>
         <Section>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
+          <span className="section-label" style={{ color: "var(--color-stage)" }}>
             Actividades
-          </p>
-          <h1 className="mt-3 text-4xl font-semibold text-stone-950">
+          </span>
+          <h1
+            className="mt-4"
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "var(--text-4xl)",
+              lineHeight: 0.95,
+            }}
+          >
             Eventos y comunidad
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-stone-700">
+          <p
+            className="mt-4 max-w-2xl leading-7"
+            style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-lg)", color: "#3a3a3a" }}
+          >
             Espacios para comer, reunirse y participar en actividades locales.
           </p>
         </Section>
 
         <Section className="pt-0">
           {events.length === 0 ? (
-            <p className="text-sm text-stone-500">
+            <p className="text-sm" style={{ color: "#5a5a5a" }}>
               No hay eventos publicados por el momento.
             </p>
           ) : (
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {events.map((event) => {
+                const locationLabel = event.locationLabel || restaurantInfo.name;
+                const locationAddress = event.locationAddress || restaurantInfo.shortAddress;
                 const dateStr = event.startsAt.toLocaleDateString("es", {
                   weekday: "long",
                   day: "numeric",
@@ -71,48 +84,61 @@ export default async function EventsPage() {
                   <Link
                     key={event.id}
                     href={`/eventos/${event.slug}`}
-                    className="group overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm transition hover:shadow-md"
+                    className="product-card group no-underline"
+                    style={{ color: "var(--color-ink)" }}
                   >
                     <div
-                      className="flex h-52 items-center justify-center bg-stone-100"
+                      className="card-img flex items-center justify-center"
                       style={
                         event.coverImageUrl
-                          ? {
-                              backgroundImage: `url(${event.coverImageUrl})`,
-                              backgroundPosition: "center",
-                              backgroundSize: "cover",
-                            }
-                          : undefined
+                          ? { backgroundImage: `url(${event.coverImageUrl})` }
+                          : { background: "var(--color-grain)" }
                       }
                     >
                       {!event.coverImageUrl && (
-                        <CalendarDays className="h-12 w-12 text-stone-300" />
+                        <CalendarDays className="h-12 w-12" style={{ color: "rgba(26,26,26,0.22)" }} />
                       )}
                     </div>
-                    <div className="p-5">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-700">
-                        {TYPE_LABEL[event.type] ?? event.type}
-                      </p>
-                      <h2 className="mt-2 text-xl font-semibold text-stone-950 group-hover:text-emerald-700 transition-colors">
+                    <div className="card-body">
+                      <span className="card-cat">{TYPE_LABEL[event.type] ?? event.type}</span>
+                      <h2
+                        style={{
+                          fontFamily: "var(--font-display)",
+                          fontSize: "24px",
+                          lineHeight: 1.04,
+                          margin: "2px 0 0",
+                        }}
+                      >
                         {event.title}
                       </h2>
-                      <p className="mt-2 flex items-center gap-2 text-sm text-stone-500 capitalize">
-                        <CalendarDays className="h-4 w-4 text-emerald-700 shrink-0" />
+                      <p className="mt-1 flex items-center gap-2 text-sm capitalize" style={{ color: "#5a5a5a" }}>
+                        <CalendarDays className="h-4 w-4 shrink-0" style={{ color: "var(--color-navy)" }} />
                         {dateStr} · {timeStr}
                       </p>
-                      {event.locationLabel && (
-                        <p className="mt-1 text-sm text-stone-500">
-                          {event.locationLabel}
+                      {(locationLabel || locationAddress) && (
+                        <p className="flex items-start gap-2 text-sm" style={{ color: "#5a5a5a" }}>
+                          <MapPin className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "var(--color-navy)" }} />
+                          <span>
+                            <span className="font-medium" style={{ color: "var(--color-ink)" }}>
+                              {locationLabel}
+                            </span>
+                            {locationAddress && (
+                              <span className="block leading-5">{locationAddress}</span>
+                            )}
+                          </span>
                         </p>
                       )}
                       {event.linkedTournamentId && (
-                        <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-amber-700">
+                        <p
+                          className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.1em]"
+                          style={{ fontFamily: "var(--font-poster)", color: "var(--color-marquee)" }}
+                        >
                           <Trophy className="h-3.5 w-3.5" />
                           Incluye torneo de ajedrez
                         </p>
                       )}
                       {event.description && (
-                        <p className="mt-3 line-clamp-3 text-sm leading-6 text-stone-600">
+                        <p className="mt-1 line-clamp-3 text-sm leading-6" style={{ color: "#3a3a3a" }}>
                           {event.description}
                         </p>
                       )}
