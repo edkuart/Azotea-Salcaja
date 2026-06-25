@@ -55,7 +55,7 @@ export default function AdminCategoriesPage() {
           <form className="mt-4 grid gap-4">
             <TextField label="Nombre" placeholder="Ej. Postres" />
             <TextField label="Orden" placeholder="4" type="number" />
-            <button className="h-11 rounded-md bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800">
+            <button className="h-11 rounded-md bg-stone-950 px-4 text-sm font-semibold text-white transition hover:bg-stone-800">
               Guardar categoria
             </button>
           </form>

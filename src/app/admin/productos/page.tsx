@@ -52,7 +52,7 @@ export default function AdminProductsPage() {
                   <td className="py-4 pr-4 text-stone-700">
                     {product.category}
                   </td>
-                  <td className="py-4 pr-4 font-semibold text-emerald-800">
+                  <td className="py-4 pr-4 font-semibold text-[var(--color-ink)]">
                     {product.price}
                   </td>
                   <td className="py-4 pr-4">
@@ -63,7 +63,7 @@ export default function AdminProductsPage() {
                   </td>
                   <td className="py-4 pr-4">
                     <Link
-                      className="font-semibold text-emerald-800"
+                      className="font-semibold text-[var(--color-stage)]"
                       href={`/admin/productos/${product.id}`}
                     >
                       Editar

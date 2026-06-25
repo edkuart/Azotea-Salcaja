@@ -38,7 +38,7 @@ export default function AdminRestaurantPage() {
               defaultValue={adminRestaurantProfile.mapsUrl}
               label="Google Maps"
             />
-            <button className="h-11 rounded-md bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800 sm:w-fit">
+            <button className="h-11 rounded-md bg-stone-950 px-4 text-sm font-semibold text-white transition hover:bg-stone-800 sm:w-fit">
               Guardar informacion
             </button>
           </form>

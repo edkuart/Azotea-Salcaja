@@ -85,7 +85,7 @@ export default async function AdminEventsPage() {
               )}
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rose-700">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-stage)]">
                   {TYPE_LABEL[event.type] ?? event.type}
                 </p>
                 <h2 className="mt-1 text-lg font-semibold text-stone-950">
