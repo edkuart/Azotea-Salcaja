@@ -311,7 +311,7 @@ export function TournamentManager({
                 padding: "12px 4px 11px",
                 textAlign: "center",
                 color: active ? "var(--color-ink)" : "rgba(26,26,26,0.4)",
-                borderBottom: active ? "3px solid var(--color-stage)" : "3px solid transparent",
+                borderBottom: active ? "3px solid var(--color-navy)" : "3px solid transparent",
                 background: active ? "var(--color-grain)" : "transparent",
                 cursor: "pointer",
                 whiteSpace: "nowrap",
@@ -470,7 +470,7 @@ function PlayersTab({
               textAlign: "center",
             }}
           >
-            <p style={{ fontFamily: "var(--font-display)", fontSize: 36, lineHeight: 0.95, color: "var(--color-stage)" }}>{value}</p>
+            <p style={{ fontFamily: "var(--font-display)", fontSize: 36, lineHeight: 0.95, color: "var(--color-navy)" }}>{value}</p>
             <p style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.16em", fontSize: 9.5, opacity: 0.7, marginTop: 4 }}>{label}</p>
           </div>
         ))}
@@ -656,7 +656,7 @@ function RoundsTab({
     ? "var(--color-emerald)"
     : blocker && !allRoundsGenerated
     ? "var(--color-amber)"
-    : "var(--color-stage)";
+    : "var(--color-navy)";
 
   const roundLabel = isFinished
     ? `${t.roundsPlanned}`
@@ -853,7 +853,7 @@ function GameRow({
   if (game.isBye) {
     return (
       <div style={{ ...rowBorder, display: "grid", gridTemplateColumns: "22px 1fr", gap: 8, padding: "10px 12px", alignItems: "center" }}>
-        <span style={{ fontFamily: "var(--font-poster)", fontSize: 18, color: "var(--color-stage)", textAlign: "center" }}>
+        <span style={{ fontFamily: "var(--font-poster)", fontSize: 18, color: "var(--color-navy)", textAlign: "center" }}>
           B
         </span>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -869,7 +869,7 @@ function GameRow({
   return (
     <div style={{ ...rowBorder, display: "grid", gridTemplateColumns: "22px 1fr", gap: 8, padding: "10px 12px", alignItems: "center" }}>
       {/* Board number */}
-      <span style={{ fontFamily: "var(--font-poster)", fontSize: 18, color: "var(--color-stage)", textAlign: "center", lineHeight: 1 }}>
+      <span style={{ fontFamily: "var(--font-poster)", fontSize: 18, color: "var(--color-navy)", textAlign: "center", lineHeight: 1 }}>
         {game.boardNumber}
       </span>
 
@@ -1001,7 +1001,7 @@ function StandingsTab({
               >
                 <p style={{ fontFamily: "var(--font-poster)", fontSize: 9.5, opacity: 0.7, textTransform: "uppercase", letterSpacing: "0.14em" }}>{i + 1}°</p>
                 <p style={{ fontFamily: "var(--font-body)", fontSize: 12, fontWeight: 600, marginTop: 2, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.name}</p>
-                <p style={{ fontFamily: "ui-monospace, monospace", fontSize: 13, fontWeight: 700, color: "var(--color-stage)", marginTop: 2 }}>{s.points}</p>
+                <p style={{ fontFamily: "ui-monospace, monospace", fontSize: 13, fontWeight: 700, color: "var(--color-navy)", marginTop: 2 }}>{s.points}</p>
               </div>
             );
           })}
@@ -1028,12 +1028,12 @@ function StandingsTab({
           <tbody>
             {standings.map((s, i) => (
               <tr key={s.playerId} style={{ borderBottom: "1px dashed rgba(26,26,26,0.18)", borderLeft: i < 3 ? `4px solid ${medalColors[i]!.border}` : "4px solid transparent" }}>
-                <td style={{ padding: "8px 10px", fontFamily: "var(--font-poster)", fontSize: 13, color: "var(--color-stage)" }}>{i + 1}</td>
+                <td style={{ padding: "8px 10px", fontFamily: "var(--font-poster)", fontSize: 13, color: "var(--color-navy)" }}>{i + 1}</td>
                 <td style={{ padding: "8px 10px" }}>
                   <p style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600 }}>{s.name}</p>
                   {s.rating && <p style={{ fontFamily: "ui-monospace, monospace", fontSize: 9, color: "#888", letterSpacing: "0.1em" }}>{s.rating}</p>}
                 </td>
-                <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "ui-monospace, monospace", fontSize: 14, fontWeight: 700, color: "var(--color-stage)" }}>{s.points}</td>
+                <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "ui-monospace, monospace", fontSize: 14, fontWeight: 700, color: "var(--color-navy)" }}>{s.points}</td>
                 <td style={{ padding: "8px 10px", textAlign: "center", fontFamily: "ui-monospace, monospace", fontSize: 10, color: "#666" }}>{s.wins}-{s.draws}-{s.losses}</td>
                 {t.rounds.map((round) => {
                   const game = round.games.find((g) => g.whitePlayerId === s.playerId || g.blackPlayerId === s.playerId);

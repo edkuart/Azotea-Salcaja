@@ -232,7 +232,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
                       fontWeight: 500,
                       color: "var(--color-cream)",
                       textDecoration: "none",
-                      borderLeft: active ? "4px solid var(--color-stage)" : "4px solid transparent",
+                      borderLeft: active
+                        ? `4px solid ${item.isChess ? "var(--color-marquee)" : "var(--color-stage)"}`
+                        : "4px solid transparent",
                       background: active ? "rgba(255,253,208,0.10)" : "transparent",
                       transition: "background 0.12s",
                     }}
