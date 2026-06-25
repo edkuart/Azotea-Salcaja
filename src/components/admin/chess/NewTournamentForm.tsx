@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { restaurantInfo } from "@/modules/restaurant/public-data";
 import type {
   ChessPlayer,
   TieBreakCode,
@@ -40,7 +41,7 @@ const DEFAULT_RECURRING_PLAYERS: RecurringPlayer[] = [
 const MONDAY_TEMPLATE = {
   title: "Rapid nocturno de lunes",
   rounds: 5,
-  location: "Azotea Salcajá",
+  location: `${restaurantInfo.name} · ${restaurantInfo.shortAddress}`,
   system: "swiss" as TournamentSystem,
   tiebreaks: "formal" as const,
 };
@@ -420,7 +421,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
     <form onSubmit={handleSubmit}>
       {/* ── Datos básicos ── */}
       <p style={SH}>
-        <span style={{ width: 18, height: 2, background: "var(--color-stage)", display: "block", flexShrink: 0 }} />
+        <span style={{ width: 18, height: 2, background: "var(--color-navy)", display: "block", flexShrink: 0 }} />
         Datos básicos
       </p>
 
@@ -432,7 +433,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
           style={INPUT}
           defaultValue={isMondayTemplate ? MONDAY_TEMPLATE.title : ""}
           placeholder="Copa de invierno 2026"
-          onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; e.currentTarget.style.background = "var(--color-cream)"; }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; e.currentTarget.style.background = "var(--color-cream)"; }}
           onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.background = "var(--color-grain)"; }}
         />
         <p style={{ fontFamily: "monospace", fontSize: 10, letterSpacing: "0.1em", color: "#666", marginTop: 3 }}>
@@ -450,7 +451,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
             value={startsAtDate}
             onChange={(e) => setStartsAtDate(e.currentTarget.value)}
             style={INPUT}
-            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
             onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
           />
         </div>
@@ -464,7 +465,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
             defaultValue={isMondayTemplate ? MONDAY_TEMPLATE.rounds : 5}
             required
             style={INPUT}
-            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
             onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
           />
         </div>
@@ -476,14 +477,14 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
           name="location"
           style={INPUT}
           defaultValue={MONDAY_TEMPLATE.location}
-          onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
           onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
         />
       </div>
 
       {/* ── Sistema ── */}
       <p style={SH}>
-        <span style={{ width: 18, height: 2, background: "var(--color-stage)", display: "block", flexShrink: 0 }} />
+        <span style={{ width: 18, height: 2, background: "var(--color-navy)", display: "block", flexShrink: 0 }} />
         Sistema
       </p>
 
@@ -499,7 +500,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
                 border: "2px solid var(--color-ink)",
                 background: selected ? "var(--color-ink)" : "var(--color-grain)",
                 color: selected ? "var(--color-cream)" : "var(--color-ink)",
-                borderLeft: selected ? "5px solid var(--color-stage)" : "2px solid var(--color-ink)",
+                borderLeft: selected ? "5px solid var(--color-marquee)" : "2px solid var(--color-ink)",
                 padding: selected ? "10px 12px 12px 9px" : "10px 12px 12px",
                 textAlign: "left" as const,
                 cursor: "pointer",
@@ -522,7 +523,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
 
       {/* ── Inscripción (opcional) ── */}
       <p style={SH}>
-        <span style={{ width: 18, height: 2, background: "var(--color-stage)", display: "block", flexShrink: 0 }} />
+        <span style={{ width: 18, height: 2, background: "var(--color-navy)", display: "block", flexShrink: 0 }} />
         Inscripción <span style={{ fontFamily: "var(--font-body)", textTransform: "none", letterSpacing: 0, fontSize: 11, opacity: 0.55 }}>(opcional)</span>
       </p>
 
@@ -533,7 +534,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
             name="timeControl"
             style={INPUT}
             placeholder="Ej. 10+0"
-            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
             onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
           />
         </div>
@@ -543,7 +544,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
             name="entryFee"
             style={INPUT}
             placeholder="Ej. Q30"
-            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
             onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
           />
         </div>
@@ -555,7 +556,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
           name="registrationDeadline"
           type="date"
           style={INPUT}
-          onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
           onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
         />
       </div>
@@ -571,7 +572,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
             onKeyDown={handleIncludeKeyDown}
             placeholder="Ej. Papas"
             style={{ ...INPUT, flex: 1 }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
             onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
           />
           <button
@@ -633,14 +634,14 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
           rows={3}
           placeholder={"Ej. Banco Industrial\nCuenta: 2230079290\nEnviar comprobante."}
           style={{ ...INPUT, resize: "vertical" as const }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
           onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
         />
       </div>
 
       {/* ── Premios por categoría (opcional) ── */}
       <p style={SH}>
-        <span style={{ width: 18, height: 2, background: "var(--color-stage)", display: "block", flexShrink: 0 }} />
+        <span style={{ width: 18, height: 2, background: "var(--color-navy)", display: "block", flexShrink: 0 }} />
         Premios <span style={{ fontFamily: "var(--font-body)", textTransform: "none", letterSpacing: 0, fontSize: 11, opacity: 0.55 }}>(opcional)</span>
       </p>
 
@@ -656,7 +657,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
               onChange={(e) => updateCategoryName(ci, e.currentTarget.value)}
               placeholder="Categoría (ej. Libre, Sub-18)"
               style={{ ...INPUT, flex: 1, fontWeight: 600 }}
-              onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
               onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
             />
             <button
@@ -691,7 +692,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
                   onChange={(e) => updateAward(ci, pi, e.currentTarget.value)}
                   placeholder="Premio (ej. Trofeo + Q100)"
                   style={{ ...INPUT, flex: 1 }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
                   onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
                 />
                 <button
@@ -763,7 +764,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
 
       {/* ── Jugadores recurrentes ── */}
       <p style={SH}>
-        <span style={{ width: 18, height: 2, background: "var(--color-stage)", display: "block", flexShrink: 0 }} />
+        <span style={{ width: 18, height: 2, background: "var(--color-navy)", display: "block", flexShrink: 0 }} />
         Jugadores frecuentes
       </p>
 
@@ -779,7 +780,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
             onChange={(e) => setNewPlayerName(e.currentTarget.value)}
             onKeyDown={handleRecurringKeyDown}
             style={{ ...INPUT, flex: 1 }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
             onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
           />
           <input
@@ -791,7 +792,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
             min={100}
             max={3000}
             style={{ ...INPUT, width: 90 }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(204,45,48,0.18)"; }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
             onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
           />
         </div>
@@ -833,7 +834,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
                   borderBottom: index === recurringPlayers.length - 1 ? "none" : "1px dashed rgba(26,26,26,0.18)",
                 }}
               >
-                <span style={{ fontFamily: "var(--font-poster)", fontSize: 14, color: "var(--color-stage)", textAlign: "center" }}>
+                <span style={{ fontFamily: "var(--font-poster)", fontSize: 14, color: "var(--color-navy)", textAlign: "center" }}>
                   {index + 1}
                 </span>
                 <span style={{ minWidth: 0 }}>
@@ -892,7 +893,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
 
       {/* ── Desempates ── */}
       <p style={SH}>
-        <span style={{ width: 18, height: 2, background: "var(--color-stage)", display: "block", flexShrink: 0 }} />
+        <span style={{ width: 18, height: 2, background: "var(--color-navy)", display: "block", flexShrink: 0 }} />
         Desempates
       </p>
 
@@ -906,7 +907,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
               onClick={() => setTiebreaks(preset)}
               style={{
                 border: "2px solid var(--color-ink)",
-                background: selected ? "var(--color-stage)" : "var(--color-grain)",
+                background: selected ? "var(--color-navy)" : "var(--color-grain)",
                 color: selected ? "var(--color-cream)" : "var(--color-ink)",
                 padding: "10px 12px",
                 cursor: "pointer",
@@ -934,7 +935,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
                     style={{
                       position: "absolute",
                       inset: 3,
-                      background: "var(--color-stage)",
+                      background: "var(--color-navy)",
                       borderRadius: "50%",
                       display: "block",
                     }}
