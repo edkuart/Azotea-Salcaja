@@ -25,8 +25,41 @@ export default function AdminProductsPage() {
         title="Productos"
       />
 
-      <AdminCard>
-        <div className="overflow-x-auto">
+      {/* Móvil: tarjetas apiladas (la tabla se desbordaba) */}
+      <div className="grid gap-3 md:hidden">
+        {adminProducts.map((product) => (
+          <div
+            key={product.id}
+            className="rounded-sm border-2 border-[var(--color-ink)] bg-white p-4 shadow-[3px_3px_0_var(--color-ink)]"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="font-semibold text-stone-950">{product.name}</h3>
+              <span className="shrink-0 font-semibold text-[var(--color-ink)]">
+                {product.price}
+              </span>
+            </div>
+            <p className="mt-1 text-sm text-stone-600">{product.description}</p>
+            <p className="mt-2 text-xs uppercase tracking-[0.12em] text-stone-500">
+              {product.category}
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <StatusPill label={product.status} />
+              <StatusPill label={product.availability} />
+              <Link
+                className="ml-auto text-sm font-semibold text-[var(--color-stage)]"
+                href={`/admin/productos/${product.id}`}
+              >
+                Editar
+              </Link>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Escritorio: tabla */}
+      <div className="hidden md:block">
+        <AdminCard>
+          <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] text-left text-sm">
             <thead className="border-b border-stone-200 text-xs uppercase tracking-[0.12em] text-stone-500">
               <tr>
@@ -73,8 +106,9 @@ export default function AdminProductsPage() {
               ))}
             </tbody>
           </table>
-        </div>
-      </AdminCard>
+          </div>
+        </AdminCard>
+      </div>
     </AdminShell>
   );
 }
