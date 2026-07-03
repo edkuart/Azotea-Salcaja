@@ -459,7 +459,7 @@ function PlayersTab({
   return (
     <div style={{ display: "grid", gap: 16 }}>
       {/* Summary strip */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 8 }}>
+      <div style={{ minWidth: 0, display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 8 }}>
         {[
           { label: "Total",   value: t.players.length },
           { label: "Activos", value: active },
@@ -483,7 +483,7 @@ function PlayersTab({
       </div>
 
       {/* Add player form */}
-      <div style={{ border: "2px solid var(--color-ink)", background: "var(--color-grain)", padding: 16 }}>
+      <div style={{ minWidth: 0, border: "2px solid var(--color-ink)", background: "var(--color-grain)", padding: 16 }}>
         <p style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.18em", fontSize: 11, marginBottom: 10 }}>
           Agregar jugador
         </p>
@@ -495,7 +495,7 @@ function PlayersTab({
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              style={{ ...inputStyle, flex: 1 }}
+              style={{ ...inputStyle, flex: 1, minWidth: 0 }}
               onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-stage)"; }}
               onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; }}
             />
@@ -542,7 +542,7 @@ function PlayersTab({
       </div>
 
       {/* Player list */}
-      <div className="rounded-sm border-2 border-[var(--color-ink)] bg-white">
+      <div className="min-w-0 rounded-sm border-2 border-[var(--color-ink)] bg-white">
         {t.players.length === 0 ? (
           <div className="p-8 text-center text-sm text-stone-500">
             Sin jugadores todavía. Agrega al menos 2 para iniciar.
@@ -1228,7 +1228,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
   return (
     <div className="grid gap-5">
       {/* Ficha técnica */}
-      <div className="rounded-sm border-2 border-[var(--color-ink)] bg-white">
+      <div className="min-w-0 rounded-sm border-2 border-[var(--color-ink)] bg-white">
         <div className="border-b border-stone-100 px-5 py-4">
           <h2 className="font-semibold text-stone-950">{t.title}</h2>
           {t.description && <p className="mt-1 text-sm text-stone-500">{t.description}</p>}
@@ -1236,8 +1236,8 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
         <dl className="divide-y divide-stone-100">
           {rows.map(({ label, value }) => (
             <div key={label} className="flex justify-between gap-3 px-5 py-3.5">
-              <dt className="text-sm text-stone-500">{label}</dt>
-              <dd className="text-right text-sm font-medium text-stone-950">{value}</dd>
+              <dt className="shrink-0 text-sm text-stone-500">{label}</dt>
+              <dd className="min-w-0 break-words text-right text-sm font-medium text-stone-950">{value}</dd>
             </div>
           ))}
         </dl>
@@ -1259,7 +1259,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
       </div>
 
       {/* Inscripción y tiempo */}
-      <div className="rounded-sm border-2 border-[var(--color-ink)] bg-white">
+      <div className="min-w-0 rounded-sm border-2 border-[var(--color-ink)] bg-white">
         <div className="border-b border-stone-100 px-5 py-4">
           <h3 className="font-semibold text-stone-950">Inscripción y tiempo de juego</h3>
         </div>
@@ -1316,7 +1316,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
                 }
               }}
               placeholder="Ej. Papas"
-              className="h-9 flex-1 rounded-md border border-stone-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
+              className="h-9 min-w-0 flex-1 rounded-md border border-stone-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
             />
             <button
               type="button"
@@ -1365,7 +1365,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
       </div>
 
       {/* Premios por categoría */}
-      <div className="rounded-sm border-2 border-[var(--color-ink)] bg-white">
+      <div className="min-w-0 rounded-sm border-2 border-[var(--color-ink)] bg-white">
         <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
           <div>
             <h3 className="font-semibold text-stone-950">Premios por categoría</h3>
@@ -1391,7 +1391,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
                     value={cat.name}
                     onChange={(e) => updateCategoryName(ci, e.target.value)}
                     placeholder="Categoría (ej. Libre)"
-                    className="h-8 flex-1 rounded border border-stone-200 px-2 text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-stone-400"
+                    className="h-8 min-w-0 flex-1 rounded border border-stone-200 px-2 text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-stone-400"
                   />
                   <button
                     type="button"
@@ -1411,7 +1411,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
                         value={place.award}
                         onChange={(e) => updateCategoryAward(ci, pi, e.target.value)}
                         placeholder="Premio (ej. Trofeo + Q100)"
-                        className="h-8 flex-1 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+                        className="h-8 min-w-0 flex-1 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
                       />
                       <button
                         type="button"
@@ -1452,14 +1452,14 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
       </div>
 
       {/* Galería */}
-      <div className="rounded-sm border-2 border-[var(--color-ink)] bg-white">
+      <div className="min-w-0 rounded-sm border-2 border-[var(--color-ink)] bg-white">
         <div className="border-b border-stone-100 px-5 py-4">
           <h3 className="font-semibold text-stone-950">Galería de imágenes</h3>
           <p className="mt-0.5 text-xs text-stone-400">Fotos del lugar, trofeos, ambiente. Se muestran en la página pública.</p>
         </div>
         <div className="p-5 grid gap-4">
           {/* Subir imagen */}
-          <div className="flex gap-2">
+          <div className="flex min-w-0 gap-2">
             <input
               ref={galleryFileRef}
               type="file"
@@ -1485,7 +1485,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
               value={galleryInput}
               onChange={(e) => setGalleryInput(e.target.value)}
               placeholder="o pega una URL de imagen…"
-              className="h-9 flex-1 rounded-md border border-stone-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+              className="h-9 min-w-0 flex-1 rounded-md border border-stone-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -1541,7 +1541,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
       </div>
 
       {/* Documentos (PDF) */}
-      <div className="rounded-sm border-2 border-[var(--color-ink)] bg-white">
+      <div className="min-w-0 rounded-sm border-2 border-[var(--color-ink)] bg-white">
         <div className="border-b border-stone-100 px-5 py-4">
           <h3 className="font-semibold text-stone-950">Documentos (PDF)</h3>
           <p className="mt-0.5 text-xs text-stone-400">Bases o información formal en PDF. Se muestran como descargas en la página pública del evento vinculado.</p>
@@ -1573,13 +1573,13 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
           {(t.attachments ?? []).length > 0 && (
             <div className="grid gap-2">
               {(t.attachments ?? []).map((doc, i) => (
-                <div key={i} className="flex items-center gap-2 rounded-sm border border-stone-200 px-3 py-2">
+                <div key={i} className="flex min-w-0 items-center gap-2 rounded-sm border border-stone-200 px-3 py-2">
                   <FileText className="h-4 w-4 shrink-0 text-stone-500" aria-hidden />
                   <input
                     value={doc.name}
                     onChange={(e) => updateAttachmentName(i, e.target.value)}
                     placeholder="Nombre del documento"
-                    className="h-8 flex-1 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+                    className="h-8 min-w-0 flex-1 rounded border border-stone-200 px-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
                   />
                   <a href={doc.url} target="_blank" rel="noreferrer" className="text-xs font-semibold text-stone-500 underline">
                     Ver
@@ -1600,7 +1600,7 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
       </div>
 
       {/* Reglamento */}
-      <div className="rounded-sm border-2 border-[var(--color-ink)] bg-white">
+      <div className="min-w-0 rounded-sm border-2 border-[var(--color-ink)] bg-white">
         <div className="border-b border-stone-100 px-5 py-4">
           <h3 className="font-semibold text-stone-950">Reglamento y bases</h3>
           <p className="mt-0.5 text-xs text-stone-400">Visible en la página pública del evento vinculado.</p>
