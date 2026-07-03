@@ -396,6 +396,26 @@ model ChessEnrollment {
   @@map("chess_enrollments")
 }
 
+// Jugadores del club (roster permanente, independiente de torneos).
+// Al inscribirlos en un torneo se COPIAN sus datos al blob del torneo,
+// igual que el resto de la información de torneos (sin FK).
+model ClubPlayer {
+  id        String   @id @default(cuid())
+  name      String
+  rating    Int?
+  fideId    String?  @map("fide_id")
+  title     String?
+  sex       String?
+  birthDate String?  @map("birth_date")
+  photoUrl  String?  @map("photo_url")
+  notes     String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("club_players")
+}
+
 model TournamentBlob {
   id        String   @id
   data      Json

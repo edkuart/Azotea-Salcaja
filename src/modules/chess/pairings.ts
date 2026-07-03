@@ -1,4 +1,4 @@
-import { calculateStandings, getColorBalance, getNextRoundBlocker, hasPlayerHadBye, havePlayersMet } from "./standings";
+import { calculateStandings, getColorBalance, getNextRoundBlocker, hasPlayerHadBye } from "./standings";
 import type {
   ChessGame,
   ChessPlayer,
@@ -141,6 +141,76 @@ function playersWhoHavePlayed(tournament: ChessTournament): Set<string> {
   return played;
 }
 
+function pairKey(idA: string, idB: string) {
+  return idA < idB ? `${idA}|${idB}` : `${idB}|${idA}`;
+}
+
+/** Parejas que ya se enfrentaron, precalculadas para consultarlas en O(1)
+ *  dentro del backtracking. */
+function buildMetPairs(tournament: ChessTournament): Set<string> {
+  const met = new Set<string>();
+  for (const round of tournament.rounds) {
+    for (const game of round.games) {
+      if (game.whitePlayerId && game.blackPlayerId) {
+        met.add(pairKey(game.whitePlayerId, game.blackPlayerId));
+      }
+    }
+  }
+  return met;
+}
+
+type PlayerPair = { a: PairingPlayer; b: PairingPlayer; repeat: boolean };
+
+function comparePairingPlayers(a: PairingPlayer, b: PairingPlayer) {
+  return b.points - a.points || a.seed - b.seed;
+}
+
+/** Emparejamiento con backtracking: recorre la lista en orden suizo y prueba
+ *  rivales hasta cubrir a todos sin exceder `maxRepeats` repeticiones. A
+ *  diferencia del pareo voraz, si los últimos de la cola quedan trabados
+ *  (ya se enfrentaron) reacomoda las mesas anteriores en vez de forzar la
+ *  repetición. `budget` acota los pasos totales por si la búsqueda explota. */
+function matchWithBacktracking(
+  ordered: PairingPlayer[],
+  hasMet: (a: PairingPlayer, b: PairingPlayer) => boolean,
+  maxRepeats: number,
+  budget: { steps: number },
+): PlayerPair[] | null {
+  if (ordered.length < 2) {
+    return ordered.length === 0 ? [] : null;
+  }
+
+  const [first, ...rest] = ordered;
+
+  for (let index = 0; index < rest.length; index += 1) {
+    if (budget.steps <= 0) {
+      return null;
+    }
+    budget.steps -= 1;
+
+    const candidate = rest[index];
+    const repeat = hasMet(first, candidate);
+
+    if (repeat && maxRepeats === 0) {
+      continue;
+    }
+
+    const remaining = rest.filter((_, i) => i !== index);
+    const sub = matchWithBacktracking(
+      remaining,
+      hasMet,
+      maxRepeats - (repeat ? 1 : 0),
+      budget,
+    );
+
+    if (sub) {
+      return [{ a: first, b: candidate, repeat }, ...sub];
+    }
+  }
+
+  return null;
+}
+
 export function generateSwissNextRound(tournament: ChessTournament): PairingResult {
   const blocker = getNextRoundBlocker(tournament);
 
@@ -184,33 +254,44 @@ export function generateSwissNextRound(tournament: ChessTournament): PairingResu
     };
   }
 
+  const metPairs = buildMetPairs(tournament);
+  const hasMet = (a: PairingPlayer, b: PairingPlayer) => metPairs.has(pairKey(a.id, b.id));
+  const played = playersWhoHavePlayed(tournament);
+  const isNewcomer = (player: PairingPlayer) =>
+    tournament.rounds.length > 0 && !played.has(player.id);
+
   // ── Bye: se elige aquí pero se agrega al FINAL (última mesa), para que las
-  //    partidas reales queden numeradas 1..N y el bye no desplace una mesa. ──
+  //    partidas reales queden numeradas 1..N y el bye no desplace una mesa.
+  //    Un recién incorporado no recibe bye en su ronda de entrada: jugar su
+  //    primera partida tiene prioridad sobre el punto gratis. ──
   let byePlayerId: string | undefined;
   if (pairingPlayers.length % 2 === 1) {
-    const byePlayer = [...pairingPlayers]
-      .reverse()
-      .find((player) => !hasPlayerHadBye(tournament, player.id));
+    const reversed = [...pairingPlayers].reverse();
+    const byePlayer =
+      reversed.find(
+        (player) => !hasPlayerHadBye(tournament, player.id) && !isNewcomer(player),
+      ) ??
+      reversed.find((player) => !hasPlayerHadBye(tournament, player.id)) ??
+      reversed[0];
 
-    if (byePlayer) {
-      byePlayerId = byePlayer.id;
-      pairingPlayers = pairingPlayers.filter((player) => player.id !== byePlayer.id);
-    } else {
+    if (hasPlayerHadBye(tournament, byePlayer.id)) {
       warnings.push({
         code: "bye_unavailable",
-        message: "Todos los jugadores ya recibieron bye; se asigno el ultimo posible.",
+        message: `Todos los jugadores ya recibieron bye; se repitió con ${byePlayer.name}.`,
       });
     }
+
+    byePlayerId = byePlayer.id;
+    pairingPlayers = pairingPlayers.filter((player) => player.id !== byePlayer.id);
   }
 
-  let boardNumber = 1;
+  const pairs: PlayerPair[] = [];
 
   // ── Integración de entradas tardías ──
   // Quien se inscribe con el torneo ya empezado entra con 0 puntos y caería al
   // fondo formando un bloque aislado que solo juega entre nuevos. Para evitarlo,
   // se empareja a cada nuevo con un VETERANO de bajo puntaje (de menor a mayor).
   if (tournament.rounds.length > 0) {
-    const played = playersWhoHavePlayed(tournament);
     const newcomers = pairingPlayers.filter((player) => !played.has(player.id));
 
     if (newcomers.length > 0 && newcomers.length < pairingPlayers.length) {
@@ -222,7 +303,7 @@ export function generateSwissNextRound(tournament: ChessTournament): PairingResu
 
       for (const newcomer of orderedNewcomers) {
         const unmetIndex = veterans.findIndex(
-          (vet) => !pairedIds.has(vet.id) && !havePlayersMet(tournament, newcomer.id, vet.id),
+          (vet) => !pairedIds.has(vet.id) && !hasMet(newcomer, vet),
         );
         const index =
           unmetIndex >= 0
@@ -236,50 +317,64 @@ export function generateSwissNextRound(tournament: ChessTournament): PairingResu
         const veteran = veterans[index];
         pairedIds.add(newcomer.id);
         pairedIds.add(veteran.id);
-
-        const colors = assignColors(newcomer, veteran);
-        games.push(
-          createGame(roundNumber, boardNumber, colors.whitePlayerId, colors.blackPlayerId),
-        );
-        boardNumber += 1;
+        pairs.push({ a: newcomer, b: veteran, repeat: unmetIndex < 0 });
       }
 
       pairingPlayers = pairingPlayers.filter((player) => !pairedIds.has(player.id));
     }
   }
 
-  // ── Pareo Swiss normal del resto ──
-  const unpaired = [...pairingPlayers];
+  // ── Pareo suizo del resto, con backtracking ──
+  // Primero se busca un emparejamiento sin repeticiones; solo si no existe se
+  // permite el mínimo de repeticiones necesario.
+  let matched: PlayerPair[] | null = null;
+  const maxRepeats = Math.ceil(pairingPlayers.length / 2);
 
-  while (unpaired.length > 1) {
-    const player = unpaired.shift() as PairingPlayer;
-    const opponentIndex = unpaired.findIndex(
-      (candidate) => !havePlayersMet(tournament, player.id, candidate.id),
-    );
-    const selectedIndex = opponentIndex >= 0 ? opponentIndex : 0;
-    const opponent = unpaired.splice(selectedIndex, 1)[0];
-
-    if (!opponent) {
-      break;
-    }
-
-    if (opponentIndex === -1) {
-      warnings.push({
-        code: "repeat_pairing",
-        message: `No se encontro rival nuevo para ${player.name}; se permitio repeticion.`,
-      });
-    }
-
-    const colors = assignColors(player, opponent);
-    games.push(createGame(roundNumber, boardNumber, colors.whitePlayerId, colors.blackPlayerId));
-    boardNumber += 1;
+  for (let allowed = 0; allowed <= maxRepeats && !matched; allowed += 1) {
+    matched = matchWithBacktracking(pairingPlayers, hasMet, allowed, { steps: 200_000 });
   }
 
-  if (unpaired.length === 1) {
-    warnings.push({
-      code: "unpaired_player",
-      message: `${unpaired[0].name} quedo sin pareo por configuracion inconsistente.`,
-    });
+  if (!matched) {
+    // Salvaguarda (presupuesto agotado o cantidad impar): pareo secuencial.
+    matched = [];
+    const queue = [...pairingPlayers];
+    while (queue.length > 1) {
+      const player = queue.shift() as PairingPlayer;
+      const unmetIndex = queue.findIndex((candidate) => !hasMet(player, candidate));
+      const opponent = queue.splice(Math.max(unmetIndex, 0), 1)[0];
+      matched.push({ a: player, b: opponent, repeat: unmetIndex < 0 });
+    }
+    if (queue.length === 1) {
+      warnings.push({
+        code: "unpaired_player",
+        message: `${queue[0].name} quedo sin pareo por configuracion inconsistente.`,
+      });
+    }
+  }
+
+  pairs.push(...matched);
+
+  for (const pair of pairs) {
+    if (pair.repeat) {
+      warnings.push({
+        code: "repeat_pairing",
+        message: `${pair.a.name} y ${pair.b.name} ya se habían enfrentado; no existía pareo alternativo sin repetir.`,
+      });
+    }
+  }
+
+  // ── Mesas: la partida del jugador mejor clasificado va en la mesa 1 ──
+  pairs.sort((pairX, pairY) => {
+    const leaderX = comparePairingPlayers(pairX.a, pairX.b) <= 0 ? pairX.a : pairX.b;
+    const leaderY = comparePairingPlayers(pairY.a, pairY.b) <= 0 ? pairY.a : pairY.b;
+    return comparePairingPlayers(leaderX, leaderY);
+  });
+
+  let boardNumber = 1;
+  for (const pair of pairs) {
+    const colors = assignColors(pair.a, pair.b);
+    games.push(createGame(roundNumber, boardNumber, colors.whitePlayerId, colors.blackPlayerId));
+    boardNumber += 1;
   }
 
   // ── Bye al final (última mesa) ──

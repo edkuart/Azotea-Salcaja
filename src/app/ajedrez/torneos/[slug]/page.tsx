@@ -33,8 +33,8 @@ import {
   getTournamentShareText,
 } from "@/modules/chess/publication";
 import { calculateStandings } from "@/modules/chess/standings";
-import { formatTieBreakLabel } from "@/modules/chess/tiebreaks";
 import { ImageGallery } from "@/components/media/ImageGallery";
+import { StandingsTable } from "@/components/chess/StandingsTable";
 import {
   TournamentBases,
   hasTournamentBases,
@@ -318,47 +318,12 @@ export default async function ChessTournamentDetailPage({
           <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
             <section>
               <Heading size="26px">Tabla de posiciones</Heading>
-              <div className="mt-4 overflow-x-auto border-2" style={CARD_BASE}>
-                <table className="w-full min-w-[680px] text-left text-sm">
-                  <thead
-                    className="text-xs uppercase tracking-[0.12em]"
-                    style={{
-                      fontFamily: "var(--font-poster)",
-                      background: "var(--color-navy)",
-                      color: "var(--color-cream)",
-                    }}
-                  >
-                    <tr>
-                      <th className="px-4 py-3">#</th>
-                      <th className="px-4 py-3">Jugador</th>
-                      {tieBreaks.map((code) => (
-                        <th className="px-4 py-3" key={code}>
-                          {formatTieBreakLabel(code)}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y" style={{ borderColor: "rgba(26,26,26,0.12)" }}>
-                    {standings.map((standing, index) => (
-                      <tr key={standing.playerId}>
-                        <td className="px-4 py-3 font-semibold" style={{ color: "var(--color-navy)" }}>
-                          {index + 1}
-                        </td>
-                        <td className="px-4 py-3">
-                          <p className="font-semibold text-stone-900">{standing.name}</p>
-                          <p className="mt-1 text-xs text-stone-500">
-                            {standing.wins}G {standing.draws}T {standing.losses}P
-                          </p>
-                        </td>
-                        {tieBreaks.map((code) => (
-                          <td className="px-4 py-3 font-semibold" style={{ color: "var(--color-navy)" }} key={code}>
-                            {standing.tieBreaks[code] ?? 0}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="mt-4">
+                <StandingsTable
+                  standings={standings}
+                  tieBreakCodes={tieBreaks}
+                  rounds={tournament.rounds}
+                />
               </div>
             </section>
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, Plus } from "lucide-react";
+import { CalendarDays, Plus, Users } from "lucide-react";
 
 import { AdminCard } from "@/components/admin/AdminCard";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
@@ -26,6 +26,13 @@ export default async function AdminChessTournamentsPage() {
       <AdminPageHeader
         action={
           <>
+            <Link
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-800 transition hover:bg-stone-50"
+              href="/admin/ajedrez/jugadores"
+            >
+              <Users className="h-4 w-4" aria-hidden />
+              Jugadores del club
+            </Link>
             <Link
               className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-800 transition hover:bg-stone-50"
               href="/admin/ajedrez/torneos/nuevo?plantilla=lunes"

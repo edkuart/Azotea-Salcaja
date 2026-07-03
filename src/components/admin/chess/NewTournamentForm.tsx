@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { restaurantInfo } from "@/modules/restaurant/public-data";
 import type {
   ChessPlayer,
+  ClubPlayer,
   TieBreakCode,
   TournamentSystem,
 } from "@/modules/chess/types";
@@ -22,21 +24,11 @@ const TIEBREAK_PRESETS: Record<string, TieBreakCode[]> = {
   ],
 };
 
-const RECURRING_PLAYERS_STORAGE_KEY = "az_recurring_chess_players";
-
-type RecurringPlayer = {
+/** Invitado puntual: participa en este torneo sin pertenecer al club. */
+type GuestPlayer = {
   name: string;
   rating?: number;
 };
-
-const DEFAULT_RECURRING_PLAYERS: RecurringPlayer[] = [
-  { name: "Carlos Mendez", rating: 1540 },
-  { name: "Ana Lopez", rating: 1480 },
-  { name: "Luis Garcia", rating: 1420 },
-  { name: "Sofia Perez", rating: 1390 },
-  { name: "Marco Diaz", rating: 1320 },
-  { name: "Elena Ruiz" },
-];
 
 const MONDAY_TEMPLATE = {
   title: "Rapid nocturno de lunes",
@@ -68,85 +60,37 @@ function getTodayInputValue() {
   return `${year}-${month}-${day}`;
 }
 
-function parseRecurringPlayersText(text: string): RecurringPlayer[] {
-  const seen = new Set<string>();
-
-  return text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .flatMap((line) => {
-      const [rawName, rawRating] = line.split(",");
-      const name = rawName?.trim();
-
-      if (!name) return [];
-
-      const key = name.toLowerCase();
-      if (seen.has(key)) return [];
-      seen.add(key);
-
-      const ratingValue = rawRating
-        ? Number.parseInt(rawRating.replace(/[^\d]/g, ""), 10)
-        : Number.NaN;
-
-      return [
-        {
-          name,
-          rating: Number.isFinite(ratingValue) ? ratingValue : undefined,
-        },
-      ];
-    });
-}
-
-function normalizeRecurringPlayers(value: unknown): RecurringPlayer[] {
-  if (!Array.isArray(value)) return [];
-
-  const seen = new Set<string>();
-  return value.flatMap((player) => {
-    if (!player || typeof player !== "object") return [];
-
-    const record = player as { name?: unknown; rating?: unknown };
-    const name = typeof record.name === "string" ? record.name.trim() : "";
-
-    if (!name) return [];
-
-    const key = name.toLowerCase();
-    if (seen.has(key)) return [];
-    seen.add(key);
-
-    const rating =
-      typeof record.rating === "number" && Number.isFinite(record.rating)
-        ? record.rating
-        : undefined;
-
-    return [{ name, rating }];
-  });
-}
-
-function readStoredRecurringPlayers(raw: string): RecurringPlayer[] {
-  try {
-    const parsed = JSON.parse(raw);
-    const players = normalizeRecurringPlayers(parsed);
-    if (players.length > 0) return players;
-  } catch {
-    // Older versions stored this as one text block.
-  }
-
-  return parseRecurringPlayersText(raw);
-}
-
-function saveStoredRecurringPlayers(players: RecurringPlayer[]) {
-  localStorage.setItem(RECURRING_PLAYERS_STORAGE_KEY, JSON.stringify(players));
-}
-
+/** Combina jugadores del club seleccionados + invitados y asigna seeds por
+ *  rating (mayor primero; sin rating al final). La foto del club se copia al
+ *  blob del torneo. */
 function buildTournamentPlayers(
-  players: RecurringPlayer[],
+  clubPlayers: ClubPlayer[],
+  guests: GuestPlayer[],
   tournamentId: string,
 ): ChessPlayer[] {
-  return players.map((player, index) => ({
+  const combined: Array<Pick<ChessPlayer, "name" | "rating" | "photoUrl">> = [
+    ...clubPlayers.map((player) => ({
+      name: player.name,
+      rating: player.rating,
+      photoUrl: player.photoUrl,
+    })),
+    ...guests.map((guest) => ({
+      name: guest.name,
+      rating: guest.rating,
+      photoUrl: undefined,
+    })),
+  ];
+
+  combined.sort(
+    (a, b) =>
+      (b.rating ?? -1) - (a.rating ?? -1) || a.name.localeCompare(b.name, "es"),
+  );
+
+  return combined.map((player, index) => ({
     id: `${tournamentId}-p${index + 1}`,
     name: player.name,
     rating: player.rating,
+    ...(player.photoUrl ? { photoUrl: player.photoUrl } : {}),
     seed: index + 1,
     status: "active",
   }));
@@ -197,13 +141,14 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
     isMondayTemplate ? MONDAY_TEMPLATE.tiebreaks : "formal",
   );
   const [startsAtDate, setStartsAtDate] = useState("");
-  const [recurringPlayers, setRecurringPlayers] = useState<RecurringPlayer[]>(
-    DEFAULT_RECURRING_PLAYERS,
-  );
+
+  // ── Jugadores: roster del club (seleccionables) + invitados puntuales ──
+  const [clubPlayers, setClubPlayers] = useState<ClubPlayer[]>([]);
+  const [clubLoading, setClubLoading] = useState(true);
+  const [selectedClubIds, setSelectedClubIds] = useState<Set<string>>(new Set());
+  const [guests, setGuests] = useState<GuestPlayer[]>([]);
   const [newPlayerName, setNewPlayerName] = useState("");
   const [newPlayerRating, setNewPlayerRating] = useState("");
-  const [saveRecurringPlayers, setSaveRecurringPlayers] = useState(true);
-  const [loadedStoredPlayers, setLoadedStoredPlayers] = useState(false);
 
   // ── Bases extendidas (todas opcionales) ──
   const [entryIncludes, setEntryIncludes] = useState<string[]>([]);
@@ -289,60 +234,65 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
   useEffect(() => {
     setStartsAtDate(getTodayInputValue());
 
-    try {
-      const stored = localStorage.getItem(RECURRING_PLAYERS_STORAGE_KEY);
-      if (stored?.trim()) {
-        const players = readStoredRecurringPlayers(stored);
-        if (players.length > 0) {
-          setRecurringPlayers(players);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/club-players");
+        if (!res.ok || cancelled) return;
+        const all = (await res.json()) as ClubPlayer[];
+        const active = all.filter((player) => player.isActive);
+        if (!cancelled) {
+          setClubPlayers(active);
+          // Por defecto todos los del club participan: destildar al ausente
+          // es menos trabajo que tildar uno por uno cada lunes.
+          setSelectedClubIds(new Set(active.map((player) => player.id)));
         }
+      } catch {
+        // Sin conexión al club: el torneo aún puede crearse con invitados.
+      } finally {
+        if (!cancelled) setClubLoading(false);
       }
-    } catch {
-      // Local storage is optional; the default roster still works without it.
-    } finally {
-      setLoadedStoredPlayers(true);
-    }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  useEffect(() => {
-    if (!loadedStoredPlayers || !saveRecurringPlayers) return;
+  function toggleClubPlayer(id: string) {
+    setSelectedClubIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
-    try {
-      saveStoredRecurringPlayers(recurringPlayers);
-    } catch {
-      // Ignore storage failures and keep the in-memory roster for this form.
-    }
-  }, [loadedStoredPlayers, recurringPlayers, saveRecurringPlayers]);
-
-  function addRecurringPlayer() {
+  function addGuest() {
     const name = newPlayerName.trim();
     if (!name) return;
 
     const ratingValue = Number.parseInt(newPlayerRating, 10);
     const rating = Number.isFinite(ratingValue) ? ratingValue : undefined;
-    const exists = recurringPlayers.some(
-      (player) => player.name.trim().toLowerCase() === name.toLowerCase(),
-    );
+    const taken =
+      guests.some((guest) => guest.name.trim().toLowerCase() === name.toLowerCase()) ||
+      clubPlayers.some((player) => player.name.trim().toLowerCase() === name.toLowerCase());
 
-    if (exists) {
-      setNewPlayerName("");
-      setNewPlayerRating("");
-      return;
+    if (!taken) {
+      setGuests((players) => [...players, { name, rating }]);
     }
-
-    setRecurringPlayers((players) => [...players, { name, rating }]);
     setNewPlayerName("");
     setNewPlayerRating("");
   }
 
-  function removeRecurringPlayer(index: number) {
-    setRecurringPlayers((players) => players.filter((_, i) => i !== index));
+  function removeGuest(index: number) {
+    setGuests((players) => players.filter((_, i) => i !== index));
   }
 
-  function handleRecurringKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+  function handleGuestKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key !== "Enter") return;
     e.preventDefault();
-    addRecurringPlayer();
+    addGuest();
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -352,15 +302,10 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
     const rounds = parseInt(fd.get("rounds") as string, 10);
 
     const id = `t${Date.now()}`;
-    const players = buildTournamentPlayers(recurringPlayers, id);
-
-    if (saveRecurringPlayers) {
-      try {
-        saveStoredRecurringPlayers(recurringPlayers);
-      } catch {
-        // Ignore storage failures and still create the tournament.
-      }
-    }
+    const selectedClub = clubPlayers.filter((player) =>
+      selectedClubIds.has(player.id),
+    );
+    const players = buildTournamentPlayers(selectedClub, guests, id);
 
     // Bases extendidas — solo se incluyen si tienen valor, para no ensuciar el blob.
     const timeControl = ((fd.get("timeControl") as string | null) ?? "").trim();
@@ -762,23 +707,143 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
         </span>
       </label>
 
-      {/* ── Jugadores recurrentes ── */}
+      {/* ── Jugadores del club ── */}
       <p style={SH}>
         <span style={{ width: 18, height: 2, background: "var(--color-navy)", display: "block", flexShrink: 0 }} />
-        Jugadores frecuentes
+        Jugadores del club
       </p>
 
       <div style={{ border: "2px solid var(--color-ink)", background: "var(--color-grain)", padding: 12 }}>
-        <p style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.18em", fontSize: 11, marginBottom: 10 }}>
-          Agregar jugador
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
+          <p style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.18em", fontSize: 11 }}>
+            Marcar quiénes juegan
+          </p>
+          <Link
+            href="/admin/ajedrez/jugadores"
+            style={{
+              fontFamily: "var(--font-poster)",
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              fontSize: 10,
+              color: "var(--color-navy)",
+              textDecoration: "underline",
+              flexShrink: 0,
+            }}
+          >
+            Administrar club →
+          </Link>
+        </div>
+
+        {clubLoading ? (
+          <p style={{ padding: 14, fontFamily: "var(--font-body)", fontSize: 13, color: "#666", textAlign: "center" }}>
+            Cargando jugadores del club…
+          </p>
+        ) : clubPlayers.length === 0 ? (
+          <p style={{ padding: 14, fontFamily: "var(--font-body)", fontSize: 13, color: "#666", textAlign: "center", border: "2px dashed rgba(26,26,26,0.25)" }}>
+            El club aún no tiene jugadores.{" "}
+            <Link href="/admin/ajedrez/jugadores" style={{ color: "var(--color-navy)", fontWeight: 600 }}>
+              Crea el roster aquí
+            </Link>{" "}
+            o agrega invitados abajo.
+          </p>
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+              <button
+                type="button"
+                onClick={() => setSelectedClubIds(new Set(clubPlayers.map((p) => p.id)))}
+                style={{ border: "1px solid rgba(26,26,26,0.3)", background: "transparent", color: "var(--color-ink)", padding: "5px 10px", fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.12em", fontSize: 10, cursor: "pointer" }}
+              >
+                Todos
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedClubIds(new Set())}
+                style={{ border: "1px solid rgba(26,26,26,0.3)", background: "transparent", color: "var(--color-ink)", padding: "5px 10px", fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.12em", fontSize: 10, cursor: "pointer" }}
+              >
+                Ninguno
+              </button>
+            </div>
+
+            <div style={{ border: "2px solid var(--color-ink)", background: "var(--color-cream)" }}>
+              {clubPlayers.map((player, index) => {
+                const selected = selectedClubIds.has(player.id);
+                return (
+                  <label
+                    key={player.id}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "auto 34px 1fr",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "9px 10px",
+                      borderBottom: index === clubPlayers.length - 1 ? "none" : "1px dashed rgba(26,26,26,0.18)",
+                      cursor: "pointer",
+                      background: selected ? "transparent" : "rgba(26,26,26,0.04)",
+                      opacity: selected ? 1 : 0.6,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      onChange={() => toggleClubPlayer(player.id)}
+                    />
+                    {player.photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={player.photoUrl}
+                        alt=""
+                        style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--color-ink)" }}
+                      />
+                    ) : (
+                      <span
+                        style={{
+                          width: 34,
+                          height: 34,
+                          borderRadius: "50%",
+                          border: "2px solid var(--color-ink)",
+                          background: "var(--color-grain)",
+                          color: "var(--color-navy)",
+                          fontFamily: "var(--font-poster)",
+                          fontSize: 12,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {player.name
+                          .split(/\s+/)
+                          .slice(0, 2)
+                          .map((part) => part[0]?.toUpperCase() ?? "")
+                          .join("")}
+                      </span>
+                    )}
+                    <span style={{ minWidth: 0 }}>
+                      <span style={{ display: "block", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--color-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {player.title ? `${player.title} · ` : ""}{player.name}
+                      </span>
+                      <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 10, letterSpacing: "0.08em", color: "#666" }}>
+                        {player.rating ? `Rating ${player.rating}` : "Sin rating"}
+                      </span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* ── Invitados (solo este torneo) ── */}
+        <p style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.18em", fontSize: 11, margin: "14px 0 8px" }}>
+          Invitados <span style={{ fontFamily: "var(--font-body)", textTransform: "none", letterSpacing: 0, fontSize: 11, opacity: 0.55 }}>(solo este torneo)</span>
         </p>
         <div style={{ display: "flex", gap: 8 }}>
           <input
             type="text"
-            placeholder="Nombre completo *"
+            placeholder="Nombre completo"
             value={newPlayerName}
             onChange={(e) => setNewPlayerName(e.currentTarget.value)}
-            onKeyDown={handleRecurringKeyDown}
+            onKeyDown={handleGuestKeyDown}
             style={{ ...INPUT, flex: 1 }}
             onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
             onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
@@ -788,66 +853,58 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
             placeholder="Rating"
             value={newPlayerRating}
             onChange={(e) => setNewPlayerRating(e.currentTarget.value)}
-            onKeyDown={handleRecurringKeyDown}
+            onKeyDown={handleGuestKeyDown}
             min={100}
             max={3000}
             style={{ ...INPUT, width: 90 }}
             onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
             onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
           />
+          <button
+            type="button"
+            onClick={addGuest}
+            style={{
+              background: "var(--color-stage)",
+              color: "var(--color-cream)",
+              border: "2px solid var(--color-ink)",
+              padding: "0 14px",
+              fontFamily: "var(--font-poster)",
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              fontSize: 11,
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            +
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={addRecurringPlayer}
-          style={{
-            width: "100%",
-            marginTop: 8,
-            background: "var(--color-stage)",
-            color: "var(--color-cream)",
-            border: "2px solid var(--color-ink)",
-            padding: "10px 16px",
-            fontFamily: "var(--font-poster)",
-            textTransform: "uppercase",
-            letterSpacing: "0.14em",
-            fontSize: 12,
-            cursor: "pointer",
-          }}
-        >
-          + Agregar
-        </button>
 
-        <div style={{ marginTop: 12, border: "2px solid var(--color-ink)", background: "var(--color-cream)" }}>
-          {recurringPlayers.length === 0 ? (
-            <p style={{ padding: 14, fontFamily: "var(--font-body)", fontSize: 13, color: "#666", textAlign: "center" }}>
-              Sin jugadores frecuentes.
-            </p>
-          ) : (
-            recurringPlayers.map((player, index) => (
+        {guests.length > 0 && (
+          <div style={{ marginTop: 8, border: "2px solid var(--color-ink)", background: "var(--color-cream)" }}>
+            {guests.map((guest, index) => (
               <div
-                key={`${player.name}-${index}`}
+                key={`${guest.name}-${index}`}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "32px 1fr auto",
+                  gridTemplateColumns: "1fr auto",
                   alignItems: "center",
                   gap: 10,
                   padding: "9px 10px",
-                  borderBottom: index === recurringPlayers.length - 1 ? "none" : "1px dashed rgba(26,26,26,0.18)",
+                  borderBottom: index === guests.length - 1 ? "none" : "1px dashed rgba(26,26,26,0.18)",
                 }}
               >
-                <span style={{ fontFamily: "var(--font-poster)", fontSize: 14, color: "var(--color-navy)", textAlign: "center" }}>
-                  {index + 1}
-                </span>
                 <span style={{ minWidth: 0 }}>
                   <span style={{ display: "block", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--color-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {player.name}
+                    {guest.name}
                   </span>
                   <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 10, letterSpacing: "0.08em", color: "#666" }}>
-                    {player.rating ? `Rating ${player.rating}` : "Sin rating"}
+                    {guest.rating ? `Rating ${guest.rating}` : "Sin rating"} · Invitado
                   </span>
                 </span>
                 <button
                   type="button"
-                  onClick={() => removeRecurringPlayer(index)}
+                  onClick={() => removeGuest(index)}
                   style={{
                     border: "1px solid rgba(26,26,26,0.2)",
                     background: "transparent",
@@ -860,35 +917,16 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
                     cursor: "pointer",
                   }}
                 >
-                  Eliminar
+                  Quitar
                 </button>
               </div>
-            ))
-          )}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 10 }}>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontFamily: "var(--font-body)",
-              fontSize: 12,
-              color: "var(--color-ink)",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={saveRecurringPlayers}
-              onChange={(e) => setSaveRecurringPlayers(e.currentTarget.checked)}
-            />
-            Guardar como lista recurrente
-          </label>
-          <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 10, letterSpacing: "0.1em", color: "#666", textTransform: "uppercase" }}>
-            {recurringPlayers.length} jugador{recurringPlayers.length === 1 ? "" : "es"}
-          </span>
-        </div>
+            ))}
+          </div>
+        )}
+
+        <p style={{ marginTop: 10, textAlign: "right", fontFamily: "ui-monospace, monospace", fontSize: 10, letterSpacing: "0.1em", color: "#666", textTransform: "uppercase" }}>
+          {selectedClubIds.size + guests.length} jugador{selectedClubIds.size + guests.length === 1 ? "" : "es"} en el torneo
+        </p>
       </div>
 
       {/* ── Desempates ── */}

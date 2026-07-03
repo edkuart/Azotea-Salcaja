@@ -20,7 +20,7 @@ import type {
   ChessTournament,
   ChessPlayer,
   GameResult,
-  TieBreakCode,
+  PairingWarning,
 } from "@/modules/chess/types";
 import { calculateStandings, getNextRoundBlocker } from "@/modules/chess/standings";
 import {
@@ -37,6 +37,7 @@ import {
   formatTournamentStatus,
 } from "@/modules/chess/public-data";
 import { Lightbox } from "@/components/media/Lightbox";
+import { StandingsTable } from "@/components/chess/StandingsTable";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -223,17 +224,22 @@ export function TournamentManager({
   }
 
   // ─ round actions ─
+  const [pairingWarnings, setPairingWarnings] = useState<PairingWarning[]>([]);
+
   function generateRound() {
     if (blocker || isFinished) return;
     let newRound;
+    let warnings: PairingWarning[] = [];
     if (t.system === "swiss") {
       const result = generateSwissNextRound(t);
       newRound = result.round;
+      warnings = result.warnings;
     } else {
       const allRounds = generateRoundRobinRounds(t.players);
       newRound = allRounds[t.rounds.length];
       if (!newRound) return;
     }
+    setPairingWarnings(warnings);
     setT((prev) => ({
       ...prev,
       rounds: [...prev.rounds, newRound],
@@ -325,7 +331,7 @@ export function TournamentManager({
 
       <div className="mt-5">
         {tab === "players"   && <PlayersTab   t={t} hasRounds={hasRounds} onAdd={addPlayer} onRemove={removePlayer} onStatus={setPlayerStatus} />}
-        {tab === "rounds"    && <RoundsTab    t={t} blocker={blocker} isFinished={isFinished} allRoundsGenerated={allRoundsGenerated} onGenerate={generateRound} onResult={applyResult} onUndo={undoResult} />}
+        {tab === "rounds"    && <RoundsTab    t={t} blocker={blocker} isFinished={isFinished} allRoundsGenerated={allRoundsGenerated} warnings={pairingWarnings} onDismissWarnings={() => setPairingWarnings([])} onGenerate={generateRound} onResult={applyResult} onUndo={undoResult} />}
         {tab === "standings" && <StandingsTab t={t} standings={standings} />}
         {tab === "info"      && <InfoTab      t={t} onChange={(patch) => setT((prev) => ({ ...prev, ...patch }))} />}
       </div>
@@ -639,12 +645,14 @@ function PlayersTab({
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function RoundsTab({
-  t, blocker, isFinished, allRoundsGenerated, onGenerate, onResult, onUndo,
+  t, blocker, isFinished, allRoundsGenerated, warnings, onDismissWarnings, onGenerate, onResult, onUndo,
 }: {
   t: ChessTournament;
   blocker: string | null;
   isFinished: boolean;
   allRoundsGenerated: boolean;
+  warnings: PairingWarning[];
+  onDismissWarnings: () => void;
   onGenerate: () => void;
   onResult: (roundIdx: number, gameId: string, result: GameResult) => void;
   onUndo: (roundIdx: number, gameId: string) => void;
@@ -732,6 +740,42 @@ function RoundsTab({
           </button>
         )}
       </div>
+
+      {/* Avisos del pareo (repeticiones, byes repetidos, etc.) */}
+      {warnings.length > 0 && (
+        <div
+          style={{
+            background: "var(--color-amber)",
+            color: "var(--color-cream)",
+            border: "2px solid var(--color-ink)",
+            boxShadow: "var(--shadow-card)",
+            padding: "12px 14px",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 10,
+          }}
+        >
+          <AlertTriangle className="h-4 w-4" style={{ flexShrink: 0, marginTop: 2 }} aria-hidden />
+          <div style={{ flex: 1, display: "grid", gap: 4 }}>
+            <p style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.16em", fontSize: 10 }}>
+              Avisos del pareo
+            </p>
+            {warnings.map((warning, i) => (
+              <p key={`${warning.code}-${i}`} style={{ fontFamily: "var(--font-body)", fontSize: 12.5, lineHeight: 1.4 }}>
+                {warning.message}
+              </p>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={onDismissWarnings}
+            aria-label="Descartar avisos"
+            style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", padding: 2, flexShrink: 0 }}
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {/* Round cards (newest first) */}
       {[...t.rounds].reverse().map((round, revIdx) => {
@@ -973,8 +1017,6 @@ function StandingsTab({
     );
   }
 
-  const tieBreakCols = t.tieBreakOrder.slice(0, 4);
-
   const medalColors = [
     { border: "var(--color-marquee)" },
     { border: "#999" },
@@ -1008,62 +1050,12 @@ function StandingsTab({
         </div>
       )}
 
-      {/* Full table */}
-      <div style={{ overflowX: "auto", border: "2px solid var(--color-ink)", background: "var(--color-grain)" }}>
-        <table style={{ width: "100%", minWidth: 480, textAlign: "left", fontSize: 12, borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ background: "var(--color-ink)", color: "var(--color-cream)" }}>
-              <th style={{ padding: "8px 10px", fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.16em", fontSize: 9.5, fontWeight: 400 }}>#</th>
-              <th style={{ padding: "8px 10px", fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.16em", fontSize: 9.5, fontWeight: 400 }}>Jugador</th>
-              <th style={{ padding: "8px 10px", fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.16em", fontSize: 9.5, fontWeight: 400, textAlign: "right" }}>Pts</th>
-              <th style={{ padding: "8px 10px", fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.16em", fontSize: 9.5, fontWeight: 400, textAlign: "center" }}>G-T-P</th>
-              {t.rounds.map((r) => (
-                <th key={r.id} style={{ padding: "8px 6px", fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.12em", fontSize: 9, fontWeight: 400, textAlign: "center" }}>R{r.roundNumber}</th>
-              ))}
-              {tieBreakCols.slice(1).map((code) => (
-                <th key={code} style={{ padding: "8px 10px", fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.12em", fontSize: 9, fontWeight: 400, textAlign: "right" }}>{formatTieBreakLabel(code)}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {standings.map((s, i) => (
-              <tr key={s.playerId} style={{ borderBottom: "1px dashed rgba(26,26,26,0.18)", borderLeft: i < 3 ? `4px solid ${medalColors[i]!.border}` : "4px solid transparent" }}>
-                <td style={{ padding: "8px 10px", fontFamily: "var(--font-poster)", fontSize: 13, color: "var(--color-navy)" }}>{i + 1}</td>
-                <td style={{ padding: "8px 10px" }}>
-                  <p style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600 }}>{s.name}</p>
-                  {s.rating && <p style={{ fontFamily: "ui-monospace, monospace", fontSize: 9, color: "#888", letterSpacing: "0.1em" }}>{s.rating}</p>}
-                </td>
-                <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "ui-monospace, monospace", fontSize: 14, fontWeight: 700, color: "var(--color-navy)" }}>{s.points}</td>
-                <td style={{ padding: "8px 10px", textAlign: "center", fontFamily: "ui-monospace, monospace", fontSize: 10, color: "#666" }}>{s.wins}-{s.draws}-{s.losses}</td>
-                {t.rounds.map((round) => {
-                  const game = round.games.find((g) => g.whitePlayerId === s.playerId || g.blackPlayerId === s.playerId);
-                  let cell = "·"; let color = "#ccc";
-                  if (game) {
-                    const isWhite = game.whitePlayerId === s.playerId;
-                    const score = isWhite ? game.whiteScore : game.blackScore;
-                    if (score !== undefined) {
-                      if (game.isBye) { cell = "B"; color = "var(--color-emerald)"; }
-                      else if (score === 1) { cell = "1"; color = "var(--color-emerald)"; }
-                      else if (score === 0.5) { cell = "½"; color = "var(--color-amber)"; }
-                      else { cell = "0"; color = "var(--color-stage)"; }
-                    }
-                  }
-                  return (
-                    <td key={round.id} style={{ padding: "8px 6px", textAlign: "center" }}>
-                      <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 11, fontWeight: 700, color }}>{cell}</span>
-                    </td>
-                  );
-                })}
-                {tieBreakCols.slice(1).map((code) => (
-                  <td key={code} style={{ padding: "8px 10px", textAlign: "right", fontFamily: "ui-monospace, monospace", fontSize: 10, color: "#666" }}>
-                    {s.tieBreaks[code as TieBreakCode] ?? 0}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* Full table (responsive: tabla en md+, filas expandibles en móvil) */}
+      <StandingsTable
+        standings={standings}
+        tieBreakCodes={t.tieBreakOrder.slice(0, 4)}
+        rounds={t.rounds}
+      />
     </div>
   );
 }

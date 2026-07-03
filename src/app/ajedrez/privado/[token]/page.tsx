@@ -12,7 +12,7 @@ import {
   privateDraftToTournament,
 } from "@/modules/chess/private-tournaments";
 import { calculateStandings } from "@/modules/chess/standings";
-import { formatTieBreakLabel } from "@/modules/chess/tiebreaks";
+import { StandingsTable } from "@/components/chess/StandingsTable";
 
 export const metadata: Metadata = {
   title: "Torneo privado",
@@ -117,40 +117,12 @@ export default async function PrivateTournamentPage({
                 <Users className="h-5 w-5" style={{ color: "var(--color-navy)" }} aria-hidden />
                 Tabla
               </h2>
-              <div className="mt-4 overflow-x-auto">
-                <table className="w-full min-w-[540px] text-left text-sm">
-                  <thead
-                    className="text-xs uppercase tracking-[0.12em]"
-                    style={{ fontFamily: "var(--font-poster)", color: "#5a5a5a" }}
-                  >
-                    <tr style={{ borderBottom: "2px solid var(--color-ink)" }}>
-                      <th className="py-3 pr-4">#</th>
-                      <th className="py-3 pr-4">Jugador</th>
-                      {tieBreaks.map((code) => (
-                        <th className="py-3 pr-4" key={code}>
-                          {formatTieBreakLabel(code)}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y" style={{ borderColor: "rgba(26,26,26,0.12)" }}>
-                    {standings.map((standing, index) => (
-                      <tr key={standing.playerId}>
-                        <td className="py-3 pr-4 font-semibold" style={{ color: "var(--color-navy)" }}>
-                          {index + 1}
-                        </td>
-                        <td className="py-3 pr-4 font-semibold text-stone-900">
-                          {standing.name}
-                        </td>
-                        {tieBreaks.map((code) => (
-                          <td className="py-3 pr-4 font-semibold" style={{ color: "var(--color-navy)" }} key={code}>
-                            {standing.tieBreaks[code] ?? 0}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="mt-4">
+                <StandingsTable
+                  standings={standings}
+                  tieBreakCodes={tieBreaks}
+                  rounds={tournament.rounds}
+                />
               </div>
             </section>
 

@@ -148,6 +148,25 @@ export type PairingResult = {
   warnings: PairingWarning[];
 };
 
+export type ClubPlayerSex = "M" | "F";
+
+/** Jugador del club: roster permanente independiente de torneos. Al
+ *  inscribirlo en un torneo se copian sus datos al blob del torneo. */
+export type ClubPlayer = {
+  id: string;
+  name: string;
+  rating?: number;
+  fideId?: string;
+  title?: string;
+  sex?: ClubPlayerSex;
+  birthDate?: string; // YYYY-MM-DD
+  photoUrl?: string;
+  notes?: string;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type PrivateTournamentDraft = {
   title: string;
   system: TournamentSystem;
