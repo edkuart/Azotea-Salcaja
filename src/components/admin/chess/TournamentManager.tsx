@@ -1241,6 +1241,21 @@ function InfoTab({ t, onChange }: { t: ChessTournament; onChange: (patch: Partia
             </div>
           ))}
         </dl>
+        <label className="flex cursor-pointer items-start gap-2 border-t border-stone-100 px-5 py-4 text-sm text-stone-700">
+          <input
+            type="checkbox"
+            checked={t.clubRanked ?? false}
+            onChange={(e) => onChange({ clubRanked: e.target.checked })}
+            className="mt-0.5"
+          />
+          <span>
+            Cuenta para el ranking del club
+            <span className="mt-0.5 block text-xs text-stone-400">
+              Al finalizar reparte puntos anuales por posición y actualiza el ELO del club.
+              Normalmente solo los torneos de lunes; otros días a discreción del organizador.
+            </span>
+          </span>
+        </label>
       </div>
 
       {/* Inscripción y tiempo */}

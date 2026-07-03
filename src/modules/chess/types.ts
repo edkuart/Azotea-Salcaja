@@ -44,6 +44,8 @@ export type ChessPlayer = {
   seed: number;
   status: PlayerStatus;
   photoUrl?: string;
+  /** Vínculo al roster del club (para ranking y ELO). Los invitados no lo tienen. */
+  clubPlayerId?: string;
 };
 
 export type ChessGame = {
@@ -96,6 +98,9 @@ export type ChessTournament = {
   }>;
   prizesNonCumulative?: boolean;
   attachments?: Array<{ name: string; url: string }>;
+  /** Cuenta para el ranking del club (puntos anuales + ELO). Por defecto solo
+   *  los torneos de lunes; otros días quedan a discreción del organizador. */
+  clubRanked?: boolean;
   players: ChessPlayer[];
   rounds: ChessRound[];
 };
@@ -114,6 +119,8 @@ export type PlayerStanding = {
   name: string;
   seed: number;
   rating?: number;
+  photoUrl?: string;
+  clubPlayerId?: string;
   points: number;
   played: number;
   wins: number;

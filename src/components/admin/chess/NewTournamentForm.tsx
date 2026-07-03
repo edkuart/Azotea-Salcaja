@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { restaurantInfo } from "@/modules/restaurant/public-data";
+import type { ClubRankingEntry } from "@/modules/chess/club-ranking";
 import type {
   ChessPlayer,
-  ClubPlayer,
   TieBreakCode,
   TournamentSystem,
 } from "@/modules/chess/types";
@@ -61,23 +61,28 @@ function getTodayInputValue() {
 }
 
 /** Combina jugadores del club seleccionados + invitados y asigna seeds por
- *  rating (mayor primero; sin rating al final). La foto del club se copia al
- *  blob del torneo. */
+ *  rating (mayor primero; sin rating al final). Los del club entran con su
+ *  ELO ACTUAL del ranking — así los pareos reflejan su nivel real — y llevan
+ *  clubPlayerId para que el torneo cuente en su historial. */
 function buildTournamentPlayers(
-  clubPlayers: ClubPlayer[],
+  clubEntries: ClubRankingEntry[],
   guests: GuestPlayer[],
   tournamentId: string,
 ): ChessPlayer[] {
-  const combined: Array<Pick<ChessPlayer, "name" | "rating" | "photoUrl">> = [
-    ...clubPlayers.map((player) => ({
-      name: player.name,
-      rating: player.rating,
-      photoUrl: player.photoUrl,
+  const combined: Array<
+    Pick<ChessPlayer, "name" | "rating" | "photoUrl" | "clubPlayerId">
+  > = [
+    ...clubEntries.map((entry) => ({
+      name: entry.player.name,
+      rating: entry.eloGames > 0 ? entry.elo : entry.player.rating,
+      photoUrl: entry.player.photoUrl,
+      clubPlayerId: entry.player.id,
     })),
     ...guests.map((guest) => ({
       name: guest.name,
       rating: guest.rating,
       photoUrl: undefined,
+      clubPlayerId: undefined,
     })),
   ];
 
@@ -91,9 +96,17 @@ function buildTournamentPlayers(
     name: player.name,
     rating: player.rating,
     ...(player.photoUrl ? { photoUrl: player.photoUrl } : {}),
+    ...(player.clubPlayerId ? { clubPlayerId: player.clubPlayerId } : {}),
     seed: index + 1,
     status: "active",
   }));
+}
+
+/** ¿La fecha (YYYY-MM-DD) cae en lunes? Define el default de clubRanked. */
+function isMondayDate(value: string): boolean {
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return false;
+  return new Date(year, month - 1, day).getDay() === 1;
 }
 
 const SH = {
@@ -143,12 +156,18 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
   const [startsAtDate, setStartsAtDate] = useState("");
 
   // ── Jugadores: roster del club (seleccionables) + invitados puntuales ──
-  const [clubPlayers, setClubPlayers] = useState<ClubPlayer[]>([]);
+  const [clubEntries, setClubEntries] = useState<ClubRankingEntry[]>([]);
   const [clubLoading, setClubLoading] = useState(true);
   const [selectedClubIds, setSelectedClubIds] = useState<Set<string>>(new Set());
   const [guests, setGuests] = useState<GuestPlayer[]>([]);
   const [newPlayerName, setNewPlayerName] = useState("");
   const [newPlayerRating, setNewPlayerRating] = useState("");
+
+  // ── Ranking del club: por defecto solo los lunes cuenta; otros días el
+  //    organizador decide (override manual con el checkbox). ──
+  const [clubRankedOverride, setClubRankedOverride] = useState<boolean | null>(null);
+  const clubRanked =
+    clubRankedOverride ?? (isMondayTemplate || isMondayDate(startsAtDate));
 
   // ── Bases extendidas (todas opcionales) ──
   const [entryIncludes, setEntryIncludes] = useState<string[]>([]);
@@ -237,15 +256,16 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/club-players");
+        // El ranking trae el roster + ELO actual (para seeds justos).
+        const res = await fetch("/api/club-ranking");
         if (!res.ok || cancelled) return;
-        const all = (await res.json()) as ClubPlayer[];
-        const active = all.filter((player) => player.isActive);
+        const all = (await res.json()) as ClubRankingEntry[];
+        const active = all.filter((entry) => entry.player.isActive);
         if (!cancelled) {
-          setClubPlayers(active);
+          setClubEntries(active);
           // Por defecto todos los del club participan: destildar al ausente
           // es menos trabajo que tildar uno por uno cada lunes.
-          setSelectedClubIds(new Set(active.map((player) => player.id)));
+          setSelectedClubIds(new Set(active.map((entry) => entry.player.id)));
         }
       } catch {
         // Sin conexión al club: el torneo aún puede crearse con invitados.
@@ -276,7 +296,9 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
     const rating = Number.isFinite(ratingValue) ? ratingValue : undefined;
     const taken =
       guests.some((guest) => guest.name.trim().toLowerCase() === name.toLowerCase()) ||
-      clubPlayers.some((player) => player.name.trim().toLowerCase() === name.toLowerCase());
+      clubEntries.some(
+        (entry) => entry.player.name.trim().toLowerCase() === name.toLowerCase(),
+      );
 
     if (!taken) {
       setGuests((players) => [...players, { name, rating }]);
@@ -302,8 +324,8 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
     const rounds = parseInt(fd.get("rounds") as string, 10);
 
     const id = `t${Date.now()}`;
-    const selectedClub = clubPlayers.filter((player) =>
-      selectedClubIds.has(player.id),
+    const selectedClub = clubEntries.filter((entry) =>
+      selectedClubIds.has(entry.player.id),
     );
     const players = buildTournamentPlayers(selectedClub, guests, id);
 
@@ -349,6 +371,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
       ...(cleanedIncludes.length ? { entryIncludes: cleanedIncludes } : {}),
       ...(cleanedCategories.length ? { prizeCategories: cleanedCategories } : {}),
       ...(prizesNonCumulative ? { prizesNonCumulative: true } : {}),
+      ...(clubRanked ? { clubRanked: true } : {}),
       players,
       rounds: [],
     };
@@ -714,6 +737,37 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
       </p>
 
       <div style={{ border: "2px solid var(--color-ink)", background: "var(--color-grain)", padding: 12 }}>
+        {/* Toggle: ¿este torneo cuenta para el ranking del club? */}
+        <label
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 10,
+            padding: "10px 12px",
+            marginBottom: 12,
+            border: "2px solid var(--color-ink)",
+            background: clubRanked ? "var(--color-navy)" : "var(--color-cream)",
+            color: clubRanked ? "var(--color-cream)" : "var(--color-ink)",
+            cursor: "pointer",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={clubRanked}
+            onChange={(e) => setClubRankedOverride(e.currentTarget.checked)}
+            style={{ marginTop: 3 }}
+          />
+          <span>
+            <span style={{ display: "block", fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.14em", fontSize: 11 }}>
+              Cuenta para el ranking del club
+            </span>
+            <span style={{ display: "block", fontFamily: "var(--font-body)", fontSize: 11, marginTop: 3, opacity: 0.8, lineHeight: 1.4 }}>
+              Al finalizar, reparte puntos anuales por posición y actualiza el ELO del club.
+              Se activa solo en lunes; otros días queda a tu criterio.
+            </span>
+          </span>
+        </label>
+
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
           <p style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.18em", fontSize: 11 }}>
             Marcar quiénes juegan
@@ -738,7 +792,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
           <p style={{ padding: 14, fontFamily: "var(--font-body)", fontSize: 13, color: "#666", textAlign: "center" }}>
             Cargando jugadores del club…
           </p>
-        ) : clubPlayers.length === 0 ? (
+        ) : clubEntries.length === 0 ? (
           <p style={{ padding: 14, fontFamily: "var(--font-body)", fontSize: 13, color: "#666", textAlign: "center", border: "2px dashed rgba(26,26,26,0.25)" }}>
             El club aún no tiene jugadores.{" "}
             <Link href="/admin/ajedrez/jugadores" style={{ color: "var(--color-navy)", fontWeight: 600 }}>
@@ -751,7 +805,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
             <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
               <button
                 type="button"
-                onClick={() => setSelectedClubIds(new Set(clubPlayers.map((p) => p.id)))}
+                onClick={() => setSelectedClubIds(new Set(clubEntries.map((e) => e.player.id)))}
                 style={{ border: "1px solid rgba(26,26,26,0.3)", background: "transparent", color: "var(--color-ink)", padding: "5px 10px", fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.12em", fontSize: 10, cursor: "pointer" }}
               >
                 Todos
@@ -766,8 +820,10 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
             </div>
 
             <div style={{ border: "2px solid var(--color-ink)", background: "var(--color-cream)" }}>
-              {clubPlayers.map((player, index) => {
+              {clubEntries.map((entry, index) => {
+                const player = entry.player;
                 const selected = selectedClubIds.has(player.id);
+                const hasElo = entry.eloGames > 0;
                 return (
                   <label
                     key={player.id}
@@ -777,7 +833,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
                       alignItems: "center",
                       gap: 10,
                       padding: "9px 10px",
-                      borderBottom: index === clubPlayers.length - 1 ? "none" : "1px dashed rgba(26,26,26,0.18)",
+                      borderBottom: index === clubEntries.length - 1 ? "none" : "1px dashed rgba(26,26,26,0.18)",
                       cursor: "pointer",
                       background: selected ? "transparent" : "rgba(26,26,26,0.04)",
                       opacity: selected ? 1 : 0.6,
@@ -823,7 +879,11 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
                         {player.title ? `${player.title} · ` : ""}{player.name}
                       </span>
                       <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 10, letterSpacing: "0.08em", color: "#666" }}>
-                        {player.rating ? `Rating ${player.rating}` : "Sin rating"}
+                        {hasElo
+                          ? `ELO club ${entry.elo}`
+                          : player.rating
+                            ? `Rating ${player.rating}`
+                            : "Sin rating"}
                       </span>
                     </span>
                   </label>

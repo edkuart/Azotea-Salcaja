@@ -44,6 +44,50 @@ const HEADER_CELL: React.CSSProperties = {
   fontWeight: 400,
 };
 
+export function PlayerAvatar({
+  name,
+  photoUrl,
+  size = 32,
+}: {
+  name: string;
+  photoUrl?: string;
+  size?: number;
+}) {
+  if (photoUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={photoUrl}
+        alt=""
+        loading="lazy"
+        className="shrink-0 rounded-full border-2 object-cover"
+        style={{ width: size, height: size, borderColor: "var(--color-ink)" }}
+      />
+    );
+  }
+  return (
+    <span
+      className="flex shrink-0 items-center justify-center rounded-full border-2"
+      style={{
+        width: size,
+        height: size,
+        borderColor: "rgba(26,26,26,0.35)",
+        background: "var(--color-grain)",
+        color: "var(--color-navy)",
+        fontFamily: "var(--font-poster)",
+        fontSize: size * 0.38,
+      }}
+      aria-hidden
+    >
+      {name
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase() ?? "")
+        .join("")}
+    </span>
+  );
+}
+
 export function StandingsTable({
   standings,
   tieBreakCodes,
@@ -92,11 +136,16 @@ export function StandingsTable({
                   {index + 1}
                 </td>
                 <td className="px-4 py-3">
-                  <p className="font-semibold text-stone-900">{standing.name}</p>
-                  <p className="mt-0.5 text-xs text-stone-500">
-                    {standing.wins}G {standing.draws}T {standing.losses}P
-                    {standing.rating ? ` · ${standing.rating}` : ""}
-                  </p>
+                  <div className="flex items-center gap-2.5">
+                    <PlayerAvatar name={standing.name} photoUrl={standing.photoUrl} />
+                    <div>
+                      <p className="font-semibold text-stone-900">{standing.name}</p>
+                      <p className="mt-0.5 text-xs text-stone-500">
+                        {standing.wins}G {standing.draws}T {standing.losses}P
+                        {standing.rating ? ` · ${standing.rating}` : ""}
+                      </p>
+                    </div>
+                  </div>
                 </td>
                 <td
                   className="px-4 py-3 text-right font-bold"
@@ -153,6 +202,7 @@ export function StandingsTable({
                 >
                   {index + 1}
                 </span>
+                <PlayerAvatar name={standing.name} photoUrl={standing.photoUrl} size={34} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-semibold text-stone-900">
                     {standing.name}

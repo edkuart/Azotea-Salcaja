@@ -107,6 +107,9 @@ export default function ChessPage() {
               <Link href="/ajedrez/torneos" className="btn btn-secondary">
                 Ver torneos
               </Link>
+              <Link href="/ajedrez/club" className="btn btn-secondary">
+                Ranking del club
+              </Link>
             </div>
           </div>
         </section>

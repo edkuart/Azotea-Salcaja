@@ -34,7 +34,7 @@ import {
 } from "@/modules/chess/publication";
 import { calculateStandings } from "@/modules/chess/standings";
 import { ImageGallery } from "@/components/media/ImageGallery";
-import { StandingsTable } from "@/components/chess/StandingsTable";
+import { PlayerAvatar, StandingsTable } from "@/components/chess/StandingsTable";
 import {
   TournamentBases,
   hasTournamentBases,
@@ -290,11 +290,14 @@ export default async function ChessTournamentDetailPage({
                     borderColor: index === 0 ? "var(--color-marquee)" : "var(--color-ink)",
                   }}
                 >
-                  <Medal
-                    className="h-6 w-6"
-                    style={{ color: index === 0 ? "var(--color-marquee)" : "var(--color-navy)" }}
-                    aria-hidden
-                  />
+                  <div className="flex items-center justify-between">
+                    <Medal
+                      className="h-6 w-6"
+                      style={{ color: index === 0 ? "var(--color-marquee)" : "var(--color-navy)" }}
+                      aria-hidden
+                    />
+                    <PlayerAvatar name={standing.name} photoUrl={standing.photoUrl} size={52} />
+                  </div>
                   <p
                     className="mt-4 text-[11px] uppercase"
                     style={{ fontFamily: "var(--font-poster)", letterSpacing: "0.14em", color: "#5a5a5a" }}

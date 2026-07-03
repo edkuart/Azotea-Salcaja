@@ -11,6 +11,8 @@ function createStanding(player: ChessTournament["players"][number]): PlayerStand
     name: player.name,
     seed: player.seed,
     rating: player.rating,
+    photoUrl: player.photoUrl,
+    clubPlayerId: player.clubPlayerId,
     points: 0,
     played: 0,
     wins: 0,

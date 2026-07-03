@@ -11,7 +11,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/eventos",
     "/contacto",
     "/ajedrez",
+    "/ajedrez/club",
     "/ajedrez/crear",
+    "/ajedrez/proyeccion",
     "/ajedrez/torneos",
   ];
 
