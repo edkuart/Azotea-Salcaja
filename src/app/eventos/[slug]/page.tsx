@@ -9,7 +9,7 @@ import { ExpandableImage } from "@/components/media/ExpandableImage";
 import { ImageGallery } from "@/components/media/ImageGallery";
 import { TournamentBases } from "@/components/chess/TournamentBases";
 import { db } from "@/lib/db";
-import { getTournament } from "@/lib/tournament-store";
+import { getTournamentsByIds } from "@/lib/tournament-store";
 import { restaurantInfo } from "@/modules/restaurant/public-data";
 import {
   categoryDisplayName,
@@ -21,7 +21,6 @@ import {
   formatTournamentStatus,
   getEffectiveTournamentStatus,
 } from "@/modules/chess/public-data";
-import type { ChessTournament } from "@/modules/chess/types";
 
 export const dynamic = "force-dynamic";
 
@@ -69,10 +68,7 @@ export default async function EventDetailPage({
   const event = await db().event.findUnique({ where: { slug } });
   if (!event || event.status !== "published") notFound();
 
-  const tournamentIds = getEventTournamentIds(event);
-  const tournaments = (
-    await Promise.all(tournamentIds.map((id) => getTournament(id)))
-  ).filter((t): t is ChessTournament => t != null);
+  const tournaments = await getTournamentsByIds(getEventTournamentIds(event));
 
   // Un torneo → ficha completa inline (retrocompat). Varios → índice de categorías.
   const singleTournament = tournaments.length === 1 ? tournaments[0] : null;

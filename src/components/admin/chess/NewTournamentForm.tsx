@@ -568,25 +568,27 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
         />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-        <div>
-          <label style={LABEL}>Sexo</label>
-          <select
-            value={sexCategory}
-            onChange={(e) => setSexCategory(e.currentTarget.value as TournamentSexCategory)}
-            style={INPUT}
-          >
-            {(["open", "female", "male"] as TournamentSexCategory[]).map((value) => (
-              <option key={value} value={value}>
-                {SEX_CATEGORY_LABELS[value]}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div style={{ marginBottom: 8 }}>
+        <label style={LABEL}>Sexo</label>
+        <select
+          value={sexCategory}
+          onChange={(e) => setSexCategory(e.currentTarget.value as TournamentSexCategory)}
+          style={INPUT}
+        >
+          {(["open", "female", "male"] as TournamentSexCategory[]).map((value) => (
+            <option key={value} value={value}>
+              {SEX_CATEGORY_LABELS[value]}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         <div>
           <label style={LABEL}>Edad mín.</label>
           <input
             type="number"
+            inputMode="numeric"
             min={0}
             max={120}
             value={ageMin}
@@ -601,6 +603,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
           <label style={LABEL}>Edad máx.</label>
           <input
             type="number"
+            inputMode="numeric"
             min={0}
             max={120}
             value={ageMax}
@@ -1035,8 +1038,8 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
             onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
             onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
           />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 90px", gap: 8 }}>
-            <div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <div style={{ flex: "1 1 150px", minWidth: 0 }}>
               <label style={LABEL}>Fecha de nacimiento</label>
               <input
                 type="date"
@@ -1047,7 +1050,7 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
                 onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
               />
             </div>
-            <div>
+            <div style={{ flex: "1 1 110px", minWidth: 0 }}>
               <label style={LABEL}>Sexo</label>
               <select
                 value={newPlayerSex}
@@ -1059,10 +1062,11 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
                 <option value="M">Masculino</option>
               </select>
             </div>
-            <div>
+            <div style={{ flex: "1 1 90px", minWidth: 0 }}>
               <label style={LABEL}>Rating</label>
               <input
                 type="number"
+                inputMode="numeric"
                 placeholder="—"
                 value={newPlayerRating}
                 onChange={(e) => setNewPlayerRating(e.currentTarget.value)}

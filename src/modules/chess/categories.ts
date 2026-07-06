@@ -53,29 +53,28 @@ export function categoryDisplayName(
   return t.categoryLabel?.trim() || t.title;
 }
 
+/** Convierte "YYYY-MM-DD" (o ISO) o Date a Date local a medianoche. */
+function toDate(value?: string | Date): Date | null {
+  if (value == null) return new Date();
+  const date =
+    value instanceof Date
+      ? value
+      : new Date(value.length >= 10 ? `${value.slice(0, 10)}T00:00:00` : value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 /**
- * Edad en años a la fecha de referencia. birthDate y reference en YYYY-MM-DD
- * (reference también acepta Date). Devuelve null si la fecha no es válida.
+ * Edad en años a la fecha de referencia (default: hoy). birthDate en
+ * "YYYY-MM-DD"; reference acepta string o Date. Null si la fecha no es válida.
  */
 export function computeAge(
   birthDate?: string,
   reference?: string | Date,
 ): number | null {
   if (!birthDate) return null;
-  const birth = new Date(`${birthDate}T00:00:00`);
-  if (Number.isNaN(birth.getTime())) return null;
-
-  const ref =
-    reference == null
-      ? new Date()
-      : reference instanceof Date
-        ? reference
-        : new Date(
-            /\d{4}-\d{2}-\d{2}/.test(reference)
-              ? `${reference.slice(0, 10)}T00:00:00`
-              : reference,
-          );
-  if (Number.isNaN(ref.getTime())) return null;
+  const birth = toDate(birthDate);
+  const ref = toDate(reference);
+  if (!birth || !ref) return null;
 
   let age = ref.getFullYear() - birth.getFullYear();
   const monthDiff = ref.getMonth() - birth.getMonth();
