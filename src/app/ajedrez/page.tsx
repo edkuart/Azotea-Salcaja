@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BookOpen, CalendarClock, Trophy, Users } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Building2,
+  CalendarClock,
+  Trophy,
+  Users,
+} from "lucide-react";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Section } from "@/components/public/Section";
@@ -214,6 +221,105 @@ export default function ChessPage() {
             ))}
           </div>
         </Section>
+
+        {/* ── Proyección: programa municipal ── */}
+        <div style={{ background: "var(--color-navy)", color: "var(--color-cream)" }}>
+          <Section>
+            <div className="grid gap-8 lg:grid-cols-[1.25fr_1fr] lg:items-center">
+              <div>
+                <p
+                  style={{
+                    fontFamily: "var(--font-poster)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.22em",
+                    fontSize: "11px",
+                    color: "var(--color-marquee)",
+                    marginBottom: "14px",
+                  }}
+                >
+                  Para municipalidades e instituciones
+                </p>
+                <h2
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "clamp(2rem, 5vw, 3.5rem)",
+                    lineHeight: 0.95,
+                    letterSpacing: "-0.01em",
+                    marginBottom: "18px",
+                  }}
+                >
+                  Proyección{" "}
+                  <em style={{ fontFamily: "var(--font-chess)", fontStyle: "italic", color: "var(--color-marquee)" }}>
+                    Chessitos
+                  </em>
+                </h2>
+                <p
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    fontSize: "var(--text-base)",
+                    lineHeight: 1.7,
+                    color: "rgba(255,253,208,0.82)",
+                    maxWidth: "520px",
+                    marginBottom: "24px",
+                  }}
+                >
+                  Propuesta institucional para instalar un programa municipal de
+                  ajedrez: formación por niveles, materiales propios, presupuesto
+                  flexible y una ruta anual de competencia. Pensada para alcaldías
+                  y organizaciones que quieran llevar el ajedrez a su comunidad.
+                </p>
+                <Link href="/ajedrez/proyeccion" className="btn btn-primary" style={{ display: "inline-flex" }}>
+                  Ver la propuesta
+                  <ArrowRight style={{ width: "14px", height: "14px", marginLeft: "6px" }} aria-hidden />
+                </Link>
+              </div>
+
+              <div
+                style={{
+                  border: "2px solid rgba(255,253,208,0.15)",
+                  padding: "28px",
+                  background: "rgba(255,253,208,0.04)",
+                }}
+              >
+                <Building2
+                  style={{ width: "24px", height: "24px", color: "var(--color-marquee)", marginBottom: "16px" }}
+                  aria-hidden
+                />
+                <p
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "1.8rem",
+                    lineHeight: 1.05,
+                    marginBottom: "16px",
+                  }}
+                >
+                  Programa municipal
+                </p>
+                <div style={{ display: "grid", gap: "8px" }}>
+                  {[
+                    "Formación por niveles con seguimiento",
+                    "Equipamiento y materiales propios",
+                    "Presupuesto flexible (3 o 5 días)",
+                    "Meta anual: torneo regional",
+                  ].map((item) => (
+                    <p
+                      key={item}
+                      style={{
+                        fontFamily: "var(--font-body)",
+                        fontSize: "var(--text-sm)",
+                        color: "rgba(255,253,208,0.78)",
+                        borderLeft: "2px solid var(--color-marquee)",
+                        paddingLeft: "12px",
+                      }}
+                    >
+                      {item}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Section>
+        </div>
 
         {/* ── Lunes de ajedrez ── */}
         <div style={{ background: "var(--color-ink)", color: "var(--color-cream)" }}>
