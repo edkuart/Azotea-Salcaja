@@ -11,6 +11,17 @@ import { TournamentBases } from "@/components/chess/TournamentBases";
 import { db } from "@/lib/db";
 import { getTournament } from "@/lib/tournament-store";
 import { restaurantInfo } from "@/modules/restaurant/public-data";
+import {
+  categoryDisplayName,
+  describeSexCategory,
+  formatAgeRange,
+  getEventTournamentIds,
+} from "@/modules/chess/categories";
+import {
+  formatTournamentStatus,
+  getEffectiveTournamentStatus,
+} from "@/modules/chess/public-data";
+import type { ChessTournament } from "@/modules/chess/types";
 
 export const dynamic = "force-dynamic";
 
@@ -58,9 +69,14 @@ export default async function EventDetailPage({
   const event = await db().event.findUnique({ where: { slug } });
   if (!event || event.status !== "published") notFound();
 
-  const tournament = event.linkedTournamentId
-    ? await getTournament(event.linkedTournamentId)
-    : null;
+  const tournamentIds = getEventTournamentIds(event);
+  const tournaments = (
+    await Promise.all(tournamentIds.map((id) => getTournament(id)))
+  ).filter((t): t is ChessTournament => t != null);
+
+  // Un torneo → ficha completa inline (retrocompat). Varios → índice de categorías.
+  const singleTournament = tournaments.length === 1 ? tournaments[0] : null;
+  const categories = tournaments.length >= 2 ? tournaments : null;
 
   const dateStr = event.startsAt.toLocaleDateString("es", {
     weekday: "long",
@@ -195,9 +211,9 @@ export default async function EventDetailPage({
             </div>
           )}
 
-          {tournament && (
+          {singleTournament && (
             <Link
-              href={`/ajedrez/torneos/live/${event.linkedTournamentId}`}
+              href={`/ajedrez/torneos/live/${singleTournament.id}`}
               className="btn btn-primary mt-7"
             >
               <Trophy className="h-4 w-4" aria-hidden />
@@ -207,13 +223,109 @@ export default async function EventDetailPage({
           )}
         </Section>
 
-        {/* Bases del torneo */}
-        {tournament && (
+        {/* Categorías del evento (varios torneos) */}
+        {categories && (
           <Section className="pt-0">
-            <TournamentBases tournament={tournament} showFicha />
+            <div className="mb-6 flex items-center gap-3">
+              <Trophy className="h-5 w-5" style={{ color: "var(--color-marquee)" }} />
+              <h2 style={{ fontFamily: "var(--font-display)", fontSize: "30px", lineHeight: 1.02 }}>
+                Categorías del torneo
+              </h2>
+            </div>
+            <p className="mb-6 max-w-2xl text-sm leading-6" style={{ color: "#3a3a3a" }}>
+              Este evento tiene {categories.length} categorías. Cada una tiene su propia tabla de
+              posiciones y transmisión en vivo. Elige una para ver sus bases y resultados.
+            </p>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {categories.map((cat) => {
+                const showSex = cat.sexCategory && cat.sexCategory !== "open";
+                const showAge = cat.ageMin != null || cat.ageMax != null;
+                return (
+                  <Link
+                    key={cat.id}
+                    href={`/ajedrez/torneos/live/${cat.id}`}
+                    className="group flex flex-col gap-3 border-2 p-5 no-underline transition-transform hover:-translate-y-0.5"
+                    style={CARD_BASE}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: 1.05 }}>
+                        {categoryDisplayName(cat)}
+                      </h3>
+                      <span
+                        className="shrink-0 rounded-sm px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]"
+                        style={{
+                          fontFamily: "var(--font-poster)",
+                          background: "var(--color-grain)",
+                          color: "#5a5a5a",
+                          border: "1px solid rgba(26,26,26,0.18)",
+                        }}
+                      >
+                        {formatTournamentStatus(getEffectiveTournamentStatus(cat))}
+                      </span>
+                    </div>
+
+                    {(showSex || showAge) && (
+                      <div className="flex flex-wrap gap-2">
+                        {showSex && (
+                          <span
+                            className="rounded-sm border px-2.5 py-1 text-xs font-medium"
+                            style={{ borderColor: "var(--color-navy)", color: "var(--color-navy)" }}
+                          >
+                            {describeSexCategory(cat.sexCategory)}
+                          </span>
+                        )}
+                        {showAge && (
+                          <span
+                            className="rounded-sm border px-2.5 py-1 text-xs font-medium"
+                            style={{ borderColor: "var(--color-navy)", color: "var(--color-navy)" }}
+                          >
+                            {formatAgeRange(cat)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    <dl className="grid gap-1 text-sm" style={{ color: "#3a3a3a" }}>
+                      {cat.entryFee && (
+                        <div className="flex justify-between gap-3">
+                          <dt className="text-stone-500">Inscripción</dt>
+                          <dd className="font-medium text-stone-900">{cat.entryFee}</dd>
+                        </div>
+                      )}
+                      {cat.timeControl && (
+                        <div className="flex justify-between gap-3">
+                          <dt className="text-stone-500">Ritmo</dt>
+                          <dd className="font-medium text-stone-900">{cat.timeControl}</dd>
+                        </div>
+                      )}
+                      <div className="flex justify-between gap-3">
+                        <dt className="text-stone-500">Jugadores</dt>
+                        <dd className="font-medium text-stone-900">{cat.players.length}</dd>
+                      </div>
+                    </dl>
+
+                    <span
+                      className="mt-1 inline-flex items-center gap-2 text-sm font-semibold"
+                      style={{ color: "var(--color-navy)" }}
+                    >
+                      Ver categoría en vivo
+                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </Section>
+        )}
+
+        {/* Bases del torneo (un solo torneo) */}
+        {singleTournament && (
+          <Section className="pt-0">
+            <TournamentBases tournament={singleTournament} showFicha />
 
             {/* Galería */}
-            {tournament.gallery && tournament.gallery.length > 0 && (
+            {singleTournament.gallery && singleTournament.gallery.length > 0 && (
               <div className="mt-8 max-w-3xl">
                 <h3
                   className="mb-4"
@@ -221,7 +333,7 @@ export default async function EventDetailPage({
                 >
                   Galería
                 </h3>
-                <ImageGallery images={tournament.gallery} />
+                <ImageGallery images={singleTournament.gallery} />
               </div>
             )}
           </Section>

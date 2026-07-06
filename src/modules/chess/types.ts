@@ -6,6 +6,9 @@ export type TournamentStatus = "setup" | "active" | "closed" | "cancelled";
 
 export type TournamentVisibility = "draft" | "published" | "unlisted" | "archived";
 
+/** Categoría por sexo de un torneo. Ausente = "open" (abierta). */
+export type TournamentSexCategory = "open" | "female" | "male";
+
 export type PlayerStatus = "active" | "withdrawn" | "absent";
 
 export type RoundStatus =
@@ -46,6 +49,10 @@ export type ChessPlayer = {
   photoUrl?: string;
   /** Vínculo al roster del club (para ranking y ELO). Los invitados no lo tienen. */
   clubPlayerId?: string;
+  /** Sexo del jugador (para categorías femenina/masculina). */
+  sex?: ClubPlayerSex;
+  /** Fecha de nacimiento YYYY-MM-DD (para categorías por edad; sobre todo invitados). */
+  birthDate?: string;
 };
 
 export type ChessGame = {
@@ -98,6 +105,15 @@ export type ChessTournament = {
   }>;
   prizesNonCumulative?: boolean;
   attachments?: Array<{ name: string; url: string }>;
+  // Categoría (cuando el torneo es una categoría dentro de un evento con varias).
+  /** Nombre visible de la categoría: "Sub-12", "Libre", "Femenino Absoluto"… */
+  categoryLabel?: string;
+  /** Edad mínima inclusiva (ej. 35+ → 35). Referencia = startsAt del torneo. */
+  ageMin?: number;
+  /** Edad máxima inclusiva (ej. Sub-12 → 12). Referencia = startsAt del torneo. */
+  ageMax?: number;
+  /** Categoría por sexo. Ausente = "open" (abierta). */
+  sexCategory?: TournamentSexCategory;
   /** Cuenta para el ranking del club (puntos anuales + ELO). Por defecto solo
    *  los torneos de lunes; otros días quedan a discreción del organizador. */
   clubRanked?: boolean;

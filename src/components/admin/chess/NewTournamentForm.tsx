@@ -7,9 +7,16 @@ import { restaurantInfo } from "@/modules/restaurant/public-data";
 import type { ClubRankingEntry } from "@/modules/chess/club-ranking";
 import type {
   ChessPlayer,
+  ClubPlayerSex,
   TieBreakCode,
+  TournamentSexCategory,
   TournamentSystem,
 } from "@/modules/chess/types";
+import {
+  checkPlayerCategory,
+  computeAge,
+  SEX_CATEGORY_LABELS,
+} from "@/modules/chess/categories";
 
 const TIEBREAK_PRESETS: Record<string, TieBreakCode[]> = {
   casual: ["points", "progressive", "buchholz", "median_buchholz", "wins"],
@@ -28,6 +35,8 @@ const TIEBREAK_PRESETS: Record<string, TieBreakCode[]> = {
 type GuestPlayer = {
   name: string;
   rating?: number;
+  birthDate?: string;
+  sex?: ClubPlayerSex;
 };
 
 const MONDAY_TEMPLATE = {
@@ -70,19 +79,26 @@ function buildTournamentPlayers(
   tournamentId: string,
 ): ChessPlayer[] {
   const combined: Array<
-    Pick<ChessPlayer, "name" | "rating" | "photoUrl" | "clubPlayerId">
+    Pick<
+      ChessPlayer,
+      "name" | "rating" | "photoUrl" | "clubPlayerId" | "sex" | "birthDate"
+    >
   > = [
     ...clubEntries.map((entry) => ({
       name: entry.player.name,
       rating: entry.eloGames > 0 ? entry.elo : entry.player.rating,
       photoUrl: entry.player.photoUrl,
       clubPlayerId: entry.player.id,
+      sex: entry.player.sex,
+      birthDate: entry.player.birthDate,
     })),
     ...guests.map((guest) => ({
       name: guest.name,
       rating: guest.rating,
       photoUrl: undefined,
       clubPlayerId: undefined,
+      sex: guest.sex,
+      birthDate: guest.birthDate,
     })),
   ];
 
@@ -97,6 +113,8 @@ function buildTournamentPlayers(
     rating: player.rating,
     ...(player.photoUrl ? { photoUrl: player.photoUrl } : {}),
     ...(player.clubPlayerId ? { clubPlayerId: player.clubPlayerId } : {}),
+    ...(player.sex ? { sex: player.sex } : {}),
+    ...(player.birthDate ? { birthDate: player.birthDate } : {}),
     seed: index + 1,
     status: "active",
   }));
@@ -162,6 +180,14 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
   const [guests, setGuests] = useState<GuestPlayer[]>([]);
   const [newPlayerName, setNewPlayerName] = useState("");
   const [newPlayerRating, setNewPlayerRating] = useState("");
+  const [newPlayerBirthDate, setNewPlayerBirthDate] = useState("");
+  const [newPlayerSex, setNewPlayerSex] = useState<"" | ClubPlayerSex>("");
+
+  // ── Categoría (cuando el torneo es una categoría de un evento con varias) ──
+  const [categoryLabel, setCategoryLabel] = useState("");
+  const [sexCategory, setSexCategory] = useState<TournamentSexCategory>("open");
+  const [ageMin, setAgeMin] = useState("");
+  const [ageMax, setAgeMax] = useState("");
 
   // ── Ranking del club: por defecto solo los lunes cuenta; otros días el
   //    organizador decide (override manual con el checkbox). ──
@@ -301,10 +327,20 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
       );
 
     if (!taken) {
-      setGuests((players) => [...players, { name, rating }]);
+      setGuests((players) => [
+        ...players,
+        {
+          name,
+          rating,
+          ...(newPlayerBirthDate ? { birthDate: newPlayerBirthDate } : {}),
+          ...(newPlayerSex ? { sex: newPlayerSex } : {}),
+        },
+      ]);
     }
     setNewPlayerName("");
     setNewPlayerRating("");
+    setNewPlayerBirthDate("");
+    setNewPlayerSex("");
   }
 
   function removeGuest(index: number) {
@@ -350,6 +386,11 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
       }))
       .filter((cat) => cat.name || cat.places.length > 0);
 
+    // Metadatos de categoría (opcionales) — solo se incluyen si tienen valor.
+    const categoryLabelClean = categoryLabel.trim();
+    const ageMinNum = ageMin.trim() ? Number.parseInt(ageMin, 10) : NaN;
+    const ageMaxNum = ageMax.trim() ? Number.parseInt(ageMax, 10) : NaN;
+
     const tournament = {
       id,
       kind: "official" as const,
@@ -372,6 +413,10 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
       ...(cleanedCategories.length ? { prizeCategories: cleanedCategories } : {}),
       ...(prizesNonCumulative ? { prizesNonCumulative: true } : {}),
       ...(clubRanked ? { clubRanked: true } : {}),
+      ...(categoryLabelClean ? { categoryLabel: categoryLabelClean } : {}),
+      ...(Number.isFinite(ageMinNum) ? { ageMin: ageMinNum } : {}),
+      ...(Number.isFinite(ageMaxNum) ? { ageMax: ageMaxNum } : {}),
+      ...(sexCategory !== "open" ? { sexCategory } : {}),
       players,
       rounds: [],
     };
@@ -384,6 +429,16 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
 
     router.push(`/admin/ajedrez/torneos/${id}`);
   }
+
+  // Restricciones de la categoría en curso, para avisos suaves al inscribir.
+  const parsedAgeMin = ageMin.trim() ? Number.parseInt(ageMin, 10) : NaN;
+  const parsedAgeMax = ageMax.trim() ? Number.parseInt(ageMax, 10) : NaN;
+  const categoryForCheck = {
+    ageMin: Number.isFinite(parsedAgeMin) ? parsedAgeMin : undefined,
+    ageMax: Number.isFinite(parsedAgeMax) ? parsedAgeMax : undefined,
+    sexCategory,
+    startsAt: startsAtDate,
+  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -488,6 +543,78 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
           );
         })}
       </div>
+
+      {/* ── Categoría (opcional) ── */}
+      <p style={SH}>
+        <span style={{ width: 18, height: 2, background: "var(--color-navy)", display: "block", flexShrink: 0 }} />
+        Categoría <span style={{ fontFamily: "var(--font-body)", textTransform: "none", letterSpacing: 0, fontSize: 11, opacity: 0.55 }}>(opcional)</span>
+      </p>
+
+      <p style={{ fontFamily: "var(--font-body)", fontSize: 11, lineHeight: 1.4, color: "#555", marginBottom: 8 }}>
+        Úsala cuando este torneo sea una categoría dentro de un evento con varias
+        (ej. Sub-12, Femenino, Libre). Luego adjunta varios torneos-categoría al evento.
+      </p>
+
+      <div style={{ marginBottom: 10 }}>
+        <label style={LABEL}>Nombre de la categoría</label>
+        <input
+          type="text"
+          value={categoryLabel}
+          onChange={(e) => setCategoryLabel(e.currentTarget.value)}
+          placeholder="Ej. Sub-12, Femenino Absoluto, Libre"
+          style={INPUT}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
+        />
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+        <div>
+          <label style={LABEL}>Sexo</label>
+          <select
+            value={sexCategory}
+            onChange={(e) => setSexCategory(e.currentTarget.value as TournamentSexCategory)}
+            style={INPUT}
+          >
+            {(["open", "female", "male"] as TournamentSexCategory[]).map((value) => (
+              <option key={value} value={value}>
+                {SEX_CATEGORY_LABELS[value]}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label style={LABEL}>Edad mín.</label>
+          <input
+            type="number"
+            min={0}
+            max={120}
+            value={ageMin}
+            onChange={(e) => setAgeMin(e.currentTarget.value)}
+            placeholder="—"
+            style={INPUT}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
+          />
+        </div>
+        <div>
+          <label style={LABEL}>Edad máx.</label>
+          <input
+            type="number"
+            min={0}
+            max={120}
+            value={ageMax}
+            onChange={(e) => setAgeMax(e.currentTarget.value)}
+            placeholder="—"
+            style={INPUT}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
+          />
+        </div>
+      </div>
+      <p style={{ fontFamily: "ui-monospace, monospace", fontSize: 10, letterSpacing: "0.05em", color: "#666", marginTop: 4 }}>
+        Ej. Sub-12 → edad máx. 12. Mayores 35 → edad mín. 35. La edad se calcula a la fecha de inicio.
+      </p>
 
       {/* ── Inscripción (opcional) ── */}
       <p style={SH}>
@@ -897,29 +1024,57 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
         <p style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.18em", fontSize: 11, margin: "14px 0 8px" }}>
           Invitados <span style={{ fontFamily: "var(--font-body)", textTransform: "none", letterSpacing: 0, fontSize: 11, opacity: 0.55 }}>(solo este torneo)</span>
         </p>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "grid", gap: 8 }}>
           <input
             type="text"
             placeholder="Nombre completo"
             value={newPlayerName}
             onChange={(e) => setNewPlayerName(e.currentTarget.value)}
             onKeyDown={handleGuestKeyDown}
-            style={{ ...INPUT, flex: 1 }}
+            style={INPUT}
             onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
             onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
           />
-          <input
-            type="number"
-            placeholder="Rating"
-            value={newPlayerRating}
-            onChange={(e) => setNewPlayerRating(e.currentTarget.value)}
-            onKeyDown={handleGuestKeyDown}
-            min={100}
-            max={3000}
-            style={{ ...INPUT, width: 90 }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
-          />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 90px", gap: 8 }}>
+            <div>
+              <label style={LABEL}>Fecha de nacimiento</label>
+              <input
+                type="date"
+                value={newPlayerBirthDate}
+                onChange={(e) => setNewPlayerBirthDate(e.currentTarget.value)}
+                style={INPUT}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
+              />
+            </div>
+            <div>
+              <label style={LABEL}>Sexo</label>
+              <select
+                value={newPlayerSex}
+                onChange={(e) => setNewPlayerSex(e.currentTarget.value as "" | ClubPlayerSex)}
+                style={INPUT}
+              >
+                <option value="">—</option>
+                <option value="F">Femenino</option>
+                <option value="M">Masculino</option>
+              </select>
+            </div>
+            <div>
+              <label style={LABEL}>Rating</label>
+              <input
+                type="number"
+                placeholder="—"
+                value={newPlayerRating}
+                onChange={(e) => setNewPlayerRating(e.currentTarget.value)}
+                onKeyDown={handleGuestKeyDown}
+                min={100}
+                max={3000}
+                style={INPUT}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
+              />
+            </div>
+          </div>
           <button
             type="button"
             onClick={addGuest}
@@ -927,60 +1082,95 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
               background: "var(--color-stage)",
               color: "var(--color-cream)",
               border: "2px solid var(--color-ink)",
-              padding: "0 14px",
+              padding: "10px 14px",
               fontFamily: "var(--font-poster)",
               textTransform: "uppercase",
               letterSpacing: "0.12em",
               fontSize: 11,
               cursor: "pointer",
-              flexShrink: 0,
             }}
           >
-            +
+            + Agregar invitado
           </button>
         </div>
 
         {guests.length > 0 && (
           <div style={{ marginTop: 8, border: "2px solid var(--color-ink)", background: "var(--color-cream)" }}>
-            {guests.map((guest, index) => (
-              <div
-                key={`${guest.name}-${index}`}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr auto",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "9px 10px",
-                  borderBottom: index === guests.length - 1 ? "none" : "1px dashed rgba(26,26,26,0.18)",
-                }}
-              >
-                <span style={{ minWidth: 0 }}>
-                  <span style={{ display: "block", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--color-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {guest.name}
-                  </span>
-                  <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 10, letterSpacing: "0.08em", color: "#666" }}>
-                    {guest.rating ? `Rating ${guest.rating}` : "Sin rating"} · Invitado
-                  </span>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => removeGuest(index)}
+            {guests.map((guest, index) => {
+              const age = computeAge(guest.birthDate, startsAtDate);
+              const warnings = checkPlayerCategory(guest, categoryForCheck);
+              const meta = [
+                guest.rating ? `Rating ${guest.rating}` : "Sin rating",
+                guest.sex === "F" ? "Femenino" : guest.sex === "M" ? "Masculino" : null,
+                age != null ? `${age} años` : null,
+                "Invitado",
+              ].filter(Boolean);
+              return (
+                <div
+                  key={`${guest.name}-${index}`}
                   style={{
-                    border: "1px solid rgba(26,26,26,0.2)",
-                    background: "transparent",
-                    color: "var(--color-stage)",
-                    padding: "5px 8px",
-                    fontFamily: "var(--font-poster)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.12em",
-                    fontSize: 10,
-                    cursor: "pointer",
+                    padding: "9px 10px",
+                    borderBottom: index === guests.length - 1 ? "none" : "1px dashed rgba(26,26,26,0.18)",
                   }}
                 >
-                  Quitar
-                </button>
-              </div>
-            ))}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr auto",
+                      alignItems: "center",
+                      gap: 10,
+                    }}
+                  >
+                    <span style={{ minWidth: 0 }}>
+                      <span style={{ display: "block", fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--color-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {guest.name}
+                      </span>
+                      <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 10, letterSpacing: "0.08em", color: "#666" }}>
+                        {meta.join(" · ")}
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeGuest(index)}
+                      style={{
+                        border: "1px solid rgba(26,26,26,0.2)",
+                        background: "transparent",
+                        color: "var(--color-stage)",
+                        padding: "5px 8px",
+                        fontFamily: "var(--font-poster)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.12em",
+                        fontSize: 10,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                  {warnings.map((warning, wi) => (
+                    <p
+                      key={wi}
+                      style={{
+                        marginTop: 6,
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 6,
+                        borderLeft: "3px solid var(--color-marquee)",
+                        background: "rgba(212,160,23,0.12)",
+                        padding: "6px 8px",
+                        fontFamily: "var(--font-body)",
+                        fontSize: 11,
+                        lineHeight: 1.35,
+                        color: "#6b5310",
+                      }}
+                    >
+                      <span aria-hidden>⚠</span>
+                      {warning}
+                    </p>
+                  ))}
+                </div>
+              );
+            })}
           </div>
         )}
 

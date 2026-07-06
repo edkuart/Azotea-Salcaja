@@ -14,6 +14,21 @@ function slugify(text: string) {
     .replace(/^-|-$/g, "");
 }
 
+/** Torneos-categoría adjuntos al evento, en orden y sin vacíos ni duplicados. */
+function parseLinkedTournamentIds(formData: FormData): string[] {
+  const raw = formData.getAll("linkedTournamentIds").map(String);
+  const seen = new Set<string>();
+  const ids: string[] = [];
+  for (const id of raw) {
+    const trimmed = id.trim();
+    if (trimmed && !seen.has(trimmed)) {
+      seen.add(trimmed);
+      ids.push(trimmed);
+    }
+  }
+  return ids;
+}
+
 export async function createEvent(formData: FormData) {
   const title = formData.get("title") as string;
   const type = formData.get("type") as EventType;
@@ -21,9 +36,11 @@ export async function createEvent(formData: FormData) {
   const startsAt = formData.get("startsAt") as string;
   const endsAt = formData.get("endsAt") as string;
   const locationLabel = formData.get("locationLabel") as string;
+  const locationAddress = formData.get("locationAddress") as string;
+  const locationMapsUrl = formData.get("locationMapsUrl") as string;
   const coverImageUrl = formData.get("coverImageUrl") as string;
   const status = (formData.get("status") as PublishStatus) ?? "draft";
-  const linkedTournamentId = formData.get("linkedTournamentId") as string;
+  const linkedTournamentIds = parseLinkedTournamentIds(formData);
 
   const baseSlug = slugify(title);
   let slug = baseSlug;
@@ -44,9 +61,12 @@ export async function createEvent(formData: FormData) {
       startsAt: new Date(startsAt),
       endsAt: endsAt ? new Date(endsAt) : null,
       locationLabel: locationLabel || null,
+      locationAddress: locationAddress || null,
+      locationMapsUrl: locationMapsUrl || null,
       coverImageUrl: coverImageUrl || null,
       status,
-      linkedTournamentId: linkedTournamentId || null,
+      linkedTournamentIds,
+      linkedTournamentId: linkedTournamentIds[0] ?? null,
     },
   });
 
@@ -62,9 +82,11 @@ export async function updateEvent(id: string, formData: FormData) {
   const startsAt = formData.get("startsAt") as string;
   const endsAt = formData.get("endsAt") as string;
   const locationLabel = formData.get("locationLabel") as string;
+  const locationAddress = formData.get("locationAddress") as string;
+  const locationMapsUrl = formData.get("locationMapsUrl") as string;
   const coverImageUrl = formData.get("coverImageUrl") as string;
   const status = formData.get("status") as PublishStatus;
-  const linkedTournamentId = formData.get("linkedTournamentId") as string;
+  const linkedTournamentIds = parseLinkedTournamentIds(formData);
 
   await db().event.update({
     where: { id },
@@ -75,9 +97,12 @@ export async function updateEvent(id: string, formData: FormData) {
       startsAt: new Date(startsAt),
       endsAt: endsAt ? new Date(endsAt) : null,
       locationLabel: locationLabel || null,
+      locationAddress: locationAddress || null,
+      locationMapsUrl: locationMapsUrl || null,
       coverImageUrl: coverImageUrl || null,
       status,
-      linkedTournamentId: linkedTournamentId || null,
+      linkedTournamentIds,
+      linkedTournamentId: linkedTournamentIds[0] ?? null,
     },
   });
 

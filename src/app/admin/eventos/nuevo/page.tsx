@@ -10,6 +10,10 @@ export default async function NewEventPage() {
     id: t.id,
     title: t.title,
     status: t.status,
+    categoryLabel: t.categoryLabel,
+    sexCategory: t.sexCategory,
+    ageMin: t.ageMin,
+    ageMax: t.ageMax,
   }));
 
   return (

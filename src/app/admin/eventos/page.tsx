@@ -7,6 +7,7 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { StatusPill } from "@/components/admin/StatusPill";
 import { db } from "@/lib/db";
 import { deleteEvent, toggleEventStatus } from "@/app/actions/events";
+import { getEventTournamentIds } from "@/modules/chess/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,7 @@ export default async function AdminEventsPage() {
             month: "short",
             year: "numeric",
           });
+          const tournamentCount = getEventTournamentIds(event).length;
 
           return (
             <article
@@ -92,10 +94,12 @@ export default async function AdminEventsPage() {
                   {event.title}
                 </h2>
                 <p className="mt-0.5 text-sm text-stone-500">{dateStr}</p>
-                {event.linkedTournamentId && (
+                {tournamentCount > 0 && (
                   <p className="mt-1 flex items-center gap-1.5 text-xs text-stone-500">
                     <Trophy className="h-3 w-3" aria-hidden />
-                    Torneo vinculado
+                    {tournamentCount > 1
+                      ? `${tournamentCount} torneos vinculados`
+                      : "Torneo vinculado"}
                   </p>
                 )}
                 {event.description && (

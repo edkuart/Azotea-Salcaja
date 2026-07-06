@@ -211,9 +211,10 @@ model Event {
   locationMapsUrl    String?       @map("location_maps_url")
   imageId            String?       @map("image_id")
   coverImageUrl      String?       @map("cover_image_url")
-  status             PublishStatus @default(draft)
-  linkedTournamentId String?       @map("linked_tournament_id")
-  createdAt          DateTime      @default(now()) @map("created_at")
+  status              PublishStatus @default(draft)
+  linkedTournamentId  String?       @map("linked_tournament_id")
+  linkedTournamentIds String[]      @map("linked_tournament_ids")
+  createdAt           DateTime      @default(now()) @map("created_at")
   updatedAt          DateTime      @updatedAt @map("updated_at")
 
   image MediaAsset? @relation("EventImage", fields: [imageId], references: [id], onDelete: SetNull)

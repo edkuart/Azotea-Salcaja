@@ -28,6 +28,10 @@ export default async function EditEventPage({
     id: t.id,
     title: t.title,
     status: t.status,
+    categoryLabel: t.categoryLabel,
+    sexCategory: t.sexCategory,
+    ageMin: t.ageMin,
+    ageMax: t.ageMax,
   }));
 
   if (!event) notFound();

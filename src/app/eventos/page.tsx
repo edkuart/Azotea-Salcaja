@@ -6,6 +6,7 @@ import { PublicLayout } from "@/components/public/PublicLayout";
 import { Section } from "@/components/public/Section";
 import { db } from "@/lib/db";
 import { restaurantInfo } from "@/modules/restaurant/public-data";
+import { getEventTournamentIds } from "@/modules/chess/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -79,6 +80,7 @@ export default async function EventsPage() {
                   hour: "2-digit",
                   minute: "2-digit",
                 });
+                const tournamentCount = getEventTournamentIds(event).length;
 
                 return (
                   <Link
@@ -128,13 +130,15 @@ export default async function EventsPage() {
                           </span>
                         </p>
                       )}
-                      {event.linkedTournamentId && (
+                      {tournamentCount > 0 && (
                         <p
                           className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.1em]"
                           style={{ fontFamily: "var(--font-poster)", color: "var(--color-marquee)" }}
                         >
                           <Trophy className="h-3.5 w-3.5" />
-                          Incluye torneo de ajedrez
+                          {tournamentCount > 1
+                            ? `Incluye ${tournamentCount} categorías de ajedrez`
+                            : "Incluye torneo de ajedrez"}
                         </p>
                       )}
                       {event.description && (
