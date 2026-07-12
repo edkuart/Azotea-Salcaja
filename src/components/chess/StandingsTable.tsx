@@ -1,7 +1,14 @@
+import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 
 import { formatTieBreakLabel } from "@/modules/chess/tiebreaks";
-import type { ChessRound, PlayerStanding, TieBreakCode } from "@/modules/chess/types";
+import type {
+  ChessRound,
+  PlayerStanding,
+  TieBreakCode,
+} from "@/modules/chess/types";
+import type { ClubAvatarId } from "@/modules/chess/avatars";
+import { ClubMemberAvatar } from "@/components/chess/ClubMemberAvatar";
 
 /**
  * Tabla de posiciones responsive, sin JavaScript de cliente:
@@ -12,6 +19,12 @@ import type { ChessRound, PlayerStanding, TieBreakCode } from "@/modules/chess/t
  */
 
 type RoundCellTone = "win" | "draw" | "loss" | "bye" | "none";
+type PlayerProfileLink = {
+  href: string;
+  photoUrl?: string;
+  avatarId?: ClubAvatarId;
+  name?: string;
+};
 
 const TONE_COLORS: Record<RoundCellTone, string> = {
   win: "var(--color-emerald)",
@@ -21,7 +34,10 @@ const TONE_COLORS: Record<RoundCellTone, string> = {
   none: "rgba(26,26,26,0.35)",
 };
 
-function roundCell(round: ChessRound, playerId: string): { label: string; tone: RoundCellTone } {
+function roundCell(
+  round: ChessRound,
+  playerId: string,
+): { label: string; tone: RoundCellTone } {
   const game = round.games.find(
     (g) => g.whitePlayerId === playerId || g.blackPlayerId === playerId,
   );
@@ -47,44 +63,21 @@ const HEADER_CELL: React.CSSProperties = {
 export function PlayerAvatar({
   name,
   photoUrl,
+  avatarId,
   size = 32,
 }: {
   name: string;
   photoUrl?: string;
+  avatarId?: ClubAvatarId;
   size?: number;
 }) {
-  if (photoUrl) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={photoUrl}
-        alt=""
-        loading="lazy"
-        className="shrink-0 rounded-full border-2 object-cover"
-        style={{ width: size, height: size, borderColor: "var(--color-ink)" }}
-      />
-    );
-  }
   return (
-    <span
-      className="flex shrink-0 items-center justify-center rounded-full border-2"
-      style={{
-        width: size,
-        height: size,
-        borderColor: "rgba(26,26,26,0.35)",
-        background: "var(--color-grain)",
-        color: "var(--color-navy)",
-        fontFamily: "var(--font-poster)",
-        fontSize: size * 0.38,
-      }}
-      aria-hidden
-    >
-      {name
-        .split(/\s+/)
-        .slice(0, 2)
-        .map((part) => part[0]?.toUpperCase() ?? "")
-        .join("")}
-    </span>
+    <ClubMemberAvatar
+      name={name}
+      photoUrl={photoUrl}
+      avatarId={avatarId}
+      size={size}
+    />
   );
 }
 
@@ -92,13 +85,46 @@ export function StandingsTable({
   standings,
   tieBreakCodes,
   rounds = [],
+  profileLinksByClubPlayerId,
 }: {
   standings: PlayerStanding[];
   tieBreakCodes: TieBreakCode[];
   rounds?: ChessRound[];
+  profileLinksByClubPlayerId?: Record<string, PlayerProfileLink>;
 }) {
   // "points" va en la columna/fila principal; el resto son desempates.
   const extraTieBreaks = tieBreakCodes.filter((code) => code !== "points");
+  const privacyAware = profileLinksByClubPlayerId !== undefined;
+
+  function standingAvatar(standing: PlayerStanding, size = 32) {
+    const profile = standing.clubPlayerId
+      ? profileLinksByClubPlayerId?.[standing.clubPlayerId]
+      : undefined;
+    const name = profile?.name ?? standing.name;
+    const photoUrl =
+      profile?.photoUrl ??
+      (privacyAware && standing.clubPlayerId ? undefined : standing.photoUrl);
+    const avatar = (
+      <PlayerAvatar
+        name={name}
+        photoUrl={photoUrl}
+        avatarId={profile?.avatarId ?? standing.avatarId}
+        size={size}
+      />
+    );
+
+    if (!profile) return avatar;
+
+    return (
+      <Link
+        href={profile.href}
+        aria-label={`Ver perfil de ${name}`}
+        className="rounded-full no-underline focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--color-marquee)]"
+      >
+        {avatar}
+      </Link>
+    );
+  }
 
   return (
     <div
@@ -111,36 +137,66 @@ export function StandingsTable({
     >
       {/* ── Tabla completa (md en adelante) ── */}
       <div className="hidden overflow-x-auto md:block">
-        <table className="w-full text-left text-sm" style={{ borderCollapse: "collapse" }}>
-          <thead style={{ background: "var(--color-navy)", color: "var(--color-cream)" }}>
+        <table
+          className="w-full text-left text-sm"
+          style={{ borderCollapse: "collapse" }}
+        >
+          <thead
+            style={{
+              background: "var(--color-navy)",
+              color: "var(--color-cream)",
+            }}
+          >
             <tr>
-              <th className="px-4 py-3" style={HEADER_CELL}>#</th>
-              <th className="px-4 py-3" style={HEADER_CELL}>Jugador</th>
-              <th className="px-4 py-3 text-right" style={HEADER_CELL}>Pts</th>
+              <th className="px-4 py-3" style={HEADER_CELL}>
+                #
+              </th>
+              <th className="px-4 py-3" style={HEADER_CELL}>
+                Jugador
+              </th>
+              <th className="px-4 py-3 text-right" style={HEADER_CELL}>
+                Pts
+              </th>
               {extraTieBreaks.map((code) => (
-                <th className="px-4 py-3 text-right" key={code} style={HEADER_CELL}>
+                <th
+                  className="px-4 py-3 text-right"
+                  key={code}
+                  style={HEADER_CELL}
+                >
                   {formatTieBreakLabel(code)}
                 </th>
               ))}
               {rounds.map((round) => (
-                <th className="px-2 py-3 text-center" key={round.id} style={HEADER_CELL}>
+                <th
+                  className="px-2 py-3 text-center"
+                  key={round.id}
+                  style={HEADER_CELL}
+                >
                   R{round.roundNumber}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y" style={{ borderColor: "rgba(26,26,26,0.12)" }}>
+          <tbody
+            className="divide-y"
+            style={{ borderColor: "rgba(26,26,26,0.12)" }}
+          >
             {standings.map((standing, index) => (
               <tr key={standing.playerId}>
-                <td className="px-4 py-3 font-semibold" style={{ color: "var(--color-navy)" }}>
+                <td
+                  className="px-3 py-2 font-semibold sm:px-4 sm:py-3"
+                  style={{ color: "var(--color-navy)" }}
+                >
                   {index + 1}
                 </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2.5">
-                    <PlayerAvatar name={standing.name} photoUrl={standing.photoUrl} />
+                <td className="px-3 py-2 sm:px-4 sm:py-3">
+                  <div className="flex items-center gap-2 sm:gap-2.5">
+                    {standingAvatar(standing)}
                     <div>
-                      <p className="font-semibold text-stone-900">{standing.name}</p>
-                      <p className="mt-0.5 text-xs text-stone-500">
+                      <p className="text-sm font-semibold text-stone-900 sm:text-base">
+                        {standing.name}
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-stone-500 sm:text-xs">
                         {standing.wins}G {standing.draws}T {standing.losses}P
                         {standing.rating ? ` · ${standing.rating}` : ""}
                       </p>
@@ -148,16 +204,22 @@ export function StandingsTable({
                   </div>
                 </td>
                 <td
-                  className="px-4 py-3 text-right font-bold"
-                  style={{ fontFamily: "ui-monospace, monospace", color: "var(--color-navy)" }}
+                  className="px-3 py-2 text-right font-bold sm:px-4 sm:py-3"
+                  style={{
+                    fontFamily: "ui-monospace, monospace",
+                    color: "var(--color-navy)",
+                  }}
                 >
                   {standing.points}
                 </td>
                 {extraTieBreaks.map((code) => (
                   <td
-                    className="px-4 py-3 text-right font-semibold"
+                    className="px-3 py-2 text-right font-semibold sm:px-4 sm:py-3"
                     key={code}
-                    style={{ fontFamily: "ui-monospace, monospace", color: "var(--color-navy)" }}
+                    style={{
+                      fontFamily: "ui-monospace, monospace",
+                      color: "var(--color-navy)",
+                    }}
                   >
                     {standing.tieBreaks[code] ?? 0}
                   </td>
@@ -165,10 +227,16 @@ export function StandingsTable({
                 {rounds.map((round) => {
                   const cell = roundCell(round, standing.playerId);
                   return (
-                    <td className="px-2 py-3 text-center" key={round.id}>
+                    <td
+                      className="px-2 py-2 text-center sm:py-3"
+                      key={round.id}
+                    >
                       <span
                         className="text-xs font-bold"
-                        style={{ fontFamily: "ui-monospace, monospace", color: TONE_COLORS[cell.tone] }}
+                        style={{
+                          fontFamily: "ui-monospace, monospace",
+                          color: TONE_COLORS[cell.tone],
+                        }}
                       >
                         {cell.label}
                       </span>
@@ -184,37 +252,50 @@ export function StandingsTable({
       {/* ── Lista compacta expandible (móvil) ── */}
       <div className="md:hidden">
         <div
-          className="flex items-center gap-3 px-4 py-2.5"
-          style={{ background: "var(--color-navy)", color: "var(--color-cream)" }}
+          className="flex items-center gap-2.5 px-3 py-2 sm:gap-3 sm:px-4 sm:py-2.5"
+          style={{
+            background: "var(--color-navy)",
+            color: "var(--color-cream)",
+          }}
         >
-          <span className="w-6 text-center" style={HEADER_CELL}>#</span>
-          <span className="flex-1" style={HEADER_CELL}>Jugador</span>
+          <span className="w-6 text-center" style={HEADER_CELL}>
+            #
+          </span>
+          <span className="flex-1" style={HEADER_CELL}>
+            Jugador
+          </span>
           <span style={HEADER_CELL}>Pts</span>
           <span className="w-4" aria-hidden />
         </div>
-        <div className="divide-y" style={{ borderColor: "rgba(26,26,26,0.12)" }}>
+        <div
+          className="divide-y"
+          style={{ borderColor: "rgba(26,26,26,0.12)" }}
+        >
           {standings.map((standing, index) => (
             <details className="group" key={standing.playerId}>
-              <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer list-none items-center gap-2.5 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3 [&::-webkit-details-marker]:hidden">
                 <span
                   className="w-6 text-center font-semibold"
                   style={{ color: "var(--color-navy)" }}
                 >
                   {index + 1}
                 </span>
-                <PlayerAvatar name={standing.name} photoUrl={standing.photoUrl} size={34} />
+                {standingAvatar(standing, 30)}
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold text-stone-900">
+                  <span className="block truncate text-sm font-semibold text-stone-900 sm:text-base">
                     {standing.name}
                   </span>
-                  <span className="mt-0.5 block text-xs text-stone-500">
+                  <span className="mt-0.5 block text-[11px] text-stone-500 sm:text-xs">
                     {standing.wins}G {standing.draws}T {standing.losses}P
                     {standing.rating ? ` · ${standing.rating}` : ""}
                   </span>
                 </span>
                 <span
-                  className="text-base font-bold"
-                  style={{ fontFamily: "ui-monospace, monospace", color: "var(--color-navy)" }}
+                  className="text-sm font-bold sm:text-base"
+                  style={{
+                    fontFamily: "ui-monospace, monospace",
+                    color: "var(--color-navy)",
+                  }}
                 >
                   {standing.points}
                 </span>
@@ -224,20 +305,32 @@ export function StandingsTable({
                 />
               </summary>
 
-              <div className="px-4 pb-4 pt-1" style={{ background: "var(--color-grain)" }}>
+              <div
+                className="px-3 pb-3 pt-0.5 sm:px-4 sm:pb-4 sm:pt-1"
+                style={{ background: "var(--color-grain)" }}
+              >
                 {extraTieBreaks.length > 0 && (
                   <dl className="grid grid-cols-2 gap-x-4 gap-y-2 pt-3">
                     {extraTieBreaks.map((code) => (
-                      <div className="flex items-baseline justify-between gap-2" key={code}>
+                      <div
+                        className="flex items-baseline justify-between gap-2"
+                        key={code}
+                      >
                         <dt
                           className="text-[10px] uppercase text-stone-500"
-                          style={{ fontFamily: "var(--font-poster)", letterSpacing: "0.14em" }}
+                          style={{
+                            fontFamily: "var(--font-poster)",
+                            letterSpacing: "0.14em",
+                          }}
                         >
                           {formatTieBreakLabel(code)}
                         </dt>
                         <dd
                           className="text-sm font-semibold"
-                          style={{ fontFamily: "ui-monospace, monospace", color: "var(--color-navy)" }}
+                          style={{
+                            fontFamily: "ui-monospace, monospace",
+                            color: "var(--color-navy)",
+                          }}
                         >
                           {standing.tieBreaks[code] ?? 0}
                         </dd>
@@ -250,7 +343,10 @@ export function StandingsTable({
                   <div className="mt-3">
                     <p
                       className="text-[10px] uppercase text-stone-500"
-                      style={{ fontFamily: "var(--font-poster)", letterSpacing: "0.14em" }}
+                      style={{
+                        fontFamily: "var(--font-poster)",
+                        letterSpacing: "0.14em",
+                      }}
                     >
                       Rondas
                     </p>
@@ -268,7 +364,9 @@ export function StandingsTable({
                               color: TONE_COLORS[cell.tone],
                             }}
                           >
-                            <span className="font-normal text-stone-400">R{round.roundNumber}</span>
+                            <span className="font-normal text-stone-400">
+                              R{round.roundNumber}
+                            </span>
                             {cell.label}
                           </span>
                         );

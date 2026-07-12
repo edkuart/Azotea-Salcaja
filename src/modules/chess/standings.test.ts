@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { calculateStandings, getColorBalance, getNextRoundBlocker } from "./standings";
+import {
+  calculateStandings,
+  getColorBalance,
+  getNextRoundBlocker,
+} from "./standings";
 import type { ChessTournament } from "./types";
 
 const baseTournament: ChessTournament = {
@@ -18,7 +22,13 @@ const baseTournament: ChessTournament = {
   locationLabel: "Azotea",
   tieBreakOrder: ["points", "buchholz_cut_1", "wins"],
   players: [
-    { id: "p1", name: "Carlos Mendez", seed: 1, status: "active" },
+    {
+      id: "p1",
+      name: "Carlos Mendez",
+      seed: 1,
+      status: "active",
+      avatarId: "chessitos-m01",
+    },
     { id: "p2", name: "Sofia Perez", seed: 2, status: "active" },
     { id: "p3", name: "Ana Lopez", seed: 3, status: "active" },
     { id: "p4", name: "Diego Ramirez", seed: 4, status: "active" },
@@ -38,9 +48,27 @@ describe("calculateStandings", () => {
           roundNumber: 1,
           status: "completed",
           games: [
-            { id: "g1", boardNumber: 1, whitePlayerId: "p1", blackPlayerId: "p4", result: "white_win" },
-            { id: "g2", boardNumber: 2, whitePlayerId: "p5", blackPlayerId: "p2", result: "black_win" },
-            { id: "g3", boardNumber: 3, whitePlayerId: "p3", blackPlayerId: "p6", result: "draw" },
+            {
+              id: "g1",
+              boardNumber: 1,
+              whitePlayerId: "p1",
+              blackPlayerId: "p4",
+              result: "white_win",
+            },
+            {
+              id: "g2",
+              boardNumber: 2,
+              whitePlayerId: "p5",
+              blackPlayerId: "p2",
+              result: "black_win",
+            },
+            {
+              id: "g3",
+              boardNumber: 3,
+              whitePlayerId: "p3",
+              blackPlayerId: "p6",
+              result: "draw",
+            },
           ],
         },
       ],
@@ -50,6 +78,7 @@ describe("calculateStandings", () => {
 
     expect(standings[0]).toMatchObject({
       name: "Carlos Mendez",
+      avatarId: "chessitos-m01",
       points: 1,
       wins: 1,
     });
@@ -59,7 +88,9 @@ describe("calculateStandings", () => {
       wins: 1,
       blackWins: 1,
     });
-    expect(standings.find((standing) => standing.name === "Ana Lopez")).toMatchObject({
+    expect(
+      standings.find((standing) => standing.name === "Ana Lopez"),
+    ).toMatchObject({
       points: 0.5,
       draws: 1,
     });
@@ -123,9 +154,27 @@ describe("getNextRoundBlocker", () => {
           roundNumber: 1,
           status: "in_progress",
           games: [
-            { id: "g1", boardNumber: 1, whitePlayerId: "p1", blackPlayerId: "p4", result: "unplayed" },
-            { id: "g2", boardNumber: 2, whitePlayerId: "p5", blackPlayerId: "p2", result: "unplayed" },
-            { id: "g3", boardNumber: 3, whitePlayerId: "p3", blackPlayerId: "p6", result: "unplayed" },
+            {
+              id: "g1",
+              boardNumber: 1,
+              whitePlayerId: "p1",
+              blackPlayerId: "p4",
+              result: "unplayed",
+            },
+            {
+              id: "g2",
+              boardNumber: 2,
+              whitePlayerId: "p5",
+              blackPlayerId: "p2",
+              result: "unplayed",
+            },
+            {
+              id: "g3",
+              boardNumber: 3,
+              whitePlayerId: "p3",
+              blackPlayerId: "p6",
+              result: "unplayed",
+            },
           ],
         },
       ],

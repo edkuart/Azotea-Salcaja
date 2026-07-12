@@ -11,10 +11,10 @@ export function SiteFooter() {
           aria-label="Chessitos"
           style={{
             fontFamily: "var(--font-display)",
-            fontSize: "clamp(4rem, 12vw, 10rem)",
+            fontSize: "clamp(2.9rem, 13vw, 10rem)",
             lineHeight: 0.9,
             letterSpacing: "-0.01em",
-            margin: "0 0 36px",
+            margin: "0 0 22px",
           }}
         >
           Chess
@@ -32,13 +32,13 @@ export function SiteFooter() {
 
         {/* 4-column grid */}
         <div
-          className="grid gap-8 border-t-2 pt-7 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid gap-5 border-t-2 pt-5 sm:grid-cols-2 sm:gap-8 sm:pt-7 lg:grid-cols-4"
           style={{ borderColor: "var(--color-marquee)" }}
         >
           {/* Dirección */}
           <div>
             <p
-              className="mb-3"
+              className="mb-2 sm:mb-3"
               style={{
                 fontFamily: "var(--font-poster)",
                 textTransform: "uppercase",
@@ -50,8 +50,11 @@ export function SiteFooter() {
               Dirección
             </p>
             <p
-              className="leading-6 opacity-85"
-              style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)" }}
+              className="leading-5 opacity-85 sm:leading-6"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "var(--text-sm)",
+              }}
             >
               {restaurantInfo.address}
             </p>
@@ -60,7 +63,7 @@ export function SiteFooter() {
           {/* Horario */}
           <div>
             <p
-              className="mb-3"
+              className="mb-2 sm:mb-3"
               style={{
                 fontFamily: "var(--font-poster)",
                 textTransform: "uppercase",
@@ -73,13 +76,16 @@ export function SiteFooter() {
             </p>
             <div
               className="grid gap-1 opacity-85"
-              style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)" }}
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "var(--text-sm)",
+              }}
             >
               <p>Torneos · Lunes 7:30 PM</p>
               <p>Clases · Lunes 5:30 – 7:30 PM</p>
             </div>
             <p
-              className="mt-4 mb-2"
+              className="mb-1.5 mt-3 sm:mb-2 sm:mt-4"
               style={{
                 fontFamily: "var(--font-poster)",
                 textTransform: "uppercase",
@@ -92,7 +98,11 @@ export function SiteFooter() {
             </p>
             <div
               className="grid gap-1"
-              style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", opacity: 0.5 }}
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "var(--text-sm)",
+                opacity: 0.5,
+              }}
             >
               {restaurantInfo.hours.map((h) => (
                 <p key={h.day}>
@@ -105,7 +115,7 @@ export function SiteFooter() {
           {/* Contacto */}
           <div>
             <p
-              className="mb-3"
+              className="mb-2 sm:mb-3"
               style={{
                 fontFamily: "var(--font-poster)",
                 textTransform: "uppercase",
@@ -118,7 +128,10 @@ export function SiteFooter() {
             </p>
             <div
               className="grid gap-1.5 opacity-85"
-              style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)" }}
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "var(--text-sm)",
+              }}
             >
               <a
                 href={`https://wa.me/${restaurantInfo.whatsapp}`}
@@ -145,7 +158,7 @@ export function SiteFooter() {
           {/* Ajedrez */}
           <div>
             <p
-              className="mb-3"
+              className="mb-2 sm:mb-3"
               style={{
                 fontFamily: "var(--font-poster)",
                 textTransform: "uppercase",
@@ -158,7 +171,10 @@ export function SiteFooter() {
             </p>
             <div
               className="grid gap-1.5 opacity-85"
-              style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)" }}
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "var(--text-sm)",
+              }}
             >
               <Link
                 href="/ajedrez/clases"
@@ -173,6 +189,13 @@ export function SiteFooter() {
                 style={{ color: "var(--color-cream)" }}
               >
                 Torneos
+              </Link>
+              <Link
+                href="/ajedrez/proyeccion"
+                className="no-underline transition-opacity hover:opacity-100"
+                style={{ color: "var(--color-cream)" }}
+              >
+                Proyección
               </Link>
               <Link
                 href="/ajedrez"
@@ -194,7 +217,7 @@ export function SiteFooter() {
 
         {/* Legal */}
         <div
-          className="mt-12 flex justify-between opacity-60"
+          className="mt-7 flex justify-between opacity-60 sm:mt-12"
           style={{
             fontFamily: "var(--font-poster)",
             textTransform: "uppercase",

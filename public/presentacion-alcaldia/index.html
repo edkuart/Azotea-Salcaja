@@ -116,6 +116,37 @@
     position:absolute; inset:0; z-index:2; pointer-events:none;
     background:linear-gradient(180deg, rgba(6,24,46,0) 55%, rgba(6,24,46,.30) 100%);
   }
+  .photo-badge{
+    position:absolute; left:28px; top:28px; z-index:3;
+    display:inline-flex; align-items:center; gap:14px;
+    background:rgba(6,24,46,.84); color:var(--cream);
+    border:2px solid var(--gold); padding:14px 18px;
+    font-family:var(--f-poster); font-size:18px;
+    text-transform:uppercase; letter-spacing:.16em;
+    box-shadow:8px 8px 0 rgba(0,0,0,.28);
+  }
+  .photo-badge .badge-icon{
+    font-size:32px; line-height:1; color:var(--gold);
+    font-family:Georgia,serif;
+  }
+  .closeout-proof{
+    position:absolute; left:28px; right:28px; bottom:28px; z-index:3;
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+  }
+  .proof-pill{
+    min-height:92px; padding:16px 14px;
+    background:rgba(255,253,208,.92); color:var(--ink);
+    border:2px solid var(--gold);
+    display:flex; flex-direction:column; justify-content:center;
+    box-shadow:6px 6px 0 rgba(0,0,0,.32);
+  }
+  .proof-pill strong{
+    font-family:var(--f-display); font-size:34px; line-height:.95;
+  }
+  .proof-pill span{
+    margin-top:7px; font-family:var(--f-poster); font-size:12px;
+    text-transform:uppercase; letter-spacing:.14em; color:var(--stage);
+  }
 
   /* ============ CHIPS / BLOCKS ============ */
   .chip-row{ display:flex; flex-wrap:wrap; gap:18px; }
@@ -442,6 +473,12 @@
         <div class="photo on-dark anim d3" style="flex:.92; height:600px; align-self:stretch;">
           <img src="/presentacion-alcaldia/assets/foto-9-cierre.jpg" alt="Niños jugando ajedrez en grupo" />
           <span class="photo-grad"></span>
+          <div class="photo-badge"><span class="badge-icon">&#9733;</span>Cierre con evidencia</div>
+          <div class="closeout-proof">
+            <div class="proof-pill"><strong>Premios</strong><span>reconocimiento</span></div>
+            <div class="proof-pill"><strong>Fotos</strong><span>visibilidad</span></div>
+            <div class="proof-pill"><strong>Informe</strong><span>resultados</span></div>
+          </div>
         </div>
       </div>
       <div class="foot">

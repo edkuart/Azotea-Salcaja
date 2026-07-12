@@ -4,12 +4,14 @@ import { ArrowRight, BookOpen, CalendarDays, MapPin, Trophy } from "lucide-react
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Section } from "@/components/public/Section";
-import { listTournaments } from "@/lib/tournament-store";
+import { listOfficialTournaments } from "@/lib/official-tournaments";
 import {
+  formatDateEs,
+  formatTournamentDate,
   formatTournamentSystem,
   getEffectiveTournamentStatus,
-  officialChessTournaments,
 } from "@/modules/chess/public-data";
+import { restaurantInfo } from "@/modules/restaurant/public-data";
 import type { ChessTournament } from "@/modules/chess/types";
 
 export const metadata: Metadata = {
@@ -21,16 +23,6 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-const DAYS_ES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-const MONTHS_ES = [
-  "enero", "febrero", "marzo", "abril", "mayo", "junio",
-  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
-];
-
-function formatDate(d: Date) {
-  return `${DAYS_ES[d.getDay()]}, ${d.getDate()} de ${MONTHS_ES[d.getMonth()]}`;
-}
 
 function getUpcomingMondays(count: number): Date[] {
   const today = new Date();
@@ -49,7 +41,8 @@ function getUpcomingMondays(count: number): Date[] {
 }
 
 function isUpcoming(t: ChessTournament) {
-  return t.status === "setup" || t.status === "active";
+  const status = getEffectiveTournamentStatus(t);
+  return status === "setup" || status === "active";
 }
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
@@ -62,16 +55,20 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default async function AgendaPage() {
-  const stored = await listTournaments();
-  const allTournaments = [
-    ...stored,
-    ...officialChessTournaments.filter(
-      (ot) => !stored.some((s) => s.id === ot.id),
-    ),
-  ];
+  const allTournaments = await listOfficialTournaments();
 
   const upcoming = allTournaments.filter(isUpcoming);
-  const mondays  = getUpcomingMondays(8);
+  // Si no hay torneos activos, la columna muestra los recién finalizados para
+  // que la agenda nunca quede vacía entre lunes y lunes.
+  const recentFinished =
+    upcoming.length > 0
+      ? []
+      : allTournaments
+          .filter((t) => getEffectiveTournamentStatus(t) === "closed")
+          .sort((a, b) => (b.startsAt ?? "").localeCompare(a.startsAt ?? ""))
+          .slice(0, 3);
+  const shownTournaments = upcoming.length > 0 ? upcoming : recentFinished;
+  const mondays  = getUpcomingMondays(5);
 
   return (
     <PublicLayout>
@@ -85,41 +82,40 @@ export default async function AgendaPage() {
             borderBottom: "4px solid var(--color-stage)",
           }}
         >
-          <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
-            <Link
-              href="/ajedrez"
-              style={{
-                fontFamily: "var(--font-poster)",
-                textTransform: "uppercase",
-                letterSpacing: "0.2em",
-                fontSize: "10px",
-                color: "var(--color-marquee)",
-                textDecoration: "none",
-                display: "inline-block",
-                marginBottom: "18px",
-              }}
-            >
-              ← Ajedrez
-            </Link>
-            <p
-              style={{
-                fontFamily: "var(--font-poster)",
-                textTransform: "uppercase",
-                letterSpacing: "0.22em",
-                fontSize: "11px",
-                color: "var(--color-stage)",
-                marginBottom: "12px",
-              }}
-            >
-              Calendario
-            </p>
+          <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+              <Link
+                href="/ajedrez"
+                style={{
+                  fontFamily: "var(--font-poster)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.2em",
+                  fontSize: "10px",
+                  color: "var(--color-marquee)",
+                  textDecoration: "none",
+                }}
+              >
+                ← Ajedrez
+              </Link>
+              <p
+                style={{
+                  fontFamily: "var(--font-poster)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.22em",
+                  fontSize: "11px",
+                  color: "var(--color-stage)",
+                }}
+              >
+                Calendario
+              </p>
+            </div>
             <h1
               style={{
                 fontFamily: "var(--font-display)",
-                fontSize: "clamp(2.8rem, 7vw, 5rem)",
+                fontSize: "clamp(2rem, 9vw, var(--text-4xl))",
                 lineHeight: 0.95,
                 letterSpacing: "-0.01em",
-                marginBottom: "14px",
+                margin: "10px 0 8px",
               }}
             >
               Agenda de{" "}
@@ -136,8 +132,8 @@ export default async function AgendaPage() {
             <p
               style={{
                 fontFamily: "var(--font-body)",
-                fontSize: "var(--text-base)",
-                lineHeight: 1.7,
+                fontSize: "var(--text-sm)",
+                lineHeight: 1.6,
                 color: "rgba(255,253,208,0.78)",
                 maxWidth: "480px",
               }}
@@ -187,7 +183,7 @@ export default async function AgendaPage() {
                       color: "#666",
                     }}
                   >
-                    Lunes · 5:30 – 7:30 PM · Azotea Salcajá
+                    Lunes · 5:30 – 7:30 PM · {restaurantInfo.shortAddress}
                   </p>
                 </div>
               </div>
@@ -216,7 +212,7 @@ export default async function AgendaPage() {
                           color: i === 0 ? "var(--color-cream)" : "var(--color-ink)",
                         }}
                       >
-                        {formatDate(d)}
+                        {formatDateEs(d)}
                       </p>
                       <p
                         style={{
@@ -301,15 +297,18 @@ export default async function AgendaPage() {
                   <p style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "#666" }}>
                     {upcoming.length > 0
                       ? `${upcoming.length} torneo${upcoming.length > 1 ? "s" : ""} activo${upcoming.length > 1 ? "s" : ""}`
-                      : "Sin torneos activos"}
+                      : recentFinished.length > 0
+                        ? "Sin torneos activos · últimos resultados"
+                        : "Sin torneos activos"}
                   </p>
                 </div>
               </div>
 
-              {upcoming.length > 0 ? (
+              {shownTournaments.length > 0 ? (
                 <div style={{ display: "grid", gap: "6px" }}>
-                  {upcoming.map((t) => {
-                    const statusCfg = STATUS_LABEL[t.status] ?? STATUS_LABEL.setup;
+                  {shownTournaments.map((t) => {
+                    const statusCfg =
+                      STATUS_LABEL[getEffectiveTournamentStatus(t)] ?? STATUS_LABEL.setup;
                     const liveHref  = t.id.startsWith("t") ? `/ajedrez/torneos/live/${t.id}` : `/ajedrez/torneos/${t.slug}`;
                     return (
                       <Link
@@ -362,7 +361,7 @@ export default async function AgendaPage() {
                                   style={{ display: "flex", alignItems: "center", gap: "3px" }}
                                 >
                                   <CalendarDays style={{ width: "10px", height: "10px" }} aria-hidden />
-                                  {t.startsAt.split(" ")[0]}
+                                  {formatTournamentDate(t.startsAt)}
                                 </span>
                               </>
                             )}
@@ -449,24 +448,42 @@ export default async function AgendaPage() {
                 </div>
               )}
 
-              <Link
-                href="/ajedrez/torneos"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  marginTop: "16px",
-                  fontFamily: "var(--font-poster)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.16em",
-                  fontSize: "10px",
-                  color: "var(--color-marquee)",
-                  textDecoration: "none",
-                }}
-              >
-                Ver todos los torneos
-                <ArrowRight style={{ width: "12px", height: "12px" }} aria-hidden />
-              </Link>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", marginTop: "16px" }}>
+                <Link
+                  href="/ajedrez/torneos"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    fontFamily: "var(--font-poster)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.16em",
+                    fontSize: "10px",
+                    color: "var(--color-marquee)",
+                    textDecoration: "none",
+                  }}
+                >
+                  Ver todos los torneos
+                  <ArrowRight style={{ width: "12px", height: "12px" }} aria-hidden />
+                </Link>
+                <Link
+                  href="/ajedrez/club"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    fontFamily: "var(--font-poster)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.16em",
+                    fontSize: "10px",
+                    color: "var(--color-marquee)",
+                    textDecoration: "none",
+                  }}
+                >
+                  Ranking del club
+                  <ArrowRight style={{ width: "12px", height: "12px" }} aria-hidden />
+                </Link>
+              </div>
             </div>
           </div>
         </Section>
@@ -506,7 +523,7 @@ export default async function AgendaPage() {
                     marginTop: "4px",
                   }}
                 >
-                  Cada lunes · Clases 5:30 PM · Torneos 7:30 PM
+                  Cada lunes · Clases 5:30 PM · Torneos 7:30 PM · {restaurantInfo.shortAddress}
                 </p>
               </div>
               <Link href="/contacto" className="btn btn-primary">

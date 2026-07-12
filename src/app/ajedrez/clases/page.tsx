@@ -219,6 +219,35 @@ export default function ClasesPage() {
                 <ArrowRight style={{ width: "14px", height: "14px" }} aria-hidden />
               </a>
             </div>
+
+            {/* Atajos a secciones: la info clave sin scroll largo */}
+            <nav
+              aria-label="Secciones de clases"
+              style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "20px" }}
+            >
+              {[
+                { href: "#horario", label: "Horario y precio" },
+                { href: "#ubicacion", label: "Ubicación" },
+                { href: "#faq", label: "Preguntas" },
+              ].map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  style={{
+                    fontFamily: "var(--font-poster)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.16em",
+                    fontSize: "10px",
+                    color: "var(--color-cream)",
+                    border: "1px solid rgba(255,253,208,0.4)",
+                    padding: "7px 14px",
+                    textDecoration: "none",
+                  }}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </nav>
           </div>
         </section>
 
@@ -532,7 +561,7 @@ export default function ClasesPage() {
         </div>
 
         {/* ── Horario ── */}
-        <div style={{ background: "var(--color-stage)", color: "var(--color-cream)" }}>
+        <div id="horario" style={{ background: "var(--color-stage)", color: "var(--color-cream)" }}>
           <Section>
             <div className="grid gap-8 lg:grid-cols-3 lg:items-center">
               <div className="lg:col-span-2">
@@ -599,7 +628,7 @@ export default function ClasesPage() {
         </div>
 
         {/* ── Dónde estamos ── */}
-        <Section>
+        <Section id="ubicacion">
           <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr] lg:items-start">
 
             {/* Mapa */}
@@ -637,7 +666,7 @@ export default function ClasesPage() {
                     Azotea Salcajá
                   </p>
                   <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "rgba(255,253,208,0.6)" }}>
-                    {restaurantInfo.floor} · Salcajá, Quetzaltenango
+                    {restaurantInfo.shortAddress}
                   </p>
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
@@ -683,13 +712,13 @@ export default function ClasesPage() {
                 <p style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)", lineHeight: 1.7, color: "#444" }}>
                   Las clases se realizan en el restaurante —{" "}
                   <strong style={{ color: "var(--color-ink)" }}>{restaurantInfo.floor}</strong>{" "}
-                  del edificio, en el centro de Salcajá. Los papás pueden quedarse
-                  a disfrutar el local mientras los niños tienen su clase.
+                  en {restaurantInfo.shortAddress}. Los papás pueden quedarse a
+                  disfrutar el local mientras los niños tienen su clase.
                 </p>
               </div>
 
               {[
-                { icon: MapPin, label: "Dirección",  value: `${restaurantInfo.floor} · Salcajá, Quetzaltenango` },
+                { icon: MapPin, label: "Dirección",  value: restaurantInfo.address },
                 { icon: Clock,  label: "Clases",     value: "Lunes · 5:30 – 7:30 PM"                           },
               ].map(({ icon: Icon, label, value }) => (
                 <div
@@ -715,7 +744,7 @@ export default function ClasesPage() {
         </Section>
 
         {/* ── FAQ ── */}
-        <Section>
+        <Section id="faq">
           <p
             style={{
               fontFamily: "var(--font-poster)",

@@ -2,9 +2,8 @@
  * Genera el PDF descargable de la presentación municipal de Chessitos.
  *
  * Sirve el deck estático (public/presentacion-alcaldia/) y usa Playwright para
- * exportarlo a PDF. deck-stage.js define `@media print` (una diapositiva por
- * página, al tamaño 1920×1080 vía @page, sin rail), así que con
- * preferCSSPageSize cada slide queda en su propia página 16:9 horizontal.
+ * exportarlo a PDF. El deck se mantiene en 1920×1080 para pantalla, pero el
+ * PDF público se emite a 1440×810 para que sea más liviano y siga siendo 16:9.
  *
  * Salida: public/docs/chessitos/chessitos-salcaja-presentacion-alcaldia.pdf
  * Uso: node scripts/generate-presentacion-alcaldia-pdf.js
@@ -22,6 +21,12 @@ const outPath = path.join(
   "chessitos",
   "chessitos-salcaja-presentacion-alcaldia.pdf",
 );
+
+const SCREEN_W = 1920;
+const SCREEN_H = 1080;
+const PDF_W = 1440;
+const PDF_H = 810;
+const PDF_SCALE = PDF_W / SCREEN_W;
 
 const MIME = {
   ".html": "text/html",
@@ -73,6 +78,35 @@ function startServer() {
     await page.evaluate(() => (document.fonts ? document.fonts.ready : null));
     await page.waitForTimeout(2500);
 
+    await page.evaluate(
+      ({ pdfWidth, pdfHeight, screenWidth, screenHeight, scale }) => {
+        const deck = document.querySelector("deck-stage");
+        deck?.setAttribute("width", String(pdfWidth));
+        deck?.setAttribute("height", String(pdfHeight));
+
+        const style = document.createElement("style");
+        style.id = "print-downscale";
+        style.textContent = `
+          @media print {
+            deck-stage > section > .slide {
+              width: ${screenWidth}px !important;
+              height: ${screenHeight}px !important;
+              transform: scale(${scale});
+              transform-origin: top left;
+            }
+          }
+        `;
+        document.head.appendChild(style);
+      },
+      {
+        pdfWidth: PDF_W,
+        pdfHeight: PDF_H,
+        screenWidth: SCREEN_W,
+        screenHeight: SCREEN_H,
+        scale: PDF_SCALE,
+      },
+    );
+
     await page.emulateMedia({ media: "print" });
     await page.waitForTimeout(400);
 
@@ -80,7 +114,7 @@ function startServer() {
     await page.pdf({
       path: outPath,
       printBackground: true,
-      preferCSSPageSize: true, // usa el @page 1920×1080 del deck → 16:9 horizontal
+      preferCSSPageSize: true,
     });
   } finally {
     await browser.close();

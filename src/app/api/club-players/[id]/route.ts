@@ -1,18 +1,23 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { deleteClubPlayer, updateClubPlayer } from "@/lib/club-players-store";
-import type { ClubPlayer } from "@/modules/chess/types";
+import { requireApiSession } from "@/lib/auth/api";
+import { clubPlayerUpdateSchema } from "@/modules/chess/club-player-validation";
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const body = (await req.json()) as Partial<ClubPlayer>;
-
-  if (body.name !== undefined && !body.name.trim()) {
-    return NextResponse.json({ error: "El nombre es obligatorio" }, { status: 400 });
-  }
+  const auth = await requireApiSession();
+  if (auth.response) return auth.response;
+  const parsed = clubPlayerUpdateSchema.safeParse(await req.json());
+  if (!parsed.success)
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Datos inválidos" },
+      { status: 400 },
+    );
+  const body = parsed.data;
 
   try {
     const player = await updateClubPlayer(id, {
@@ -30,6 +35,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+  const auth = await requireApiSession();
+  if (auth.response) return auth.response;
   await deleteClubPlayer(id);
   return NextResponse.json({ ok: true });
 }

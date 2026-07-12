@@ -5,11 +5,31 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { ClubPlayersManager } from "@/components/admin/chess/ClubPlayersManager";
 import { listClubPlayers } from "@/lib/club-players-store";
+import { listTournaments } from "@/lib/tournament-store";
+import { computeClubRanking } from "@/modules/chess/club-ranking";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminClubPlayersPage() {
-  const players = await listClubPlayers();
+  const [players, tournaments] = await Promise.all([
+    listClubPlayers(),
+    listTournaments(),
+  ]);
+  const rankingByPlayerId = new Map(
+    computeClubRanking(tournaments, players).map((entry) => [
+      entry.player.id,
+      entry,
+    ]),
+  );
+  const playersWithCurrentElo = players.map((player) => {
+    const entry = rankingByPlayerId.get(player.id);
+    return {
+      ...player,
+      currentElo: entry?.elo ?? player.rating,
+      currentEloDelta: entry?.eloDelta ?? 0,
+      currentEloGames: entry?.eloGames ?? 0,
+    };
+  });
 
   return (
     <AdminShell>
@@ -23,13 +43,13 @@ export default async function AdminClubPlayersPage() {
             Torneos
           </Link>
         }
-        description="El roster permanente del club: rating, foto, fecha de nacimiento y ficha ajedrecística. Desde aquí se inscriben en cada torneo nuevo."
+        description="El roster permanente del club: ELO actual, foto, fecha de nacimiento y ficha ajedrecística. Desde aquí se inscriben en cada torneo nuevo."
         eyebrow="Ajedrez"
         title="Jugadores del club"
       />
 
       <div className="mt-8">
-        <ClubPlayersManager initial={players} />
+        <ClubPlayersManager initial={playersWithCurrentElo} />
       </div>
     </AdminShell>
   );

@@ -77,6 +77,27 @@ export function formatTournamentSystem(system: ChessTournament["system"]) {
   return system === "swiss" ? "Sistema suizo" : "Todos contra todos";
 }
 
+const DAYS_ES = [
+  "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado",
+];
+const MONTHS_ES = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+];
+
+/** Fecha legible en español: "Lunes, 6 de julio". */
+export function formatDateEs(d: Date) {
+  return `${DAYS_ES[d.getDay()]}, ${d.getDate()} de ${MONTHS_ES[d.getMonth()]}`;
+}
+
+/** "2026-07-06" (o con hora) → "Lunes, 6 de julio", sin corrimiento de zona
+ *  horaria (el ISO se parsea manualmente como fecha local). */
+export function formatTournamentDate(startsAt: string) {
+  const [y, m, d] = startsAt.slice(0, 10).split("-").map(Number);
+  if (!y || !m || !d) return startsAt.split(" ")[0];
+  return formatDateEs(new Date(y, m - 1, d));
+}
+
 export function formatTournamentStatus(status: ChessTournament["status"]) {
   const labels: Record<ChessTournament["status"], string> = {
     setup: "En preparacion",

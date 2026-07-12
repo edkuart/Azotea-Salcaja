@@ -199,23 +199,23 @@ model Promotion {
 }
 
 model Event {
-  id                 String        @id @default(cuid())
-  title              String
-  slug               String        @unique
-  type               EventType
-  description        String?
-  startsAt           DateTime      @map("starts_at")
-  endsAt             DateTime?     @map("ends_at")
-  locationLabel      String?       @map("location_label")
-  locationAddress    String?       @map("location_address")
-  locationMapsUrl    String?       @map("location_maps_url")
-  imageId            String?       @map("image_id")
-  coverImageUrl      String?       @map("cover_image_url")
+  id                  String        @id @default(cuid())
+  title               String
+  slug                String        @unique
+  type                EventType
+  description         String?
+  startsAt            DateTime      @map("starts_at")
+  endsAt              DateTime?     @map("ends_at")
+  locationLabel       String?       @map("location_label")
+  locationAddress     String?       @map("location_address")
+  locationMapsUrl     String?       @map("location_maps_url")
+  imageId             String?       @map("image_id")
+  coverImageUrl       String?       @map("cover_image_url")
   status              PublishStatus @default(draft)
   linkedTournamentId  String?       @map("linked_tournament_id")
   linkedTournamentIds String[]      @map("linked_tournament_ids")
   createdAt           DateTime      @default(now()) @map("created_at")
-  updatedAt          DateTime      @updatedAt @map("updated_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
 
   image MediaAsset? @relation("EventImage", fields: [imageId], references: [id], onDelete: SetNull)
 
@@ -401,18 +401,29 @@ model ChessEnrollment {
 // Al inscribirlos en un torneo se COPIAN sus datos al blob del torneo,
 // igual que el resto de la información de torneos (sin FK).
 model ClubPlayer {
-  id        String   @id @default(cuid())
-  name      String
-  rating    Int?
-  fideId    String?  @map("fide_id")
-  title     String?
-  sex       String?
-  birthDate String?  @map("birth_date")
-  photoUrl  String?  @map("photo_url")
-  notes     String?
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id                String   @id @default(cuid())
+  name              String
+  rating            Int?
+  fideId            String?  @map("fide_id")
+  title             String?
+  sex               String?
+  birthDate         String?  @map("birth_date")
+  photoUrl          String?  @map("photo_url")
+  avatarId          String?  @map("avatar_id")
+  notes             String?
+  isActive          Boolean  @default(true) @map("is_active")
+  publicSlug        String?  @unique @map("public_slug")
+  publicName        String?  @map("public_name")
+  memberSince       String?  @map("member_since")
+  clubCategory      String?  @map("club_category")
+  profileVisibility String   @default("private") @map("profile_visibility")
+  showPhoto         Boolean  @default(false) @map("show_photo")
+  showAgeBand       Boolean  @default(false) @map("show_age_band")
+  showStats         Boolean  @default(true) @map("show_stats")
+  allowSharing      Boolean  @default(false) @map("allow_sharing")
+  consentRecordedAt String?  @map("consent_recorded_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
   @@map("club_players")
 }

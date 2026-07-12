@@ -1,10 +1,13 @@
+import type { ClubAvatarId } from "@/modules/chess/avatars";
+
 export type TournamentSystem = "swiss" | "round_robin";
 
 export type TournamentKind = "official" | "private";
 
 export type TournamentStatus = "setup" | "active" | "closed" | "cancelled";
 
-export type TournamentVisibility = "draft" | "published" | "unlisted" | "archived";
+export type TournamentVisibility =
+  "draft" | "published" | "unlisted" | "archived";
 
 /** Categoría por sexo de un torneo. Ausente = "open" (abierta). */
 export type TournamentSexCategory = "open" | "female" | "male";
@@ -12,11 +15,7 @@ export type TournamentSexCategory = "open" | "female" | "male";
 export type PlayerStatus = "active" | "withdrawn" | "absent";
 
 export type RoundStatus =
-  | "pending"
-  | "paired"
-  | "in_progress"
-  | "completed"
-  | "locked";
+  "pending" | "paired" | "in_progress" | "completed" | "locked";
 
 export type GameResult =
   | "white_win"
@@ -47,6 +46,9 @@ export type ChessPlayer = {
   seed: number;
   status: PlayerStatus;
   photoUrl?: string;
+  /** Avatar ilustrado vigente del roster. En superficies publicas se refresca
+   * desde el perfil del club para no congelarlo dentro del torneo. */
+  avatarId?: ClubAvatarId;
   /** Vínculo al roster del club (para ranking y ELO). Los invitados no lo tienen. */
   clubPlayerId?: string;
   /** Sexo del jugador (para categorías femenina/masculina). */
@@ -136,6 +138,7 @@ export type PlayerStanding = {
   seed: number;
   rating?: number;
   photoUrl?: string;
+  avatarId?: ClubAvatarId;
   clubPlayerId?: string;
   points: number;
   played: number;
@@ -172,6 +175,7 @@ export type PairingResult = {
 };
 
 export type ClubPlayerSex = "M" | "F";
+export type ClubProfileVisibility = "private" | "initials" | "public";
 
 /** Jugador del club: roster permanente independiente de torneos. Al
  *  inscribirlo en un torneo se copian sus datos al blob del torneo. */
@@ -184,8 +188,19 @@ export type ClubPlayer = {
   sex?: ClubPlayerSex;
   birthDate?: string; // YYYY-MM-DD
   photoUrl?: string;
+  avatarId?: ClubAvatarId | null;
   notes?: string;
   isActive: boolean;
+  publicSlug?: string;
+  publicName?: string;
+  memberSince?: string;
+  clubCategory?: string;
+  profileVisibility?: ClubProfileVisibility;
+  showPhoto?: boolean;
+  showAgeBand?: boolean;
+  showStats?: boolean;
+  allowSharing?: boolean;
+  consentRecordedAt?: string;
   createdAt?: string;
   updatedAt?: string;
 };

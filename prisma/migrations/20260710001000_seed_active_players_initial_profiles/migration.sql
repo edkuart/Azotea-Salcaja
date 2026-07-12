@@ -1,0 +1,3 @@
+-- No-op.
+-- This migration slot was reserved during implementation and intentionally does
+-- not change data. Public visibility is controlled manually from admin.

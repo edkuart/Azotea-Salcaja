@@ -13,7 +13,8 @@ const chessSubItems = [
   { href: "/ajedrez/proyeccion", label: "Proyección", exact: false },
   { href: "/ajedrez/torneos", label: "Torneos", exact: false },
   { href: "/ajedrez/agenda", label: "Agenda", exact: false },
-  { href: "/ajedrez/ranking", label: "Clasificación", exact: false },
+  { href: "/ajedrez/club", label: "Club Chessitos", exact: false },
+  { href: "/ajedrez/ranking", label: "Palmarés", exact: false },
   { href: "/ajedrez", label: "Comunidad", exact: true },
 ];
 
@@ -252,7 +253,7 @@ export function SiteHeader() {
           aria-expanded={open}
           aria-controls="mobile-menu"
           onClick={() => setOpen((v) => !v)}
-          className="flex md:hidden flex-col justify-center items-center gap-[5px] p-2 -mr-1"
+          className="flex md:hidden flex-col justify-center items-center gap-[5px] p-2"
           style={{ width: "40px", height: "40px" }}
         >
           <span

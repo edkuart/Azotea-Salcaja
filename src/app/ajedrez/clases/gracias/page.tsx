@@ -113,7 +113,7 @@ export default function GraciasPage() {
               <div style={{ display: "grid", gap: "8px" }}>
                 {[
                   "Clases: lunes de 5:30 a 7:30 PM",
-                  "Lugar: Azotea Salcajá",
+                  `Lugar: Azotea Salcajá · ${restaurantInfo.shortAddress}`,
                   `WhatsApp: ${restaurantInfo.phone}`,
                 ].map((line) => (
                   <p

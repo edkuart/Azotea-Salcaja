@@ -1,5 +1,6 @@
 import { TextAreaField } from "@/components/admin/TextAreaField";
 import { TextField } from "@/components/admin/TextField";
+import { restaurantInfo } from "@/modules/restaurant/public-data";
 import type { ChessTournament } from "@/modules/chess/types";
 
 export function ChessTournamentForm({
@@ -48,7 +49,7 @@ export function ChessTournamentForm({
         <TextField
           defaultValue={tournament?.locationLabel}
           label="Ubicacion"
-          placeholder="Azotea Salcajá"
+          placeholder={`${restaurantInfo.name} · ${restaurantInfo.shortAddress}`}
         />
       </div>
 

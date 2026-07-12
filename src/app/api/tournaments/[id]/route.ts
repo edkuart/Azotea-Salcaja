@@ -5,6 +5,7 @@ import {
   storeTournament,
   deleteTournament,
 } from "@/lib/tournament-store";
+import { withCurrentClubAvatars } from "@/lib/official-tournaments";
 import { officialChessTournaments } from "@/modules/chess/public-data";
 import { mergeTournamentResults } from "@/modules/chess/merge";
 import type { ChessTournament } from "@/modules/chess/types";
@@ -19,7 +20,8 @@ export async function GET(
     officialChessTournaments.find((tournament) => tournament.id === id);
 
   if (!t) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(t);
+  const [publicTournament] = await withCurrentClubAvatars([t]);
+  return NextResponse.json(publicTournament);
 }
 
 export async function PUT(

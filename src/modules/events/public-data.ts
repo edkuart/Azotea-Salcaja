@@ -1,9 +1,14 @@
+import { restaurantInfo } from "@/modules/restaurant/public-data";
+
 export const publicEvents = [
   {
     title: "Lunes de ajedrez",
     type: "Comunidad",
     date: "Todos los lunes",
     time: "7:30 p.m.",
+    locationLabel: restaurantInfo.name,
+    locationAddress: restaurantInfo.address,
+    locationMapsUrl: restaurantInfo.mapsUrl,
     description:
       "El restaurante presta el espacio para partidas casuales, torneos rapidos y convivencia.",
     image:
@@ -14,6 +19,9 @@ export const publicEvents = [
     type: "Restaurante",
     date: "Viernes",
     time: "6:00 p.m.",
+    locationLabel: restaurantInfo.name,
+    locationAddress: restaurantInfo.address,
+    locationMapsUrl: restaurantInfo.mapsUrl,
     description:
       "Productos destacados y bebidas para cerrar la semana con amigos.",
     image:
@@ -24,6 +32,9 @@ export const publicEvents = [
     type: "Restaurante",
     date: "Domingo",
     time: "Mediodia",
+    locationLabel: restaurantInfo.name,
+    locationAddress: restaurantInfo.address,
+    locationMapsUrl: restaurantInfo.mapsUrl,
     description:
       "Ambiente tranquilo para almorzar, conversar y compartir en grupo.",
     image:

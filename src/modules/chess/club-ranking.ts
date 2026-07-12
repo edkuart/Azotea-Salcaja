@@ -23,7 +23,7 @@ export const POSITION_POINTS = [100, 70, 50, 40, 30, 25, 20, 15] as const;
 export const PARTICIPATION_POINTS = 10;
 
 export const DEFAULT_ELO = 1200;
-const ELO_K = 24;
+export const CLUB_ELO_K = 24;
 
 /** Días sin jugar torneo del club para considerarse "inactivo" en el ranking. */
 export const INACTIVITY_DAYS = 120;
@@ -76,7 +76,7 @@ const ELO_RESULTS: Record<string, [number, number]> = {
   draw: [0.5, 0.5],
 };
 
-function expectedScore(own: number, opponent: number) {
+export function expectedClubEloScore(own: number, opponent: number) {
   return 1 / (1 + 10 ** ((opponent - own) / 400));
 }
 
@@ -145,11 +145,15 @@ export function computeClubRanking(
         const blackRating = ratingOf(game.blackPlayerId);
 
         if (whiteEntry) {
-          whiteEntry.elo += ELO_K * (scores[0] - expectedScore(whiteRating, blackRating));
+          whiteEntry.elo +=
+            CLUB_ELO_K *
+            (scores[0] - expectedClubEloScore(whiteRating, blackRating));
           whiteEntry.eloGames += 1;
         }
         if (blackEntry) {
-          blackEntry.elo += ELO_K * (scores[1] - expectedScore(blackRating, whiteRating));
+          blackEntry.elo +=
+            CLUB_ELO_K *
+            (scores[1] - expectedClubEloScore(blackRating, whiteRating));
           blackEntry.eloGames += 1;
         }
       }
@@ -173,7 +177,10 @@ export function computeClubRanking(
         entry.tournamentWins += 1;
         entry.yearlyWins[year] = (entry.yearlyWins[year] ?? 0) + 1;
       }
-      if (!entry.lastPlayedAt || (tournament.startsAt ?? "") > entry.lastPlayedAt) {
+      if (
+        !entry.lastPlayedAt ||
+        (tournament.startsAt ?? "") > entry.lastPlayedAt
+      ) {
         entry.lastPlayedAt = tournament.startsAt;
       }
     });
@@ -234,7 +241,10 @@ export function getLifetimeTable(entries: ClubRankingEntry[]) {
 /** Un jugador se considera inactivo si no juega torneo del club hace más de
  *  INACTIVITY_DAYS días. Sirve para señalarlo en el ranking sin borrar su
  *  historial; si además se desactiva en el roster, sale del ranking ELO. */
-export function isEntryInactive(entry: ClubRankingEntry, now = new Date()): boolean {
+export function isEntryInactive(
+  entry: ClubRankingEntry,
+  now = new Date(),
+): boolean {
   if (!entry.lastPlayedAt) return true;
   const last = new Date(entry.lastPlayedAt.slice(0, 10));
   if (Number.isNaN(last.getTime())) return true;

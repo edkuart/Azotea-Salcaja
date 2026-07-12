@@ -281,7 +281,10 @@ body.grain-overlay::after {
 
 /* ============================================================
    BUTTONS
+   En @layer components para que las utilidades de Tailwind
+   (hidden, sm:inline-flex, …) puedan sobreescribirlos.
    ============================================================ */
+@layer components {
 .btn {
   display: inline-flex;
   align-items: center;
@@ -331,6 +334,7 @@ body.grain-overlay::after {
 .btn-poster:hover {
   transform: translate(-2px, -2px);
   box-shadow: 6px 6px 0 var(--color-ink);
+}
 }
 
 /* ============================================================

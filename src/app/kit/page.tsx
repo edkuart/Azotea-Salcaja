@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { Download, Loader2 } from "lucide-react";
+import { restaurantInfo } from "@/modules/restaurant/public-data";
 
 /* ─── Grain texture (mismo del diseño original) ───────────────────────────── */
 const GRAIN_BG = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")`;
@@ -366,7 +367,7 @@ function Status() {
         fontSize: 30, color: "#C9A84C",
         textAlign: "center",
       }}>
-        Azotea Salcajá · Salcajá, Guatemala
+        {restaurantInfo.name} · {restaurantInfo.shortAddress}
       </div>
 
       <Grain />

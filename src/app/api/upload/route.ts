@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStorageClient, STORAGE_BUCKET, getPublicUrl } from "@/lib/supabase-storage";
+import {
+  getStorageClient,
+  STORAGE_BUCKET,
+  getPublicUrl,
+} from "@/lib/supabase-storage";
+import { requireApiSession } from "@/lib/auth/api";
 
 const ALLOWED_TYPES = [
   "image/jpeg",
@@ -13,6 +18,8 @@ const MAX_PDF_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireApiSession();
+    if (auth.response) return auth.response;
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const folder = (formData.get("folder") as string) || "misc";
@@ -37,7 +44,8 @@ export async function POST(req: NextRequest) {
       .from(STORAGE_BUCKET)
       .upload(path, buffer, { contentType: file.type, upsert: false });
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error)
+      return NextResponse.json({ error: error.message }, { status: 500 });
 
     return NextResponse.json({ url: getPublicUrl(path), path });
   } catch (err) {

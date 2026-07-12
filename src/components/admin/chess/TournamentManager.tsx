@@ -23,6 +23,7 @@ import type {
   PairingWarning,
 } from "@/modules/chess/types";
 import { calculateStandings, getNextRoundBlocker } from "@/modules/chess/standings";
+import type { ClubRankingEntry } from "@/modules/chess/club-ranking";
 import {
   generateSwissNextRound,
   generateRoundRobinRounds,
@@ -38,6 +39,7 @@ import {
 } from "@/modules/chess/public-data";
 import { Lightbox } from "@/components/media/Lightbox";
 import { StandingsTable } from "@/components/chess/StandingsTable";
+import { ShareResultsCard } from "@/components/admin/chess/ShareResultsCard";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -178,7 +180,11 @@ export function TournamentManager({
   const isFinished = allRoundsGenerated && lastRoundDone;
 
   // ─ player actions ─
-  function addPlayer(name: string, rating?: number) {
+  function addPlayer(
+    name: string,
+    rating?: number,
+    extras?: Pick<ChessPlayer, "clubPlayerId" | "photoUrl" | "sex" | "birthDate">,
+  ) {
     const nextSeed = t.players.reduce((m, p) => Math.max(m, p.seed), 0) + 1;
     const player: ChessPlayer = {
       id: `p${Date.now()}`,
@@ -186,6 +192,10 @@ export function TournamentManager({
       rating: rating || undefined,
       seed: nextSeed,
       status: "active",
+      ...(extras?.clubPlayerId ? { clubPlayerId: extras.clubPlayerId } : {}),
+      ...(extras?.photoUrl ? { photoUrl: extras.photoUrl } : {}),
+      ...(extras?.sex ? { sex: extras.sex } : {}),
+      ...(extras?.birthDate ? { birthDate: extras.birthDate } : {}),
     };
     setT((prev) => ({ ...prev, players: [...prev.players, player] }));
   }
@@ -332,7 +342,12 @@ export function TournamentManager({
       <div className="mt-5">
         {tab === "players"   && <PlayersTab   t={t} hasRounds={hasRounds} onAdd={addPlayer} onRemove={removePlayer} onStatus={setPlayerStatus} />}
         {tab === "rounds"    && <RoundsTab    t={t} blocker={blocker} isFinished={isFinished} allRoundsGenerated={allRoundsGenerated} warnings={pairingWarnings} onDismissWarnings={() => setPairingWarnings([])} onGenerate={generateRound} onResult={applyResult} onUndo={undoResult} />}
-        {tab === "standings" && <StandingsTab t={t} standings={standings} />}
+        {tab === "standings" && (
+          <>
+            {isFinished && apiId && <ShareResultsCard t={t} standings={standings} />}
+            <StandingsTab t={t} standings={standings} />
+          </>
+        )}
         {tab === "info"      && <InfoTab      t={t} onChange={(patch) => setT((prev) => ({ ...prev, ...patch }))} />}
       </div>
 
@@ -408,18 +423,71 @@ export function TournamentManager({
 // TAB: JUGADORES
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/** Normaliza para comparar nombres sin tildes ni mayúsculas (igual que el ranking). */
+function normalizePlayerName(name: string) {
+  return name.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+
 function PlayersTab({
   t, hasRounds, onAdd, onRemove, onStatus,
 }: {
   t: ChessTournament;
   hasRounds: boolean;
-  onAdd: (name: string, rating?: number) => void;
+  onAdd: (
+    name: string,
+    rating?: number,
+    extras?: Pick<ChessPlayer, "clubPlayerId" | "photoUrl" | "sex" | "birthDate">,
+  ) => void;
   onRemove: (id: string) => void;
   onStatus: (id: string, status: ChessPlayer["status"]) => void;
 }) {
   const [name, setName]     = useState("");
   const [rating, setRating] = useState("");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [clubEntries, setClubEntries] = useState<ClubRankingEntry[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/club-ranking");
+        if (!res.ok || cancelled) return;
+        const all = (await res.json()) as ClubRankingEntry[];
+        if (!cancelled) setClubEntries(all.filter((entry) => entry.player.isActive));
+      } catch {
+        // Sin roster disponible: se puede seguir agregando por nombre.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Socios del club que aún no están en el torneo (por vínculo o por nombre).
+  const availableClubEntries = useMemo(() => {
+    const linkedIds = new Set(
+      t.players.map((p) => p.clubPlayerId).filter(Boolean) as string[],
+    );
+    const names = new Set(t.players.map((p) => normalizePlayerName(p.name)));
+    return clubEntries.filter(
+      (entry) =>
+        !linkedIds.has(entry.player.id) &&
+        !names.has(normalizePlayerName(entry.player.name)),
+    );
+  }, [clubEntries, t.players]);
+
+  function addClubPlayer(entry: ClubRankingEntry) {
+    onAdd(
+      entry.player.name,
+      entry.eloGames > 0 ? entry.elo : entry.player.rating,
+      {
+        clubPlayerId: entry.player.id,
+        photoUrl: entry.player.photoUrl,
+        sex: entry.player.sex,
+        birthDate: entry.player.birthDate,
+      },
+    );
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -487,6 +555,42 @@ function PlayersTab({
         <p style={{ fontFamily: "var(--font-poster)", textTransform: "uppercase", letterSpacing: "0.18em", fontSize: 11, marginBottom: 10 }}>
           Agregar jugador
         </p>
+        {availableClubEntries.length > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            <p className="mb-1.5 text-xs text-stone-600">
+              Del club (entran vinculados al ranking):
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {availableClubEntries.map((entry) => (
+                <button
+                  key={entry.player.id}
+                  type="button"
+                  onClick={() => addClubPlayer(entry)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    background: "var(--color-cream)",
+                    border: "2px solid var(--color-ink)",
+                    padding: "6px 10px",
+                    fontFamily: "var(--font-body)",
+                    fontSize: 13,
+                    cursor: "pointer",
+                  }}
+                >
+                  <Plus className="h-3.5 w-3.5" aria-hidden />
+                  {entry.player.name}
+                  <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 11, opacity: 0.6 }}>
+                    {entry.eloGames > 0 ? entry.elo : entry.player.rating ?? "s/r"}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-stone-500">
+              ¿No está en el club? Agrégalo como invitado con el formulario:
+            </p>
+          </div>
+        )}
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <div style={{ display: "flex", gap: 8 }}>
             <input

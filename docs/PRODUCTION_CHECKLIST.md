@@ -7,7 +7,7 @@
 - [ ] Confirmar categorias del menu.
 - [ ] Confirmar productos, precios y descripciones.
 - [ ] Confirmar telefono de WhatsApp.
-- [ ] Confirmar direccion exacta y link de mapa.
+- [x] Direccion exacta y link base de Google Maps configurados: 3ra Av. 2-77, zona 2, Barrio El Calvario, tercer nivel de la construcción.
 - [ ] Confirmar horarios.
 - [ ] Confirmar eventos recurrentes.
 - [ ] Confirmar textos de ajedrez y horario de lunes 7:30 p.m.

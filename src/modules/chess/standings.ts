@@ -5,13 +5,16 @@ import {
 } from "./tiebreaks";
 import type { ChessGame, ChessTournament, PlayerStanding } from "./types";
 
-function createStanding(player: ChessTournament["players"][number]): PlayerStanding {
+function createStanding(
+  player: ChessTournament["players"][number],
+): PlayerStanding {
   return {
     playerId: player.id,
     name: player.name,
     seed: player.seed,
     rating: player.rating,
     photoUrl: player.photoUrl,
+    avatarId: player.avatarId,
     clubPlayerId: player.clubPlayerId,
     points: 0,
     played: 0,
@@ -138,14 +141,19 @@ export function hasPlayerHadBye(tournament: ChessTournament, playerId: string) {
   return tournament.rounds.some((round) =>
     round.games.some(
       (game) =>
-        (game.isBye || game.result === "bye") && game.whitePlayerId === playerId,
+        (game.isBye || game.result === "bye") &&
+        game.whitePlayerId === playerId,
     ),
   );
 }
 
 export function getColorBalance(standing: PlayerStanding) {
-  const whites = standing.colorHistory.filter((color) => color === "white").length;
-  const blacks = standing.colorHistory.filter((color) => color === "black").length;
+  const whites = standing.colorHistory.filter(
+    (color) => color === "white",
+  ).length;
+  const blacks = standing.colorHistory.filter(
+    (color) => color === "black",
+  ).length;
 
   return whites - blacks;
 }
@@ -157,7 +165,9 @@ export function getNextRoundBlocker(tournament: ChessTournament) {
     return null;
   }
 
-  const pendingGames = lastRound.games.filter((game) => game.result === "unplayed");
+  const pendingGames = lastRound.games.filter(
+    (game) => game.result === "unplayed",
+  );
 
   if (pendingGames.length > 0) {
     return `Faltan ${pendingGames.length} resultado(s) de la ronda ${lastRound.roundNumber}.`;

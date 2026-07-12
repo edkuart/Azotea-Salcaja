@@ -2,10 +2,13 @@
 
 Web mobile-first para Azotea Salcajá: catalogo digital del restaurante, eventos, contacto y modulo comunitario de ajedrez con torneos oficiales y privados.
 
+Dirección pública: 3ra Av. 2-77, zona 2, Barrio El Calvario, tercer nivel de la construcción, Salcajá, Quetzaltenango, Guatemala.
+
 ## Estado del MVP
 
 - Web publica del restaurante: home, menu, eventos, contacto y ajedrez.
 - Panel admin visual: resumen, productos, categorias, eventos, datos del restaurante y torneos oficiales.
+- Eventos con dirección visible y link de Google Maps para publicar cómo llegar.
 - Modulo de ajedrez: torneos oficiales publicados, standings, rondas, galeria, podium y torneos privados por link.
 - Motor local de torneo: sistema suizo, round robin, byes, resultados, standings y desempates principales.
 - Seguridad base: headers, rutas admin/privadas no indexables, validacion de tokens privados y paginas de error.

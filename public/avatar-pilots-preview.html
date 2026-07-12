@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pilotos de avatar · Chessitos</title>
+    <style>
+      :root {
+        --ink: #1a1a1a;
+        --stage: #cc2d30;
+        --cream: #fffdd0;
+        --gold: #c9a84c;
+        --navy: #0b2a4a;
+        --grain: #fafaf5;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: var(--cream);
+        color: var(--ink);
+        font-family: Georgia, serif;
+      }
+
+      header {
+        border-bottom: 3px solid var(--gold);
+        background: var(--navy);
+        color: var(--cream);
+        padding: 52px max(24px, calc((100vw - 1120px) / 2));
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--gold);
+        font: 700 12px/1.2 Arial, sans-serif;
+        letter-spacing: .2em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 760px;
+        font-size: clamp(42px, 7vw, 76px);
+        line-height: .95;
+      }
+
+      header p:last-child {
+        max-width: 720px;
+        margin: 20px 0 0;
+        color: #f0d9b5;
+        font-size: 18px;
+        line-height: 1.55;
+      }
+
+      main {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 42px 0 72px;
+      }
+
+      h2 {
+        margin: 0 0 18px;
+        color: var(--navy);
+        font-size: 32px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+      }
+
+      .card {
+        border: 2px solid var(--ink);
+        background: var(--grain);
+        box-shadow: 6px 6px 0 var(--ink);
+        overflow: hidden;
+      }
+
+      .hero-avatar {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-bottom: 2px solid var(--ink);
+      }
+
+      .card-body { padding: 20px; }
+
+      .card h3 { margin: 0; font-size: 22px; }
+
+      .card p {
+        margin: 7px 0 0;
+        color: #57534e;
+        line-height: 1.45;
+      }
+
+      .sizes {
+        display: flex;
+        align-items: end;
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .size {
+        display: grid;
+        justify-items: center;
+        gap: 7px;
+        color: #78716c;
+        font: 700 10px/1 Arial, sans-serif;
+      }
+
+      .round {
+        display: block;
+        border: 2px solid var(--ink);
+        border-radius: 999px;
+        object-fit: cover;
+      }
+
+      .directory { margin-top: 54px; }
+
+      .catalog-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .catalog-item {
+        display: grid;
+        justify-items: center;
+        gap: 10px;
+        border: 2px solid var(--ink);
+        background: #fff;
+        box-shadow: 3px 3px 0 var(--ink);
+        padding: 14px 8px 10px;
+        font: 700 11px/1.2 Arial, sans-serif;
+        letter-spacing: .08em;
+        text-align: center;
+        text-transform: uppercase;
+      }
+
+      .directory-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .member {
+        display: flex;
+        min-height: 126px;
+        align-items: flex-start;
+        gap: 14px;
+        border: 2px solid var(--ink);
+        background: var(--cream);
+        box-shadow: 4px 4px 0 var(--ink);
+        padding: 16px;
+      }
+
+      .member strong { display: block; font-size: 17px; }
+      .member small { display: block; margin-top: 5px; color: #78716c; }
+      .stats { margin-top: 15px; color: var(--navy); font: 700 12px/1 Arial, sans-serif; }
+
+      .note {
+        margin-top: 44px;
+        border-left: 5px solid var(--stage);
+        background: #fff;
+        padding: 18px 22px;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 760px) {
+        .grid, .directory-grid { grid-template-columns: 1fr; }
+        .catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        header { padding-top: 38px; padding-bottom: 38px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p class="eyebrow">Chessitos · Fase 0</p>
+      <h1>Avatares del club</h1>
+      <p>Tres pilotos probados como retrato, avatar pequeño y ficha real del directorio.</p>
+    </header>
+
+    <main>
+      <h2>Dirección artística piloto</h2>
+      <section class="grid" aria-label="Avatares piloto">
+        <article class="card">
+          <img class="hero-avatar" src="/images/chessitos/avatars/pilots/chessitos-m01-pilot.png" alt="Avatar piloto masculino infantil" />
+          <div class="card-body">
+            <h3>M01 · Niñez</h3>
+            <p>Amable, expresivo y con patrón ajedrecístico integrado.</p>
+            <div class="sizes">
+              <span class="size"><img class="round" width="32" height="32" src="/images/chessitos/avatars/pilots/chessitos-m01-pilot.png" alt="" />32</span>
+              <span class="size"><img class="round" width="56" height="56" src="/images/chessitos/avatars/pilots/chessitos-m01-pilot.png" alt="" />56</span>
+              <span class="size"><img class="round" width="96" height="96" src="/images/chessitos/avatars/pilots/chessitos-m01-pilot.png" alt="" />96</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="hero-avatar" src="/images/chessitos/avatars/pilots/chessitos-m04-pilot.png" alt="Avatar piloto masculino adolescente" />
+          <div class="card-body">
+            <h3>M04 · Adolescencia</h3>
+            <p>Más sobrio y competitivo, conservando cercanía.</p>
+            <div class="sizes">
+              <span class="size"><img class="round" width="32" height="32" src="/images/chessitos/avatars/pilots/chessitos-m04-pilot.png" alt="" />32</span>
+              <span class="size"><img class="round" width="56" height="56" src="/images/chessitos/avatars/pilots/chessitos-m04-pilot.png" alt="" />56</span>
+              <span class="size"><img class="round" width="96" height="96" src="/images/chessitos/avatars/pilots/chessitos-m04-pilot.png" alt="" />96</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="hero-avatar" src="/images/chessitos/avatars/pilots/chessitos-f02-pilot.png" alt="Avatar piloto femenino joven adulto" />
+          <div class="card-body">
+            <h3>F02 · Juventud</h3>
+            <p>Segura, contemporánea y coherente con la misma familia visual.</p>
+            <div class="sizes">
+              <span class="size"><img class="round" width="32" height="32" src="/images/chessitos/avatars/pilots/chessitos-f02-pilot.png" alt="" />32</span>
+              <span class="size"><img class="round" width="56" height="56" src="/images/chessitos/avatars/pilots/chessitos-f02-pilot.png" alt="" />56</span>
+              <span class="size"><img class="round" width="96" height="96" src="/images/chessitos/avatars/pilots/chessitos-f02-pilot.png" alt="" />96</span>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="directory">
+        <p class="eyebrow">Colección completa</p>
+        <h2>15 avatares seleccionables</h2>
+        <div class="catalog-grid">
+          <article class="catalog-item"><img class="round" width="96" height="96" src="/images/chessitos/avatars/chessitos-m01.webp" alt="Avatar 01" />Avatar 01</article>
+          <article class="catalog-item"><img class="round" width="96" height="96" src="/images/chessitos/avatars/chessitos-m02.webp" alt="Avatar 02" />Avatar 02</article>
+          <article class="catalog-item"><img class="round" width="96" height="96" src="/images/chessitos/avatars/chessitos-m03.webp" alt="Avatar 03" />Avatar 03</article>
+          <article class="catalog-item"><img class="round" width="96" height="96" src="/images/chessitos/avatars/chessitos-m04.webp" alt="Avatar 04" />Avatar 04</article>
+          <article class="catalog-item"><img class="round" width="96" height="96" src="/images/chessitos/avatars/chessitos-m05.webp" alt="Avatar 05" />Avatar 05</article>
+          <article class="catalog-item"><img class="round" width="96" height="96" src="/images/chessitos/avatars/chessitos-m06.webp" alt="Avatar 06" />Avatar 06</article>
+          <article class="catalog-item"><img class="round" width="96" height="96" src="/images/chessitos/avatars/chessitos-m07.webp" alt="Avatar 07" />Avatar 07</article>
+          <article class="catalog-item"><img class="round" width="96" height="96" src="/images/chessitos/avatars/chessitos-m08.webp" alt="Avatar 08" />Avatar 08</article>
+          <article class="catalog-item"><img class="round" width="96" height="96" src="/images/chessitos/avatars/chessitos-m09.webp" alt="Avatar 09" />Avatar 09</article>
+          <article class="catalog-item"><img class="round" width="96" height="96" src="/images/chessitos/avatars/chessitos-m10.webp" alt="Avatar 10" />Avatar 10</article>
+          <article class="catalog-item"><img class="round" width="96" height="96" src="/images/chessitos/avatars/chessitos-m11.webp" alt="Avatar 11" />Avatar 11</article>
+          <article class="catalog-item"><img class="round" width="96" height="96" src="/images/chessitos/avatars/chessitos-m12.webp" alt="Avatar 12" />Avatar 12</article>
+          <article class="catalog-item"><img class="round" width="96" height="96" src="/images/chessitos/avatars/chessitos-m13.webp" alt="Avatar 13" />Avatar 13</article>
+          <article class="catalog-item"><img class="round" width="96" height="96" src="/images/chessitos/avatars/chessitos-f01.webp" alt="Avatar 14" />Avatar 14</article>
+          <article class="catalog-item"><img class="round" width="96" height="96" src="/images/chessitos/avatars/chessitos-f02.webp" alt="Avatar 15" />Avatar 15</article>
+        </div>
+      </section>
+
+      <section class="directory">
+        <p class="eyebrow">Simulación dentro del producto</p>
+        <h2>Miembros del club</h2>
+        <div class="directory-grid">
+          <article class="member">
+            <img class="round" width="56" height="56" src="/images/chessitos/avatars/pilots/chessitos-m01-pilot.png" alt="" />
+            <div><strong>Jugador de ejemplo</strong><small>Sub-12 · Desde 2026</small><div class="stats">ELO 1420 · 3 torneos</div></div>
+          </article>
+          <article class="member">
+            <img class="round" width="56" height="56" src="/images/chessitos/avatars/pilots/chessitos-m04-pilot.png" alt="" />
+            <div><strong>Jugador de ejemplo</strong><small>Sub-18 · Desde 2025</small><div class="stats">ELO 1610 · 8 torneos</div></div>
+          </article>
+          <article class="member">
+            <img class="round" width="56" height="56" src="/images/chessitos/avatars/pilots/chessitos-f02-pilot.png" alt="" />
+            <div><strong>Jugadora de ejemplo</strong><small>Libre · Desde 2024</small><div class="stats">ELO 1745 · 11 torneos</div></div>
+          </article>
+        </div>
+      </section>
+
+      <p class="note"><strong>Colección integrada:</strong> los quince personajes están optimizados y disponibles en el selector administrativo. La fotografía autorizada conserva prioridad; después se usa el avatar elegido y finalmente las iniciales.</p>
+    </main>
+  </body>
+</html>

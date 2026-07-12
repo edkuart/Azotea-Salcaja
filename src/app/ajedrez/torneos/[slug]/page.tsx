@@ -7,34 +7,36 @@ import {
   CalendarDays,
   ListChecks,
   MapPin,
-  Medal,
   Trophy,
   Users,
 } from "lucide-react";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Section } from "@/components/public/Section";
-import { listTournaments } from "@/lib/tournament-store";
+import { TournamentPlayerIdentity } from "@/components/chess/TournamentPlayerIdentity";
+import { VictoryPodium } from "@/components/chess/VictoryPodium";
+import { listOfficialTournaments } from "@/lib/official-tournaments";
+import { listPublicClubMembers } from "@/lib/public-club-members";
 import {
   formatGameResult,
+  formatTournamentDate,
   getEffectiveTournamentStatus,
   formatTournamentStatus,
   formatTournamentSystem,
-  getPlayerName,
   getPublishedOfficialTournaments,
   getTournamentSummary,
-  officialChessTournaments,
 } from "@/modules/chess/public-data";
 import type { ChessTournament } from "@/modules/chess/types";
 import { generateNextRoundPreview } from "@/modules/chess/pairings";
 import {
   getTournamentCoverImage,
   getTournamentPodium,
+  getTournamentShareImage,
   getTournamentShareText,
 } from "@/modules/chess/publication";
 import { calculateStandings } from "@/modules/chess/standings";
 import { ImageGallery } from "@/components/media/ImageGallery";
-import { PlayerAvatar, StandingsTable } from "@/components/chess/StandingsTable";
+import { StandingsTable } from "@/components/chess/StandingsTable";
 import {
   TournamentBases,
   hasTournamentBases,
@@ -48,12 +50,11 @@ export function generateStaticParams() {
 
 export const dynamic = "force-dynamic";
 
-async function findTournamentBySlug(slug: string): Promise<ChessTournament | undefined> {
-  const stored = await listTournaments();
-  return (
-    stored.find((item) => item.slug === slug) ??
-    officialChessTournaments.find((item) => item.slug === slug)
-  );
+async function findTournamentBySlug(
+  slug: string,
+): Promise<ChessTournament | undefined> {
+  const all = await listOfficialTournaments();
+  return all.find((item) => item.slug === slug);
 }
 
 export async function generateMetadata({
@@ -70,7 +71,7 @@ export async function generateMetadata({
     };
   }
 
-  const image = getTournamentCoverImage(tournament);
+  const image = getTournamentShareImage(tournament);
 
   return {
     title: tournament.title,
@@ -127,6 +128,46 @@ const CARD_BASE = {
   boxShadow: "var(--shadow-card)",
 } as const;
 
+function TournamentMatchup({
+  tournament,
+  whitePlayerId,
+  blackPlayerId,
+}: {
+  tournament: ChessTournament;
+  whitePlayerId?: string;
+  blackPlayerId?: string;
+}) {
+  const white = tournament.players.find(
+    (player) => player.id === whitePlayerId,
+  );
+  const black = tournament.players.find(
+    (player) => player.id === blackPlayerId,
+  );
+
+  return (
+    <span className="grid min-w-0 gap-1 sm:inline-flex sm:items-center sm:gap-2">
+      <TournamentPlayerIdentity
+        name={white?.name ?? "BYE"}
+        photoUrl={white?.photoUrl}
+        avatarId={white?.avatarId}
+        size={26}
+        className="w-full sm:w-auto"
+      />
+      <span className="sr-only">contra</span>
+      <span aria-hidden="true" className="hidden text-stone-500 sm:inline">
+        vs
+      </span>
+      <TournamentPlayerIdentity
+        name={black?.name ?? "BYE"}
+        photoUrl={black?.photoUrl}
+        avatarId={black?.avatarId}
+        size={26}
+        className="w-full sm:w-auto"
+      />
+    </span>
+  );
+}
+
 function MetaItem({
   Icon,
   children,
@@ -136,7 +177,10 @@ function MetaItem({
 }) {
   return (
     <p className="flex items-center gap-2">
-      <Icon className="h-4 w-4 shrink-0" style={{ color: "var(--color-marquee)" }} />
+      <Icon
+        className="h-4 w-4 shrink-0"
+        style={{ color: "var(--color-marquee)" }}
+      />
       {children}
     </p>
   );
@@ -153,6 +197,22 @@ export default async function ChessTournamentDetailPage({
   if (!tournament) {
     notFound();
   }
+
+  const publicMembers = await listPublicClubMembers();
+  const publicMemberByPlayerId = new Map(
+    publicMembers.map((member) => [member.clubPlayerId, member]),
+  );
+  const profileLinksByClubPlayerId = Object.fromEntries(
+    publicMembers.map((member) => [
+      member.clubPlayerId,
+      {
+        href: `/ajedrez/club/jugadores/${member.slug}`,
+        photoUrl: member.photoUrl,
+        avatarId: member.avatarId,
+        name: member.displayName,
+      },
+    ]),
+  );
 
   const summary = getTournamentSummary(tournament);
   const status = getEffectiveTournamentStatus(tournament);
@@ -208,11 +268,15 @@ export default async function ChessTournamentDetailPage({
             </p>
 
             <div className="mt-8 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-              <MetaItem Icon={Trophy}>{formatTournamentStatus(status)}</MetaItem>
+              <MetaItem Icon={Trophy}>
+                {formatTournamentStatus(status)}
+              </MetaItem>
               <MetaItem Icon={ListChecks}>
                 {formatTournamentSystem(tournament.system)}
               </MetaItem>
-              <MetaItem Icon={CalendarDays}>{tournament.startsAt}</MetaItem>
+              <MetaItem Icon={CalendarDays}>
+                {formatTournamentDate(tournament.startsAt)}
+              </MetaItem>
               <MetaItem Icon={MapPin}>{tournament.locationLabel}</MetaItem>
             </div>
           </div>
@@ -225,12 +289,20 @@ export default async function ChessTournamentDetailPage({
               [
                 ["Jugadores", `${summary.players}`, Users],
                 ["Rondas", `${tournament.roundsPlanned}`, ListChecks],
-                ["Partidas", `${summary.completedGames}/${summary.games}`, Trophy],
+                [
+                  "Partidas",
+                  `${summary.completedGames}/${summary.games}`,
+                  Trophy,
+                ],
                 ["Actual", `${tournament.currentRoundNumber}`, CalendarDays],
               ] as const
             ).map(([label, value, Icon]) => (
               <article className="border-2 p-4" key={label} style={CARD_BASE}>
-                <Icon className="h-5 w-5" style={{ color: "var(--color-navy)" }} aria-hidden />
+                <Icon
+                  className="h-5 w-5"
+                  style={{ color: "var(--color-navy)" }}
+                  aria-hidden
+                />
                 <p
                   className="mt-3 text-[11px] uppercase"
                   style={{
@@ -243,7 +315,11 @@ export default async function ChessTournamentDetailPage({
                 </p>
                 <p
                   className="mt-1"
-                  style={{ fontFamily: "var(--font-display)", fontSize: "26px", lineHeight: 1 }}
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "26px",
+                    lineHeight: 1,
+                  }}
                 >
                   {value}
                 </p>
@@ -272,46 +348,42 @@ export default async function ChessTournamentDetailPage({
                 className="self-start rounded-sm px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em]"
                 style={{
                   fontFamily: "var(--font-poster)",
-                  background: status === "closed" ? "var(--color-navy)" : "var(--color-marquee)",
-                  color: status === "closed" ? "var(--color-cream)" : "var(--color-ink)",
+                  background:
+                    status === "closed"
+                      ? "var(--color-navy)"
+                      : "var(--color-marquee)",
+                  color:
+                    status === "closed"
+                      ? "var(--color-cream)"
+                      : "var(--color-ink)",
                 }}
               >
                 {status === "closed" ? "Final" : "Provisional"}
               </span>
             </div>
 
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {podium.map((standing, index) => (
-                <article
-                  className="border-2 p-5"
-                  key={standing.playerId}
-                  style={{
-                    ...CARD_BASE,
-                    borderColor: index === 0 ? "var(--color-marquee)" : "var(--color-ink)",
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <Medal
-                      className="h-6 w-6"
-                      style={{ color: index === 0 ? "var(--color-marquee)" : "var(--color-navy)" }}
-                      aria-hidden
-                    />
-                    <PlayerAvatar name={standing.name} photoUrl={standing.photoUrl} size={52} />
-                  </div>
-                  <p
-                    className="mt-4 text-[11px] uppercase"
-                    style={{ fontFamily: "var(--font-poster)", letterSpacing: "0.14em", color: "#5a5a5a" }}
-                  >
-                    Lugar {index + 1}
-                  </p>
-                  <h3 className="mt-1" style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: 1.05 }}>
-                    {standing.name}
-                  </h3>
-                  <p className="mt-2 text-sm text-stone-600">
-                    {standing.points} puntos · {standing.wins} victorias
-                  </p>
-                </article>
-              ))}
+            <div className="mt-8">
+              <VictoryPodium
+                celebrate={status === "closed"}
+                entries={podium.map((standing) => {
+                  const member = standing.clubPlayerId
+                    ? publicMemberByPlayerId.get(standing.clubPlayerId)
+                    : undefined;
+
+                  return {
+                    playerId: standing.playerId,
+                    name: member?.displayName ?? standing.name,
+                    photoUrl: member?.photoUrl ?? standing.photoUrl,
+                    avatarId: member?.avatarId ?? standing.avatarId,
+                    href: standing.clubPlayerId
+                      ? profileLinksByClubPlayerId[standing.clubPlayerId]?.href
+                      : undefined,
+                    points: standing.points,
+                    wins: standing.wins,
+                  };
+                })}
+                label={`Podio de ${tournament.title}`}
+              />
             </div>
           </Section>
         </div>
@@ -326,6 +398,7 @@ export default async function ChessTournamentDetailPage({
                   standings={standings}
                   tieBreakCodes={tieBreaks}
                   rounds={tournament.rounds}
+                  profileLinksByClubPlayerId={profileLinksByClubPlayerId}
                 />
               </div>
             </section>
@@ -335,9 +408,18 @@ export default async function ChessTournamentDetailPage({
               <div className="mt-4 grid gap-4">
                 {tournament.rounds.length > 0 ? (
                   tournament.rounds.map((round) => (
-                    <article className="border-2 p-4" key={round.id} style={CARD_BASE}>
+                    <article
+                      className="border-2 p-4"
+                      key={round.id}
+                      style={CARD_BASE}
+                    >
                       <div className="flex items-center justify-between gap-4">
-                        <h3 style={{ fontFamily: "var(--font-display)", fontSize: "20px" }}>
+                        <h3
+                          style={{
+                            fontFamily: "var(--font-display)",
+                            fontSize: "20px",
+                          }}
+                        >
                           Ronda {round.roundNumber}
                         </h3>
                         <span
@@ -352,7 +434,10 @@ export default async function ChessTournamentDetailPage({
                           {round.status}
                         </span>
                       </div>
-                      <div className="mt-4 divide-y" style={{ borderColor: "rgba(26,26,26,0.12)" }}>
+                      <div
+                        className="mt-4 divide-y"
+                        style={{ borderColor: "rgba(26,26,26,0.12)" }}
+                      >
                         {round.games.map((game) => (
                           <div
                             className="grid grid-cols-[auto_1fr_auto] items-center gap-3 py-3 text-sm"
@@ -360,15 +445,22 @@ export default async function ChessTournamentDetailPage({
                           >
                             <span
                               className="text-[11px] font-semibold uppercase tracking-[0.1em]"
-                              style={{ fontFamily: "var(--font-poster)", color: "#7a7a7a" }}
+                              style={{
+                                fontFamily: "var(--font-poster)",
+                                color: "#7a7a7a",
+                              }}
                             >
                               M{game.boardNumber}
                             </span>
-                            <span className="min-w-0 text-stone-800">
-                              {getPlayerName(tournament, game.whitePlayerId)} vs{" "}
-                              {getPlayerName(tournament, game.blackPlayerId)}
-                            </span>
-                            <span className="font-semibold" style={{ color: "var(--color-navy)" }}>
+                            <TournamentMatchup
+                              tournament={tournament}
+                              whitePlayerId={game.whitePlayerId}
+                              blackPlayerId={game.blackPlayerId}
+                            />
+                            <span
+                              className="font-semibold"
+                              style={{ color: "var(--color-navy)" }}
+                            >
                               {formatGameResult(game.result)}
                             </span>
                           </div>
@@ -377,7 +469,10 @@ export default async function ChessTournamentDetailPage({
                     </article>
                   ))
                 ) : (
-                  <p className="border-2 p-4 text-sm text-stone-600" style={CARD_BASE}>
+                  <p
+                    className="border-2 p-4 text-sm text-stone-600"
+                    style={CARD_BASE}
+                  >
                     Este torneo aun no tiene rondas generadas.
                   </p>
                 )}
@@ -397,7 +492,11 @@ export default async function ChessTournamentDetailPage({
                     <p
                       className="border-l-[3px] p-3 text-sm"
                       key={warning.code}
-                      style={{ background: "rgba(212,160,23,0.12)", borderColor: "var(--color-marquee)", color: "#6b5310" }}
+                      style={{
+                        background: "rgba(212,160,23,0.12)",
+                        borderColor: "var(--color-marquee)",
+                        color: "#6b5310",
+                      }}
                     >
                       {warning.message}
                     </p>
@@ -406,7 +505,10 @@ export default async function ChessTournamentDetailPage({
               ) : null}
 
               {nextRoundPreview.round.games.length > 0 ? (
-                <div className="divide-y" style={{ borderColor: "rgba(26,26,26,0.12)" }}>
+                <div
+                  className="divide-y"
+                  style={{ borderColor: "rgba(26,26,26,0.12)" }}
+                >
                   {nextRoundPreview.round.games.map((game) => (
                     <div
                       className="grid grid-cols-[auto_1fr_auto] items-center gap-3 py-3 text-sm"
@@ -414,22 +516,31 @@ export default async function ChessTournamentDetailPage({
                     >
                       <span
                         className="text-[11px] font-semibold uppercase tracking-[0.1em]"
-                        style={{ fontFamily: "var(--font-poster)", color: "#7a7a7a" }}
+                        style={{
+                          fontFamily: "var(--font-poster)",
+                          color: "#7a7a7a",
+                        }}
                       >
                         M{game.boardNumber}
                       </span>
-                      <span className="min-w-0">
-                        {getPlayerName(tournament, game.whitePlayerId)} vs{" "}
-                        {getPlayerName(tournament, game.blackPlayerId)}
-                      </span>
-                      <span className="font-semibold" style={{ color: "var(--color-navy)" }}>
+                      <TournamentMatchup
+                        tournament={tournament}
+                        whitePlayerId={game.whitePlayerId}
+                        blackPlayerId={game.blackPlayerId}
+                      />
+                      <span
+                        className="font-semibold"
+                        style={{ color: "var(--color-navy)" }}
+                      >
                         {game.isBye ? "BYE" : "Preview"}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-stone-600">No hay pareo disponible por ahora.</p>
+                <p className="text-sm text-stone-600">
+                  No hay pareo disponible por ahora.
+                </p>
               )}
             </div>
           </Section>

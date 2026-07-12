@@ -5,6 +5,9 @@ import {
   BookOpen,
   Building2,
   CalendarClock,
+  CalendarDays,
+  Medal,
+  TrendingUp,
   Trophy,
   Users,
 } from "lucide-react";
@@ -39,6 +42,36 @@ const pillars = [
       "Competencias con sistema suizo, tabla de posiciones, desempates y resultados en tiempo real para toda la comunidad.",
     cta: "Ver torneos",
     accent: "var(--color-marquee)",
+  },
+  {
+    icon: CalendarDays,
+    href: "/ajedrez/agenda",
+    eyebrow: "Cada lunes",
+    title: "Agenda",
+    description:
+      "Calendario de clases y torneos. Las próximas fechas de todo lo que pasa los lunes, en un solo lugar.",
+    cta: "Ver agenda",
+    accent: "var(--color-stage)",
+  },
+  {
+    icon: TrendingUp,
+    href: "/ajedrez/club",
+    eyebrow: "El club",
+    title: "Ranking del club",
+    description:
+      "ELO del club, circuito anual de puntos y fichas de los miembros. Cada torneo de lunes suma.",
+    cta: "Ver ranking",
+    accent: "var(--color-navy)",
+  },
+  {
+    icon: Medal,
+    href: "/ajedrez/ranking",
+    eyebrow: "Historia",
+    title: "Palmarés",
+    description:
+      "Los podios de cada torneo oficial disputado. La memoria competitiva de la comunidad.",
+    cta: "Ver palmarés",
+    accent: "var(--color-navy)",
   },
   {
     icon: Users,
