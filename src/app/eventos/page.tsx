@@ -39,11 +39,12 @@ export default async function EventsPage() {
     <PublicLayout>
       <main>
         <Section>
-          <span className="section-label" style={{ color: "var(--color-stage)" }}>
+          <span className="section-label reveal" style={{ color: "var(--color-stage)" }}>
             Actividades
           </span>
           <h1
-            className="mt-4"
+            className="reveal mt-4"
+            data-reveal-delay="80"
             style={{
               fontFamily: "var(--font-display)",
               fontSize: "var(--text-4xl)",
@@ -53,7 +54,8 @@ export default async function EventsPage() {
             Eventos y comunidad
           </h1>
           <p
-            className="mt-4 max-w-2xl leading-7"
+            className="reveal mt-4 max-w-2xl leading-7"
+            data-reveal-delay="160"
             style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-lg)", color: "#3a3a3a" }}
           >
             Espacios para comer, reunirse y participar en actividades locales.
@@ -67,7 +69,7 @@ export default async function EventsPage() {
             </p>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {events.map((event) => {
+              {events.map((event, i) => {
                 const locationLabel = event.locationLabel || restaurantInfo.name;
                 const locationAddress = event.locationAddress || restaurantInfo.shortAddress;
                 const dateStr = event.startsAt.toLocaleDateString("es", {
@@ -86,7 +88,8 @@ export default async function EventsPage() {
                   <Link
                     key={event.id}
                     href={`/eventos/${event.slug}`}
-                    className="product-card group no-underline"
+                    className="product-card reveal group no-underline"
+                    data-reveal-delay={String((i % 3) * 80)}
                     style={{ color: "var(--color-ink)" }}
                   >
                     <div

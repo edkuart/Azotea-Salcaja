@@ -101,6 +101,7 @@ export default function ChessPage() {
         >
           <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
             <p
+              className="reveal"
               style={{
                 fontFamily: "var(--font-poster)",
                 textTransform: "uppercase",
@@ -113,6 +114,8 @@ export default function ChessPage() {
               Ecosistema de ajedrez
             </p>
             <h1
+              className="reveal"
+              data-reveal-delay="80"
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2.8rem, 7vw, 5.5rem)",
@@ -127,6 +130,8 @@ export default function ChessPage() {
               </em>
             </h1>
             <p
+              className="reveal"
+              data-reveal-delay="160"
               style={{
                 fontFamily: "var(--font-body)",
                 fontSize: "var(--text-base)",
@@ -140,7 +145,11 @@ export default function ChessPage() {
               y una comunidad local que crece cada lunes.
             </p>
 
-            <div style={{ display: "flex", gap: "12px", marginTop: "32px", flexWrap: "wrap" }}>
+            <div
+              className="reveal"
+              data-reveal-delay="240"
+              style={{ display: "flex", gap: "12px", marginTop: "32px", flexWrap: "wrap" }}
+            >
               <Link href="/ajedrez/clases" className="btn btn-primary">
                 Clases Chessitos
               </Link>
@@ -157,6 +166,7 @@ export default function ChessPage() {
         {/* ── Pilares del ecosistema ── */}
         <Section>
           <p
+            className="reveal"
             style={{
               fontFamily: "var(--font-poster)",
               textTransform: "uppercase",
@@ -169,6 +179,8 @@ export default function ChessPage() {
             Todo en un lugar
           </p>
           <h2
+            className="reveal"
+            data-reveal-delay="80"
             style={{
               fontFamily: "var(--font-display)",
               fontSize: "clamp(2rem, 5vw, 3.2rem)",
@@ -182,9 +194,11 @@ export default function ChessPage() {
           </h2>
 
           <div className="grid gap-5 md:grid-cols-3">
-            {pillars.map(({ icon: Icon, href, eyebrow, title, description, cta, accent }) => (
+            {pillars.map(({ icon: Icon, href, eyebrow, title, description, cta, accent }, i) => (
               <article
                 key={href}
+                className="reveal lift"
+                data-reveal-delay={String(i * 80)}
                 style={{
                   background: "var(--color-grain)",
                   border: "2px solid var(--color-ink)",
@@ -235,6 +249,7 @@ export default function ChessPage() {
                 </p>
                 <Link
                   href={href}
+                  className="arrow-link"
                   style={{
                     fontFamily: "var(--font-poster)",
                     textTransform: "uppercase",
@@ -259,7 +274,7 @@ export default function ChessPage() {
         <div style={{ background: "var(--color-navy)", color: "var(--color-cream)" }}>
           <Section>
             <div className="grid gap-8 lg:grid-cols-[1.25fr_1fr] lg:items-center">
-              <div>
+              <div className="reveal">
                 <p
                   style={{
                     fontFamily: "var(--font-poster)",
@@ -308,6 +323,8 @@ export default function ChessPage() {
               </div>
 
               <div
+                className="reveal"
+                data-reveal-delay="120"
                 style={{
                   border: "2px solid rgba(255,253,208,0.15)",
                   padding: "28px",
@@ -358,7 +375,7 @@ export default function ChessPage() {
         <div style={{ background: "var(--color-ink)", color: "var(--color-cream)" }}>
           <Section>
             <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
-              <div>
+              <div className="reveal">
                 <p
                   style={{
                     fontFamily: "var(--font-poster)",
@@ -417,6 +434,8 @@ export default function ChessPage() {
               </div>
 
               <div
+                className="reveal"
+                data-reveal-delay="120"
                 style={{
                   border: "2px solid rgba(255,253,208,0.15)",
                   padding: "28px",

@@ -45,10 +45,21 @@ export function DesignEffects() {
       return () => io.disconnect();
     };
 
-    // Small rAF to let the new page render before we query .reveal elements
+    // Small rAF to let the new page render before we query .reveal elements.
+    // Fallback con setTimeout: en pestañas ocultas (documento en segundo
+    // plano) el rAF no dispara y los .reveal quedarían invisibles.
     let cleanup: (() => void) | undefined;
-    const id = requestAnimationFrame(() => { cleanup = run(); });
-    return () => { cancelAnimationFrame(id); cleanup?.(); };
+    const id = requestAnimationFrame(() => {
+      if (!cleanup) cleanup = run();
+    });
+    const timeoutId = window.setTimeout(() => {
+      if (!cleanup) cleanup = run();
+    }, 300);
+    return () => {
+      cancelAnimationFrame(id);
+      clearTimeout(timeoutId);
+      cleanup?.();
+    };
   }, [pathname]);
 
   useEffect(() => {

@@ -142,6 +142,16 @@ body.grain-overlay::after {
 .parallax-slow { transform: translateY(calc(var(--scroll-y, 0) * 0.30px)); }
 .parallax-fast { transform: translateY(calc(var(--scroll-y, 0) * 0.60px)); }
 
+/* Lift: micro-elevación diagonal, la firma de hover del sitio
+   (misma dirección que .product-card y .btn-poster). Solo transform,
+   así funciona aunque el elemento tenga box-shadow inline. */
+.lift { transition: transform 0.18s ease; }
+.lift:hover { transform: translate(-2px, -2px); }
+
+/* Arrow link: la flecha (svg) se desliza a la derecha al hover. */
+.arrow-link svg { transition: transform 0.18s ease; }
+.arrow-link:hover svg { transform: translateX(3px); }
+
 @media (prefers-reduced-motion: reduce) {
   .animate-vinyl,
   .animate-vinyl-slow,
@@ -149,6 +159,8 @@ body.grain-overlay::after {
   .parallax-slow,
   .parallax-fast { animation: none !important; transform: none !important; }
   .reveal { opacity: 1; transform: none; }
+  .lift, .lift:hover { transform: none; transition: none; }
+  .arrow-link svg, .arrow-link:hover svg { transform: none; transition: none; }
 }
 
 /* ============================================================

@@ -35,6 +35,10 @@ import {
   getTournamentShareText,
 } from "@/modules/chess/publication";
 import { calculateStandings } from "@/modules/chess/standings";
+import {
+  getTournamentArchiveSlug,
+  resolveTournamentArchiveSlug,
+} from "@/modules/chess/public-tournament-route";
 import { ImageGallery } from "@/components/media/ImageGallery";
 import { StandingsTable } from "@/components/chess/StandingsTable";
 import {
@@ -44,7 +48,7 @@ import {
 
 export function generateStaticParams() {
   return getPublishedOfficialTournaments().map((tournament) => ({
-    slug: tournament.slug,
+    slug: getTournamentArchiveSlug(tournament),
   }));
 }
 
@@ -54,7 +58,7 @@ async function findTournamentBySlug(
   slug: string,
 ): Promise<ChessTournament | undefined> {
   const all = await listOfficialTournaments();
-  return all.find((item) => item.slug === slug);
+  return resolveTournamentArchiveSlug(all, slug);
 }
 
 export async function generateMetadata({
@@ -239,7 +243,7 @@ export default async function ChessTournamentDetailPage({
         >
           <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
             <Link
-              className="inline-flex items-center gap-2 text-sm font-semibold no-underline"
+              className="reveal inline-flex items-center gap-2 text-sm font-semibold no-underline"
               href="/ajedrez/torneos"
               style={{ color: "var(--color-marquee)" }}
             >
@@ -247,11 +251,12 @@ export default async function ChessTournamentDetailPage({
               Volver a torneos
             </Link>
 
-            <div className="mt-7">
+            <div className="reveal mt-7" data-reveal-delay="60">
               <Eyebrow>Torneo oficial</Eyebrow>
             </div>
             <h1
-              className="mt-3 max-w-4xl"
+              className="reveal mt-3 max-w-4xl"
+              data-reveal-delay="120"
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize: "var(--text-5xl)",
@@ -261,13 +266,17 @@ export default async function ChessTournamentDetailPage({
               {tournament.title}
             </h1>
             <p
-              className="mt-5 max-w-2xl text-base leading-7"
+              className="reveal mt-5 max-w-2xl text-base leading-7"
+              data-reveal-delay="180"
               style={{ fontFamily: "var(--font-body)", opacity: 0.9 }}
             >
               {tournament.recap ?? tournament.description}
             </p>
 
-            <div className="mt-8 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+            <div
+              className="reveal mt-8 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4"
+              data-reveal-delay="240"
+            >
               <MetaItem Icon={Trophy}>
                 {formatTournamentStatus(status)}
               </MetaItem>
@@ -296,8 +305,13 @@ export default async function ChessTournamentDetailPage({
                 ],
                 ["Actual", `${tournament.currentRoundNumber}`, CalendarDays],
               ] as const
-            ).map(([label, value, Icon]) => (
-              <article className="border-2 p-4" key={label} style={CARD_BASE}>
+            ).map(([label, value, Icon], i) => (
+              <article
+                className="reveal border-2 p-4"
+                data-reveal-delay={String(i * 60)}
+                key={label}
+                style={CARD_BASE}
+              >
                 <Icon
                   className="h-5 w-5"
                   style={{ color: "var(--color-navy)" }}

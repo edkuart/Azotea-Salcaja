@@ -162,7 +162,7 @@ export default async function ClubRankingPage({
           }}
         >
           <div className="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
-            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <div className="reveal flex flex-wrap items-baseline gap-x-4 gap-y-1">
               <Link
                 className="inline-flex items-center gap-2 text-sm font-semibold no-underline"
                 href="/ajedrez"
@@ -174,7 +174,8 @@ export default async function ClubRankingPage({
               <Eyebrow>Chessitos · Circuito de lunes</Eyebrow>
             </div>
             <h1
-              className="mt-2 max-w-4xl"
+              className="reveal mt-2 max-w-4xl"
+              data-reveal-delay="80"
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2rem, 9vw, var(--text-4xl))",
@@ -184,7 +185,8 @@ export default async function ClubRankingPage({
               Ranking del club
             </h1>
             <p
-              className="mt-2 max-w-2xl text-sm leading-6"
+              className="reveal mt-2 max-w-2xl text-sm leading-6"
+              data-reveal-delay="160"
               style={{ fontFamily: "var(--font-body)", opacity: 0.9 }}
             >
               Cada lunes reparte puntos por posición y mueve el ELO del club.
@@ -192,7 +194,8 @@ export default async function ClubRankingPage({
 
             <nav
               aria-label="Secciones del club"
-              className="mt-4 overflow-x-auto pb-1"
+              className="reveal mt-4 overflow-x-auto pb-1"
+              data-reveal-delay="240"
             >
               <div className="flex min-w-max gap-2">
                 <a
@@ -228,7 +231,7 @@ export default async function ClubRankingPage({
         {/* ── Ranking: ELO + Circuito lado a lado ── */}
         <Section id="ranking">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
-            <div>
+            <div className="reveal">
               <div className="flex items-center gap-2.5">
                 <TrendingUp
                   className="h-5 w-5"
@@ -353,7 +356,7 @@ export default async function ClubRankingPage({
               </div>
             </div>
 
-            <div>
+            <div className="reveal" data-reveal-delay="120">
               <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <div className="flex items-center gap-2.5">
                   <Flame
@@ -524,7 +527,7 @@ export default async function ClubRankingPage({
 
         {/* ── Histórico de toda la vida ── */}
         <Section id="historia" className="pt-0 sm:pt-0">
-          <div className="flex items-center gap-2.5">
+          <div className="reveal flex items-center gap-2.5">
             <Trophy
               className="h-5 w-5"
               style={{ color: "var(--color-marquee)" }}
@@ -654,7 +657,7 @@ export default async function ClubRankingPage({
 
         {/* ── Miembros del club ── */}
         <Section id="miembros" className="pt-0 sm:pt-0">
-          <div className="flex items-start gap-2.5">
+          <div className="reveal flex items-start gap-2.5">
             <Users
               className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-navy)]"
               aria-hidden

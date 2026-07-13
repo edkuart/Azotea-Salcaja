@@ -11,6 +11,7 @@ import {
   getEffectiveTournamentStatus,
 } from "@/modules/chess/public-data";
 import { calculateStandings } from "@/modules/chess/standings";
+import { getTournamentPublicHref } from "@/modules/chess/public-tournament-route";
 import type { ChessTournament } from "@/modules/chess/types";
 
 export const metadata: Metadata = {
@@ -51,7 +52,7 @@ export default async function RankingPage() {
           }}
         >
           <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <div className="reveal flex flex-wrap items-baseline gap-x-4 gap-y-1">
               <Link
                 href="/ajedrez"
                 style={{
@@ -78,6 +79,8 @@ export default async function RankingPage() {
               </p>
             </div>
             <h1
+              className="reveal"
+              data-reveal-delay="80"
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2rem, 9vw, var(--text-4xl))",
@@ -89,6 +92,8 @@ export default async function RankingPage() {
               Palmarés
             </h1>
             <p
+              className="reveal"
+              data-reveal-delay="160"
               style={{
                 fontFamily: "var(--font-body)",
                 fontSize: "var(--text-sm)",
@@ -103,6 +108,8 @@ export default async function RankingPage() {
             </p>
             <Link
               href="/ajedrez/club"
+              className="reveal arrow-link"
+              data-reveal-delay="240"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -135,6 +142,7 @@ export default async function RankingPage() {
         {/* ── Historial de torneos con podios ── */}
         <Section>
           <div
+            className="reveal"
             style={{
               display: "flex",
               alignItems: "center",
@@ -221,14 +229,14 @@ export default async function RankingPage() {
             </div>
           ) : (
             <div style={{ display: "grid", gap: "20px" }}>
-              {completed.map((t) => {
+              {completed.map((t, i) => {
                 const podium = getPodium(t);
-                const liveHref = t.id.startsWith("t")
-                  ? `/ajedrez/torneos/live/${t.id}`
-                  : `/ajedrez/torneos/${t.slug}`;
+                const liveHref = getTournamentPublicHref(t);
                 return (
                   <article
                     key={t.id}
+                    className="reveal lift"
+                    data-reveal-delay={String((i % 3) * 80)}
                     style={{
                       border: "2px solid var(--color-ink)",
                       boxShadow: "var(--shadow-card)",
@@ -274,6 +282,7 @@ export default async function RankingPage() {
                       </div>
                       <Link
                         href={liveHref}
+                        className="arrow-link"
                         style={{
                           fontFamily: "var(--font-poster)",
                           textTransform: "uppercase",

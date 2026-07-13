@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BookOpen, CalendarDays, MapPin, Trophy } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  CalendarDays,
+  MapPin,
+  Trophy,
+} from "lucide-react";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Section } from "@/components/public/Section";
@@ -13,6 +19,7 @@ import {
 } from "@/modules/chess/public-data";
 import { restaurantInfo } from "@/modules/restaurant/public-data";
 import type { ChessTournament } from "@/modules/chess/types";
+import { getTournamentPublicHref } from "@/modules/chess/public-tournament-route";
 
 export const metadata: Metadata = {
   title: "Agenda — Ajedrez · Azotea Salcajá",
@@ -46,10 +53,10 @@ function isUpcoming(t: ChessTournament) {
 }
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  setup:     { label: "Próximo",    color: "var(--color-marquee)" },
-  active:    { label: "En curso",   color: "var(--color-emerald)" },
-  closed:    { label: "Finalizado", color: "#888" },
-  cancelled: { label: "Cancelado",  color: "var(--color-stage)"  },
+  setup: { label: "Próximo", color: "var(--color-marquee)" },
+  active: { label: "En curso", color: "var(--color-emerald)" },
+  closed: { label: "Finalizado", color: "#888" },
+  cancelled: { label: "Cancelado", color: "var(--color-stage)" },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -68,12 +75,11 @@ export default async function AgendaPage() {
           .sort((a, b) => (b.startsAt ?? "").localeCompare(a.startsAt ?? ""))
           .slice(0, 3);
   const shownTournaments = upcoming.length > 0 ? upcoming : recentFinished;
-  const mondays  = getUpcomingMondays(5);
+  const mondays = getUpcomingMondays(5);
 
   return (
     <PublicLayout>
       <main>
-
         {/* ── Hero ── */}
         <section
           style={{
@@ -83,7 +89,7 @@ export default async function AgendaPage() {
           }}
         >
           <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <div className="reveal flex flex-wrap items-baseline gap-x-4 gap-y-1">
               <Link
                 href="/ajedrez"
                 style={{
@@ -110,6 +116,8 @@ export default async function AgendaPage() {
               </p>
             </div>
             <h1
+              className="reveal"
+              data-reveal-delay="80"
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2rem, 9vw, var(--text-4xl))",
@@ -130,6 +138,8 @@ export default async function AgendaPage() {
               </em>
             </h1>
             <p
+              className="reveal"
+              data-reveal-delay="160"
               style={{
                 fontFamily: "var(--font-body)",
                 fontSize: "var(--text-sm)",
@@ -147,10 +157,16 @@ export default async function AgendaPage() {
         {/* ── Dos columnas: Clases | Torneos ── */}
         <Section>
           <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
-
             {/* — Clases — */}
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
+            <div className="reveal">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginBottom: "20px",
+                }}
+              >
                 <div
                   style={{
                     width: "32px",
@@ -162,7 +178,14 @@ export default async function AgendaPage() {
                     flexShrink: 0,
                   }}
                 >
-                  <BookOpen style={{ width: "16px", height: "16px", color: "var(--color-cream)" }} aria-hidden />
+                  <BookOpen
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                      color: "var(--color-cream)",
+                    }}
+                    aria-hidden
+                  />
                 </div>
                 <div>
                   <p
@@ -198,9 +221,11 @@ export default async function AgendaPage() {
                       alignItems: "center",
                       gap: "12px",
                       padding: "12px 16px",
-                      background: i === 0 ? "var(--color-ink)" : "var(--color-grain)",
+                      background:
+                        i === 0 ? "var(--color-ink)" : "var(--color-grain)",
                       border: "2px solid var(--color-ink)",
-                      boxShadow: i === 0 ? "3px 3px 0 var(--color-stage)" : "none",
+                      boxShadow:
+                        i === 0 ? "3px 3px 0 var(--color-stage)" : "none",
                     }}
                   >
                     <div>
@@ -209,7 +234,8 @@ export default async function AgendaPage() {
                           fontFamily: "var(--font-body)",
                           fontSize: "14px",
                           fontWeight: 700,
-                          color: i === 0 ? "var(--color-cream)" : "var(--color-ink)",
+                          color:
+                            i === 0 ? "var(--color-cream)" : "var(--color-ink)",
                         }}
                       >
                         {formatDateEs(d)}
@@ -248,6 +274,7 @@ export default async function AgendaPage() {
 
               <Link
                 href="/ajedrez/clases"
+                className="arrow-link"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -262,13 +289,23 @@ export default async function AgendaPage() {
                 }}
               >
                 Ver programa completo
-                <ArrowRight style={{ width: "12px", height: "12px" }} aria-hidden />
+                <ArrowRight
+                  style={{ width: "12px", height: "12px" }}
+                  aria-hidden
+                />
               </Link>
             </div>
 
             {/* — Torneos — */}
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
+            <div className="reveal" data-reveal-delay="120">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginBottom: "20px",
+                }}
+              >
                 <div
                   style={{
                     width: "32px",
@@ -280,7 +317,14 @@ export default async function AgendaPage() {
                     flexShrink: 0,
                   }}
                 >
-                  <Trophy style={{ width: "16px", height: "16px", color: "var(--color-ink)" }} aria-hidden />
+                  <Trophy
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                      color: "var(--color-ink)",
+                    }}
+                    aria-hidden
+                  />
                 </div>
                 <div>
                   <p
@@ -294,7 +338,13 @@ export default async function AgendaPage() {
                   >
                     Torneos oficiales
                   </p>
-                  <p style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "#666" }}>
+                  <p
+                    style={{
+                      fontFamily: "var(--font-body)",
+                      fontSize: "12px",
+                      color: "#666",
+                    }}
+                  >
                     {upcoming.length > 0
                       ? `${upcoming.length} torneo${upcoming.length > 1 ? "s" : ""} activo${upcoming.length > 1 ? "s" : ""}`
                       : recentFinished.length > 0
@@ -308,12 +358,14 @@ export default async function AgendaPage() {
                 <div style={{ display: "grid", gap: "6px" }}>
                   {shownTournaments.map((t) => {
                     const statusCfg =
-                      STATUS_LABEL[getEffectiveTournamentStatus(t)] ?? STATUS_LABEL.setup;
-                    const liveHref  = t.id.startsWith("t") ? `/ajedrez/torneos/live/${t.id}` : `/ajedrez/torneos/${t.slug}`;
+                      STATUS_LABEL[getEffectiveTournamentStatus(t)] ??
+                      STATUS_LABEL.setup;
+                    const liveHref = getTournamentPublicHref(t);
                     return (
                       <Link
                         key={t.id}
                         href={liveHref}
+                        className="lift"
                         style={{
                           display: "grid",
                           gridTemplateColumns: "1fr auto",
@@ -358,9 +410,16 @@ export default async function AgendaPage() {
                               <>
                                 <span>·</span>
                                 <span
-                                  style={{ display: "flex", alignItems: "center", gap: "3px" }}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "3px",
+                                  }}
                                 >
-                                  <CalendarDays style={{ width: "10px", height: "10px" }} aria-hidden />
+                                  <CalendarDays
+                                    style={{ width: "10px", height: "10px" }}
+                                    aria-hidden
+                                  />
                                   {formatTournamentDate(t.startsAt)}
                                 </span>
                               </>
@@ -369,16 +428,30 @@ export default async function AgendaPage() {
                               <>
                                 <span>·</span>
                                 <span
-                                  style={{ display: "flex", alignItems: "center", gap: "3px" }}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "3px",
+                                  }}
                                 >
-                                  <MapPin style={{ width: "10px", height: "10px" }} aria-hidden />
+                                  <MapPin
+                                    style={{ width: "10px", height: "10px" }}
+                                    aria-hidden
+                                  />
                                   {t.locationLabel}
                                 </span>
                               </>
                             )}
                           </div>
                         </div>
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "flex-end",
+                            gap: "6px",
+                          }}
+                        >
                           <span
                             style={{
                               fontFamily: "var(--font-poster)",
@@ -394,7 +467,11 @@ export default async function AgendaPage() {
                             {statusCfg.label}
                           </span>
                           <ArrowRight
-                            style={{ width: "14px", height: "14px", color: "var(--color-stage)" }}
+                            style={{
+                              width: "14px",
+                              height: "14px",
+                              color: "var(--color-stage)",
+                            }}
                             aria-hidden
                           />
                         </div>
@@ -448,9 +525,17 @@ export default async function AgendaPage() {
                 </div>
               )}
 
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", marginTop: "16px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "20px",
+                  marginTop: "16px",
+                }}
+              >
                 <Link
                   href="/ajedrez/torneos"
+                  className="arrow-link"
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -464,10 +549,14 @@ export default async function AgendaPage() {
                   }}
                 >
                   Ver todos los torneos
-                  <ArrowRight style={{ width: "12px", height: "12px" }} aria-hidden />
+                  <ArrowRight
+                    style={{ width: "12px", height: "12px" }}
+                    aria-hidden
+                  />
                 </Link>
                 <Link
                   href="/ajedrez/club"
+                  className="arrow-link"
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -481,7 +570,10 @@ export default async function AgendaPage() {
                   }}
                 >
                   Ranking del club
-                  <ArrowRight style={{ width: "12px", height: "12px" }} aria-hidden />
+                  <ArrowRight
+                    style={{ width: "12px", height: "12px" }}
+                    aria-hidden
+                  />
                 </Link>
               </div>
             </div>
@@ -489,9 +581,22 @@ export default async function AgendaPage() {
         </Section>
 
         {/* ── Info de ubicación ── */}
-        <div style={{ background: "var(--color-grain)", borderTop: "2px solid var(--color-ink)" }}>
+        <div
+          style={{
+            background: "var(--color-grain)",
+            borderTop: "2px solid var(--color-ink)",
+          }}
+        >
           <Section>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "32px", alignItems: "center", justifyContent: "space-between" }}>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "32px",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
               <div>
                 <p
                   style={{
@@ -523,17 +628,20 @@ export default async function AgendaPage() {
                     marginTop: "4px",
                   }}
                 >
-                  Cada lunes · Clases 5:30 PM · Torneos 7:30 PM · {restaurantInfo.shortAddress}
+                  Cada lunes · Clases 5:30 PM · Torneos 7:30 PM ·{" "}
+                  {restaurantInfo.shortAddress}
                 </p>
               </div>
               <Link href="/contacto" className="btn btn-primary">
                 Cómo llegar
-                <ArrowRight style={{ width: "14px", height: "14px", marginLeft: "6px" }} aria-hidden />
+                <ArrowRight
+                  style={{ width: "14px", height: "14px", marginLeft: "6px" }}
+                  aria-hidden
+                />
               </Link>
             </div>
           </Section>
         </div>
-
       </main>
     </PublicLayout>
   );

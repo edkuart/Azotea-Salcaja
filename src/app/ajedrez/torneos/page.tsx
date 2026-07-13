@@ -26,6 +26,7 @@ import {
   getTournamentPodium,
 } from "@/modules/chess/publication";
 import type { ChessTournament } from "@/modules/chess/types";
+import { getTournamentPublicHref } from "@/modules/chess/public-tournament-route";
 
 export const metadata: Metadata = {
   title: "Torneos de ajedrez",
@@ -39,7 +40,7 @@ const HISTORY_LIMIT = 6;
 
 function tournamentHref(t: ChessTournament) {
   return isTournamentHistorical(t)
-    ? `/ajedrez/torneos/${t.slug}`
+    ? getTournamentPublicHref(t)
     : `/ajedrez/torneos/live/${t.id}`;
 }
 
@@ -79,7 +80,7 @@ export default async function ChessTournamentsPage({
           <BrandMark size={430} aria-hidden className="emblem-watermark" />
 
           <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <div className="reveal flex flex-wrap items-baseline gap-x-4 gap-y-1">
               <Link
                 href="/ajedrez"
                 style={{
@@ -101,7 +102,8 @@ export default async function ChessTournamentsPage({
               </span>
             </div>
             <h1
-              className="mt-3 max-w-3xl"
+              className="reveal mt-3 max-w-3xl"
+              data-reveal-delay="80"
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize: "var(--text-4xl)",
@@ -111,14 +113,18 @@ export default async function ChessTournamentsPage({
               Torneos de la comunidad
             </h1>
             <p
-              className="mt-2 max-w-2xl text-sm leading-6"
+              className="reveal mt-2 max-w-2xl text-sm leading-6"
+              data-reveal-delay="160"
               style={{ fontFamily: "var(--font-body)", opacity: 0.85 }}
             >
               Resultados, pareos e historias de las noches de ajedrez en Azotea
               Salcajá.
             </p>
 
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div
+              className="reveal mt-4 flex flex-wrap gap-2"
+              data-reveal-delay="240"
+            >
               {[
                 { href: "/ajedrez/agenda", label: "Agenda" },
                 { href: "/ajedrez/ranking", label: "Palmarés" },
@@ -146,7 +152,7 @@ export default async function ChessTournamentsPage({
 
         <Section>
           {/* ── En curso ── */}
-          <div className="flex items-center gap-2.5">
+          <div className="reveal flex items-center gap-2.5">
             <Trophy
               className="h-5 w-5"
               style={{ color: "var(--color-stage)" }}
@@ -165,7 +171,7 @@ export default async function ChessTournamentsPage({
 
           {active.length > 0 ? (
             <div className="mt-5 grid gap-4 md:grid-cols-2">
-              {active.map((tournament) => {
+              {active.map((tournament, i) => {
                 const summary = getTournamentSummary(tournament);
                 const status = getEffectiveTournamentStatus(tournament);
 
@@ -173,7 +179,8 @@ export default async function ChessTournamentsPage({
                   <Link
                     key={tournament.id}
                     href={tournamentHref(tournament)}
-                    className="product-card group flex-row! items-stretch no-underline"
+                    className="product-card reveal group flex-row! items-stretch no-underline"
+                    data-reveal-delay={String(i * 80)}
                     style={{ color: "var(--color-ink)" }}
                   >
                     <div
@@ -283,7 +290,7 @@ export default async function ChessTournamentsPage({
           {/* ── Historial ── */}
           {historical.length > 0 && (
             <>
-              <div className="mt-8 flex items-center justify-between gap-3">
+              <div className="reveal mt-8 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <CalendarDays
                     className="h-5 w-5"
@@ -314,13 +321,14 @@ export default async function ChessTournamentsPage({
               </div>
 
               <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
-                {shownHistory.map((tournament) => {
+                {shownHistory.map((tournament, i) => {
                   const champion = getTournamentPodium(tournament)[0];
                   return (
                     <Link
                       key={tournament.id}
                       href={tournamentHref(tournament)}
-                      className="group flex min-w-0 items-center gap-4 border-2 p-3 no-underline transition motion-safe:hover:-translate-y-0.5"
+                      className="reveal lift group flex min-w-0 items-center gap-4 border-2 p-3 no-underline"
+                      data-reveal-delay={String((i % 4) * 60)}
                       style={{
                         background: "var(--color-grain)",
                         color: "var(--color-ink)",
@@ -399,7 +407,7 @@ export default async function ChessTournamentsPage({
                         ? "/ajedrez/torneos"
                         : "/ajedrez/torneos?historial=todos"
                     }
-                    className="inline-flex items-center gap-2 no-underline transition-opacity hover:opacity-70"
+                    className="arrow-link inline-flex items-center gap-2 no-underline transition-opacity hover:opacity-70"
                     style={{
                       fontFamily: "var(--font-poster)",
                       fontSize: "var(--text-xs)",
@@ -420,7 +428,7 @@ export default async function ChessTournamentsPage({
 
           {/* Nota institucional */}
           <div
-            className="mt-8 flex items-start gap-3 border-2 p-4"
+            className="reveal mt-8 flex items-start gap-3 border-2 p-4"
             style={{
               background: "var(--color-cream)",
               borderColor: "var(--color-ink)",
