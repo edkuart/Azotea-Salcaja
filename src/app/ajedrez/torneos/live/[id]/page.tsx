@@ -6,11 +6,14 @@ import Link from "next/link";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { TournamentPlayerIdentity } from "@/components/chess/TournamentPlayerIdentity";
+import { VictoryPodium } from "@/components/chess/VictoryPodium";
+import { StandingsTable } from "@/components/chess/StandingsTable";
 import { calculateStandings } from "@/modules/chess/standings";
 import {
   formatTournamentStatus,
   formatTournamentSystem,
   getEffectiveTournamentStatus,
+  getTournamentSummary,
 } from "@/modules/chess/public-data";
 import type { ChessTournament } from "@/modules/chess/types";
 
@@ -29,8 +32,6 @@ const RESULT_LABEL: Record<string, string> = {
   bye: "BYE",
   unplayed: "—",
 };
-
-const medalBorder = ["var(--color-marquee)", "#999", "#8a5a2b"];
 
 export default function TournamentLivePage() {
   const { id } = useParams<{ id: string }>();
@@ -127,10 +128,19 @@ export default function TournamentLivePage() {
   }
 
   const standings = calculateStandings(tournament);
+  const summary = getTournamentSummary(tournament);
   const currentRound = tournament.rounds.at(-1) ?? null;
   const lastRoundDone =
     !currentRound || currentRound.games.every((g) => g.result !== "unplayed");
   const isFinished = getEffectiveTournamentStatus(tournament) === "closed";
+  // En curso, la ronda actual se destaca arriba; el histórico solo lista las
+  // rondas anteriores. Al finalizar, todas las rondas van al histórico cerrado.
+  const historyRounds = isFinished
+    ? [...tournament.rounds].reverse()
+    : tournament.rounds.slice(0, -1).reverse();
+  const registeredPlayers = [...tournament.players].sort((a, b) =>
+    a.name.localeCompare(b.name, "es"),
+  );
 
   return (
     <PublicLayout>
@@ -262,318 +272,11 @@ export default function TournamentLivePage() {
           </div>
         </div>
 
-        {/* ── Current Round ── */}
-        {currentRound ? (
-          <div style={{ marginTop: 24 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "baseline",
-                justifyContent: "space-between",
-                marginBottom: 12,
-              }}
-            >
-              <p
-                style={{
-                  fontFamily: "var(--font-poster)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.2em",
-                  fontSize: 11,
-                  color: "var(--color-ink)",
-                }}
-              >
-                <em
-                  style={{
-                    fontFamily: "var(--font-chess)",
-                    fontStyle: "italic",
-                    color: "var(--color-stage)",
-                    marginRight: 4,
-                    fontSize: 14,
-                  }}
-                >
-                  ♜
-                </em>
-                Ronda {currentRound.roundNumber}
-              </p>
-              <span
-                style={{
-                  fontFamily: "ui-monospace, monospace",
-                  fontSize: 10,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  color: lastRoundDone
-                    ? "var(--color-navy)"
-                    : "var(--color-stage)",
-                }}
-              >
-                {lastRoundDone
-                  ? "Completada"
-                  : `${currentRound.games.filter((g) => g.result === "unplayed").length} pendientes`}
-              </span>
-            </div>
-
-            <div
-              style={{
-                border: "2px solid var(--color-ink)",
-                background: "var(--color-grain)",
-                boxShadow: "4px 4px 0 var(--color-ink)",
-              }}
-            >
-              {currentRound.games.map((game, i) => {
-                const isLast = i === currentRound.games.length - 1;
-                const pending = game.result === "unplayed";
-                const whitePlayer = tournamentPlayer(
-                  tournament,
-                  game.whitePlayerId,
-                );
-                const blackPlayer = tournamentPlayer(
-                  tournament,
-                  game.blackPlayerId,
-                );
-                const white = whitePlayer?.name ?? "BYE";
-                const black = blackPlayer?.name ?? "BYE";
-
-                if (game.isBye) {
-                  return (
-                    <div
-                      key={game.id}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        padding: "13px 14px",
-                        borderBottom: isLast
-                          ? "none"
-                          : "1px dashed rgba(26,26,26,0.2)",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily: "var(--font-poster)",
-                          fontSize: 15,
-                          color: "var(--color-stage)",
-                          width: 22,
-                          textAlign: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        B
-                      </span>
-                      <TournamentPlayerIdentity
-                        name={white}
-                        photoUrl={whitePlayer?.photoUrl}
-                        avatarId={whitePlayer?.avatarId}
-                        size={32}
-                        style={{
-                          fontFamily: "var(--font-body)",
-                          fontSize: 14,
-                          fontWeight: 700,
-                          flex: 1,
-                        }}
-                        nameClassName="truncate"
-                      />
-                      <span
-                        style={{
-                          fontFamily: "ui-monospace, monospace",
-                          fontSize: 11,
-                          fontWeight: 700,
-                          letterSpacing: "0.08em",
-                          background: "var(--color-ink)",
-                          color: "var(--color-cream)",
-                          padding: "3px 10px",
-                        }}
-                      >
-                        BYE · +1
-                      </span>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div
-                    key={game.id}
-                    style={{
-                      borderBottom: isLast
-                        ? "none"
-                        : "1px dashed rgba(26,26,26,0.2)",
-                      padding: "13px 14px",
-                    }}
-                  >
-                    {/* Board label */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 6,
-                        marginBottom: 8,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily: "var(--font-poster)",
-                          fontSize: 11,
-                          color: "var(--color-stage)",
-                          letterSpacing: "0.16em",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        Mesa {game.boardNumber}
-                      </span>
-                      {!pending && (
-                        <span
-                          style={{
-                            fontFamily: "ui-monospace, monospace",
-                            fontSize: 10,
-                            fontWeight: 700,
-                            background: "var(--color-ink)",
-                            color: "var(--color-cream)",
-                            padding: "1px 8px",
-                            letterSpacing: "0.08em",
-                          }}
-                        >
-                          {RESULT_LABEL[game.result]}
-                        </span>
-                      )}
-                      {pending && (
-                        <span
-                          style={{
-                            fontFamily: "ui-monospace, monospace",
-                            fontSize: 10,
-                            border: "1px dashed rgba(26,26,26,0.3)",
-                            color: "#999",
-                            padding: "1px 8px",
-                            letterSpacing: "0.08em",
-                          }}
-                        >
-                          En juego
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Players side by side */}
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 28px 1fr",
-                        alignItems: "center",
-                        gap: 4,
-                      }}
-                    >
-                      <div
-                        style={{
-                          background: pending
-                            ? "rgba(26,26,26,0.05)"
-                            : "var(--color-ink)",
-                          border: "2px solid var(--color-ink)",
-                          padding: "8px 12px",
-                        }}
-                      >
-                        <p
-                          style={{
-                            fontFamily: "var(--font-poster)",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.12em",
-                            fontSize: 9,
-                            color: pending ? "#888" : "var(--color-marquee)",
-                            marginBottom: 2,
-                          }}
-                        >
-                          Blancas
-                        </p>
-                        <TournamentPlayerIdentity
-                          name={white}
-                          photoUrl={whitePlayer?.photoUrl}
-                          avatarId={whitePlayer?.avatarId}
-                          size={30}
-                          style={{
-                            fontFamily: "var(--font-body)",
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: pending
-                              ? "var(--color-ink)"
-                              : "var(--color-cream)",
-                            lineHeight: 1.1,
-                            maxWidth: "100%",
-                          }}
-                          nameClassName="truncate"
-                        />
-                      </div>
-                      <div
-                        style={{
-                          textAlign: "center",
-                          fontFamily: "var(--font-chess)",
-                          fontStyle: "italic",
-                          fontSize: 16,
-                          color: "var(--color-stage)",
-                        }}
-                      >
-                        vs
-                      </div>
-                      <div
-                        style={{
-                          background: pending
-                            ? "rgba(26,26,26,0.05)"
-                            : "var(--color-stage)",
-                          border: "2px solid var(--color-ink)",
-                          padding: "8px 12px",
-                        }}
-                      >
-                        <p
-                          style={{
-                            fontFamily: "var(--font-poster)",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.12em",
-                            fontSize: 9,
-                            color: pending ? "#888" : "rgba(255,253,208,0.75)",
-                            marginBottom: 2,
-                          }}
-                        >
-                          Negras
-                        </p>
-                        <TournamentPlayerIdentity
-                          name={black}
-                          photoUrl={blackPlayer?.photoUrl}
-                          avatarId={blackPlayer?.avatarId}
-                          size={30}
-                          style={{
-                            fontFamily: "var(--font-body)",
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: pending
-                              ? "var(--color-ink)"
-                              : "var(--color-cream)",
-                            lineHeight: 1.1,
-                            maxWidth: "100%",
-                          }}
-                          nameClassName="truncate"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : (
-          <div
-            style={{
-              marginTop: 24,
-              border: "2px dashed rgba(26,26,26,0.2)",
-              padding: "32px 16px",
-              textAlign: "center",
-              fontFamily: "var(--font-body)",
-              fontSize: 13,
-              color: "#888",
-            }}
-          >
-            El torneo aún no tiene rondas generadas.
-          </div>
-        )}
-
-        {/* ── Standings ── */}
-        {standings.length > 0 && (
-          <div style={{ marginTop: 32 }}>
+        {/* ── Podio principal (solo al finalizar el torneo) ── */}
+        {isFinished && standings.length >= 2 && (
+          <section style={{ marginTop: 20 }} aria-labelledby="podio-heading">
             <p
+              id="podio-heading"
               style={{
                 fontFamily: "var(--font-poster)",
                 textTransform: "uppercase",
@@ -588,301 +291,529 @@ export default function TournamentLivePage() {
                   fontFamily: "var(--font-chess)",
                   fontStyle: "italic",
                   color: "var(--color-stage)",
-                  marginRight: 4,
+                  marginRight: 5,
                   fontSize: 14,
                 }}
               >
                 ♛
               </em>
-              Tabla de posiciones
+              Podio del torneo
             </p>
+            <VictoryPodium
+              celebrate={isFinished}
+              entries={standings.slice(0, 3).map((standing) => ({
+                playerId: standing.playerId,
+                name: standing.name,
+                photoUrl: standing.photoUrl,
+                avatarId: standing.avatarId,
+                points: standing.points,
+                wins: standing.wins,
+              }))}
+              label={`Podio de ${tournament.title}`}
+            />
+          </section>
+        )}
 
-            {/* Top 3 */}
-            {standings.length >= 2 && (
+        {/* ── Emparejamientos de la ronda actual (torneo en curso) ── */}
+        {!isFinished &&
+          (currentRound ? (
+            <div style={{ marginTop: 24 }}>
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(3,1fr)",
-                  gap: 8,
-                  marginBottom: 14,
+                  display: "flex",
+                  alignItems: "baseline",
+                  justifyContent: "space-between",
+                  marginBottom: 12,
                 }}
               >
-                {[0, 1, 2].map((i) => {
-                  const s = standings[i];
-                  if (!s) return null;
+                <p
+                  style={{
+                    fontFamily: "var(--font-poster)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.2em",
+                    fontSize: 11,
+                    color: "var(--color-ink)",
+                  }}
+                >
+                  <em
+                    style={{
+                      fontFamily: "var(--font-chess)",
+                      fontStyle: "italic",
+                      color: "var(--color-stage)",
+                      marginRight: 4,
+                      fontSize: 14,
+                    }}
+                  >
+                    ♜
+                  </em>
+                  Ronda {currentRound.roundNumber}
+                </p>
+                <span
+                  style={{
+                    fontFamily: "ui-monospace, monospace",
+                    fontSize: 10,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    color: lastRoundDone
+                      ? "var(--color-navy)"
+                      : "var(--color-stage)",
+                  }}
+                >
+                  {lastRoundDone
+                    ? "Completada"
+                    : `${currentRound.games.filter((g) => g.result === "unplayed").length} pendientes`}
+                </span>
+              </div>
+
+              <div
+                style={{
+                  border: "2px solid var(--color-ink)",
+                  background: "var(--color-grain)",
+                  boxShadow: "4px 4px 0 var(--color-ink)",
+                }}
+              >
+                {currentRound.games.map((game, i) => {
+                  const isLast = i === currentRound.games.length - 1;
+                  const pending = game.result === "unplayed";
+                  const whitePlayer = tournamentPlayer(
+                    tournament,
+                    game.whitePlayerId,
+                  );
+                  const blackPlayer = tournamentPlayer(
+                    tournament,
+                    game.blackPlayerId,
+                  );
+                  const white = whitePlayer?.name ?? "BYE";
+                  const black = blackPlayer?.name ?? "BYE";
+
+                  if (game.isBye) {
+                    return (
+                      <div
+                        key={game.id}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                          padding: "13px 14px",
+                          borderBottom: isLast
+                            ? "none"
+                            : "1px dashed rgba(26,26,26,0.2)",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: "var(--font-poster)",
+                            fontSize: 15,
+                            color: "var(--color-stage)",
+                            width: 22,
+                            textAlign: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          B
+                        </span>
+                        <TournamentPlayerIdentity
+                          name={white}
+                          photoUrl={whitePlayer?.photoUrl}
+                          avatarId={whitePlayer?.avatarId}
+                          size={32}
+                          style={{
+                            fontFamily: "var(--font-body)",
+                            fontSize: 14,
+                            fontWeight: 700,
+                            flex: 1,
+                          }}
+                          nameClassName="truncate"
+                        />
+                        <span
+                          style={{
+                            fontFamily: "ui-monospace, monospace",
+                            fontSize: 11,
+                            fontWeight: 700,
+                            letterSpacing: "0.08em",
+                            background: "var(--color-ink)",
+                            color: "var(--color-cream)",
+                            padding: "3px 10px",
+                          }}
+                        >
+                          BYE · +1
+                        </span>
+                      </div>
+                    );
+                  }
+
                   return (
                     <div
-                      key={i}
+                      key={game.id}
                       style={{
-                        background: "var(--color-grain)",
-                        border: "2px solid var(--color-ink)",
-                        borderLeft: `4px solid ${medalBorder[i]}`,
-                        padding: "8px 10px",
-                        boxShadow: "2px 2px 0 var(--color-ink)",
+                        borderBottom: isLast
+                          ? "none"
+                          : "1px dashed rgba(26,26,26,0.2)",
+                        padding: "13px 14px",
                       }}
                     >
-                      <p
+                      {/* Board label */}
+                      <div
                         style={{
-                          fontFamily: "var(--font-poster)",
-                          fontSize: 9,
-                          opacity: 0.6,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.14em",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          marginBottom: 8,
                         }}
                       >
-                        {i + 1}°
-                      </p>
-                      <TournamentPlayerIdentity
-                        name={s.name}
-                        photoUrl={s.photoUrl}
-                        avatarId={s.avatarId}
-                        size={30}
+                        <span
+                          style={{
+                            fontFamily: "var(--font-poster)",
+                            fontSize: 11,
+                            color: "var(--color-stage)",
+                            letterSpacing: "0.16em",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          Mesa {game.boardNumber}
+                        </span>
+                        {!pending && (
+                          <span
+                            style={{
+                              fontFamily: "ui-monospace, monospace",
+                              fontSize: 10,
+                              fontWeight: 700,
+                              background: "var(--color-ink)",
+                              color: "var(--color-cream)",
+                              padding: "1px 8px",
+                              letterSpacing: "0.08em",
+                            }}
+                          >
+                            {RESULT_LABEL[game.result]}
+                          </span>
+                        )}
+                        {pending && (
+                          <span
+                            style={{
+                              fontFamily: "ui-monospace, monospace",
+                              fontSize: 10,
+                              border: "1px dashed rgba(26,26,26,0.3)",
+                              color: "#999",
+                              padding: "1px 8px",
+                              letterSpacing: "0.08em",
+                            }}
+                          >
+                            En juego
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Players side by side */}
+                      <div
                         style={{
-                          fontFamily: "var(--font-body)",
-                          fontSize: 12,
-                          fontWeight: 700,
-                          marginTop: 4,
-                          maxWidth: "100%",
-                        }}
-                        nameClassName="truncate"
-                      />
-                      <p
-                        style={{
-                          fontFamily: "ui-monospace, monospace",
-                          fontSize: 16,
-                          fontWeight: 700,
-                          color: "var(--color-stage)",
-                          marginTop: 2,
+                          display: "grid",
+                          gridTemplateColumns: "1fr 28px 1fr",
+                          alignItems: "center",
+                          gap: 4,
                         }}
                       >
-                        {s.points}
-                      </p>
+                        <div
+                          style={{
+                            minWidth: 0,
+                            overflow: "hidden",
+                            background: pending
+                              ? "rgba(26,26,26,0.05)"
+                              : "var(--color-ink)",
+                            border: "2px solid var(--color-ink)",
+                            padding: "8px 12px",
+                          }}
+                        >
+                          <p
+                            style={{
+                              fontFamily: "var(--font-poster)",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.12em",
+                              fontSize: 9,
+                              color: pending ? "#888" : "var(--color-marquee)",
+                              marginBottom: 2,
+                            }}
+                          >
+                            Blancas
+                          </p>
+                          <TournamentPlayerIdentity
+                            name={white}
+                            photoUrl={whitePlayer?.photoUrl}
+                            avatarId={whitePlayer?.avatarId}
+                            size={30}
+                            style={{
+                              fontFamily: "var(--font-body)",
+                              fontSize: 14,
+                              fontWeight: 700,
+                              color: pending
+                                ? "var(--color-ink)"
+                                : "var(--color-cream)",
+                              lineHeight: 1.1,
+                              maxWidth: "100%",
+                            }}
+                            nameClassName="truncate"
+                          />
+                        </div>
+                        <div
+                          style={{
+                            textAlign: "center",
+                            fontFamily: "var(--font-chess)",
+                            fontStyle: "italic",
+                            fontSize: 16,
+                            color: "var(--color-stage)",
+                          }}
+                        >
+                          vs
+                        </div>
+                        <div
+                          style={{
+                            minWidth: 0,
+                            overflow: "hidden",
+                            background: pending
+                              ? "rgba(26,26,26,0.05)"
+                              : "var(--color-stage)",
+                            border: "2px solid var(--color-ink)",
+                            padding: "8px 12px",
+                          }}
+                        >
+                          <p
+                            style={{
+                              fontFamily: "var(--font-poster)",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.12em",
+                              fontSize: 9,
+                              color: pending
+                                ? "#888"
+                                : "rgba(255,253,208,0.75)",
+                              marginBottom: 2,
+                            }}
+                          >
+                            Negras
+                          </p>
+                          <TournamentPlayerIdentity
+                            name={black}
+                            photoUrl={blackPlayer?.photoUrl}
+                            avatarId={blackPlayer?.avatarId}
+                            size={30}
+                            style={{
+                              fontFamily: "var(--font-body)",
+                              fontSize: 14,
+                              fontWeight: 700,
+                              color: pending
+                                ? "var(--color-ink)"
+                                : "var(--color-cream)",
+                              lineHeight: 1.1,
+                              maxWidth: "100%",
+                            }}
+                            nameClassName="truncate"
+                          />
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
               </div>
-            )}
-
-            <div
-              style={{
-                border: "2px solid var(--color-ink)",
-                background: "var(--color-grain)",
-                overflowX: "auto",
-              }}
+            </div>
+          ) : (
+            <section
+              style={{ marginTop: 24 }}
+              aria-labelledby="inscritos-heading"
             >
-              <table
+              <p
+                id="inscritos-heading"
                 style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  fontSize: 12,
+                  fontFamily: "var(--font-poster)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.2em",
+                  fontSize: 11,
+                  color: "var(--color-ink)",
+                  marginBottom: 12,
                 }}
               >
-                <thead>
-                  <tr
-                    style={{
-                      background: "var(--color-ink)",
-                      color: "var(--color-cream)",
-                    }}
-                  >
-                    <th
+                <em
+                  style={{
+                    fontFamily: "var(--font-chess)",
+                    fontStyle: "italic",
+                    color: "var(--color-stage)",
+                    marginRight: 5,
+                    fontSize: 14,
+                  }}
+                >
+                  ♟
+                </em>
+                Jugadores inscritos
+              </p>
+              {registeredPlayers.length > 0 ? (
+                <div
+                  style={{
+                    border: "2px solid var(--color-ink)",
+                    background: "var(--color-grain)",
+                    boxShadow: "4px 4px 0 var(--color-ink)",
+                  }}
+                >
+                  {registeredPlayers.map((player, i) => (
+                    <div
+                      key={player.id}
                       style={{
-                        padding: "8px 10px",
-                        fontFamily: "var(--font-poster)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.14em",
-                        fontSize: 9.5,
-                        fontWeight: 400,
-                        textAlign: "left",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        padding: "10px 14px",
+                        borderBottom:
+                          i === registeredPlayers.length - 1
+                            ? "none"
+                            : "1px dashed rgba(26,26,26,0.15)",
                       }}
                     >
-                      #
-                    </th>
-                    <th
-                      style={{
-                        padding: "8px 10px",
-                        fontFamily: "var(--font-poster)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.14em",
-                        fontSize: 9.5,
-                        fontWeight: 400,
-                        textAlign: "left",
-                      }}
-                    >
-                      Jugador
-                    </th>
-                    <th
-                      style={{
-                        padding: "8px 10px",
-                        fontFamily: "var(--font-poster)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.14em",
-                        fontSize: 9.5,
-                        fontWeight: 400,
-                        textAlign: "right",
-                      }}
-                    >
-                      Pts
-                    </th>
-                    <th
-                      style={{
-                        padding: "8px 10px",
-                        fontFamily: "var(--font-poster)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.14em",
-                        fontSize: 9.5,
-                        fontWeight: 400,
-                        textAlign: "center",
-                      }}
-                    >
-                      G-T-P
-                    </th>
-                    {tournament.rounds.map((r) => (
-                      <th
-                        key={r.id}
+                      <span
                         style={{
-                          padding: "8px 6px",
                           fontFamily: "var(--font-poster)",
-                          textTransform: "uppercase",
-                          fontSize: 9,
-                          fontWeight: 400,
-                          textAlign: "center",
-                          letterSpacing: "0.1em",
-                        }}
-                      >
-                        R{r.roundNumber}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {standings.map((s, i) => (
-                    <tr
-                      key={s.playerId}
-                      style={{
-                        borderBottom: "1px dashed rgba(26,26,26,0.18)",
-                        borderLeft:
-                          i < 3
-                            ? `4px solid ${medalBorder[i]}`
-                            : "4px solid transparent",
-                        background:
-                          i % 2 === 0 ? "transparent" : "rgba(0,0,0,0.02)",
-                      }}
-                    >
-                      <td
-                        style={{
-                          padding: "8px 10px",
-                          fontFamily: "var(--font-poster)",
-                          fontSize: 13,
+                          fontSize: 12,
                           color: "var(--color-stage)",
+                          width: 22,
+                          textAlign: "center",
+                          flexShrink: 0,
                         }}
                       >
                         {i + 1}
-                      </td>
-                      <td style={{ padding: "8px 10px" }}>
-                        <TournamentPlayerIdentity
-                          name={s.name}
-                          photoUrl={s.photoUrl}
-                          avatarId={s.avatarId}
-                          size={28}
+                      </span>
+                      <TournamentPlayerIdentity
+                        name={player.name}
+                        photoUrl={player.photoUrl}
+                        avatarId={player.avatarId}
+                        size={28}
+                        style={{
+                          fontFamily: "var(--font-body)",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          flex: 1,
+                          minWidth: 0,
+                        }}
+                        nameClassName="truncate"
+                      />
+                      {player.rating && (
+                        <span
                           style={{
-                            fontFamily: "var(--font-body)",
-                            fontSize: 13,
-                            fontWeight: 600,
+                            fontFamily: "ui-monospace, monospace",
+                            fontSize: 10,
+                            color: "#888",
+                            flexShrink: 0,
                           }}
-                          nameClassName="truncate"
-                        />
-                        {s.rating && (
-                          <p
-                            style={{
-                              fontFamily: "ui-monospace, monospace",
-                              fontSize: 9,
-                              color: "#888",
-                            }}
-                          >
-                            {s.rating}
-                          </p>
-                        )}
-                      </td>
-                      <td
-                        style={{
-                          padding: "8px 10px",
-                          textAlign: "right",
-                          fontFamily: "ui-monospace, monospace",
-                          fontSize: 14,
-                          fontWeight: 700,
-                          color: "var(--color-stage)",
-                        }}
-                      >
-                        {s.points}
-                      </td>
-                      <td
-                        style={{
-                          padding: "8px 10px",
-                          textAlign: "center",
-                          fontFamily: "ui-monospace, monospace",
-                          fontSize: 10,
-                          color: "#666",
-                        }}
-                      >
-                        {s.wins}-{s.draws}-{s.losses}
-                      </td>
-                      {tournament.rounds.map((round) => {
-                        const game = round.games.find(
-                          (g) =>
-                            g.whitePlayerId === s.playerId ||
-                            g.blackPlayerId === s.playerId,
-                        );
-                        let cell = "·";
-                        let color = "#ccc";
-                        if (game) {
-                          const isWhite = game.whitePlayerId === s.playerId;
-                          const score = isWhite
-                            ? game.whiteScore
-                            : game.blackScore;
-                          if (score !== undefined) {
-                            if (game.isBye) {
-                              cell = "B";
-                              color = "var(--color-emerald)";
-                            } else if (score === 1) {
-                              cell = "1";
-                              color = "var(--color-emerald)";
-                            } else if (score === 0.5) {
-                              cell = "½";
-                              color = "var(--color-amber)";
-                            } else {
-                              cell = "0";
-                              color = "var(--color-stage)";
-                            }
-                          }
-                        }
-                        return (
-                          <td
-                            key={round.id}
-                            style={{ padding: "8px 6px", textAlign: "center" }}
-                          >
-                            <span
-                              style={{
-                                fontFamily: "ui-monospace, monospace",
-                                fontSize: 11,
-                                fontWeight: 700,
-                                color,
-                              }}
-                            >
-                              {cell}
-                            </span>
-                          </td>
-                        );
-                      })}
-                    </tr>
+                        >
+                          {player.rating}
+                        </span>
+                      )}
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    border: "2px dashed rgba(26,26,26,0.2)",
+                    padding: "32px 16px",
+                    textAlign: "center",
+                    fontFamily: "var(--font-body)",
+                    fontSize: 13,
+                    color: "#888",
+                  }}
+                >
+                  Aún no hay jugadores inscritos.
+                </div>
+              )}
+            </section>
+          ))}
+
+        {/* ── Tabla completa optimizada (solo con rondas jugadas) ── */}
+        {tournament.rounds.length > 0 && standings.length > 0 && (
+          <section style={{ marginTop: 28 }} aria-labelledby="tabla-heading">
+            <p
+              id="tabla-heading"
+              style={{
+                fontFamily: "var(--font-poster)",
+                textTransform: "uppercase",
+                letterSpacing: "0.2em",
+                fontSize: 11,
+                color: "var(--color-ink)",
+                marginBottom: 12,
+              }}
+            >
+              Tabla completa y desempates
+            </p>
+            <StandingsTable
+              standings={standings}
+              tieBreakCodes={tournament.tieBreakOrder}
+              rounds={tournament.rounds}
+            />
+          </section>
         )}
 
-        {/* ── All rounds history ── */}
-        {tournament.rounds.length > 1 && (
+        {/* ── Resumen del torneo ── */}
+        <section
+          aria-label="Resumen del torneo"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 8,
+            marginTop: 16,
+          }}
+        >
+          {[
+            ["Jugadores", String(summary.players)],
+            [
+              "Rondas",
+              `${tournament.rounds.length}/${tournament.roundsPlanned}`,
+            ],
+            ["Partidas", `${summary.completedGames}/${summary.games}`],
+            [
+              isFinished ? "Campeón" : "Líder",
+              tournament.rounds.length > 0
+                ? (standings[0]?.name ?? "Por definir")
+                : "Por definir",
+            ],
+          ].map(([label, value], index) => (
+            <article
+              key={label}
+              style={{
+                minWidth: 0,
+                border: "2px solid var(--color-ink)",
+                borderTop: `4px solid ${index === 3 ? "var(--color-marquee)" : "var(--color-navy)"}`,
+                background: "var(--color-grain)",
+                padding: "11px 12px 12px",
+                boxShadow: "2px 2px 0 var(--color-ink)",
+              }}
+            >
+              <p
+                style={{
+                  fontFamily: "var(--font-poster)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.15em",
+                  fontSize: 9,
+                  color: "#6f6f6f",
+                }}
+              >
+                {label}
+              </p>
+              <p
+                title={value}
+                style={{
+                  marginTop: 4,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  fontFamily: "var(--font-display)",
+                  fontSize: index === 3 ? 18 : 24,
+                  lineHeight: 1,
+                  color:
+                    index === 3 ? "var(--color-stage)" : "var(--color-ink)",
+                }}
+              >
+                {value}
+              </p>
+            </article>
+          ))}
+        </section>
+
+        {/* ── Histórico de rondas (colapsadas) ── */}
+        {historyRounds.length > 0 && (
           <div style={{ marginTop: 32 }}>
             <p
               style={{
@@ -894,165 +825,120 @@ export default function TournamentLivePage() {
                 marginBottom: 12,
               }}
             >
-              Rondas anteriores
+              {isFinished ? "Rondas del torneo" : "Rondas anteriores"}
             </p>
             <div style={{ display: "grid", gap: 10 }}>
-              {[...tournament.rounds]
-                .reverse()
-                .slice(1)
-                .map((round) => (
-                  <details
-                    key={round.id}
+              {historyRounds.map((round) => (
+                <details
+                  key={round.id}
+                  style={{
+                    border: "2px solid var(--color-ink)",
+                    background: "var(--color-grain)",
+                  }}
+                >
+                  <summary
                     style={{
-                      border: "2px solid var(--color-ink)",
-                      background: "var(--color-grain)",
+                      padding: "10px 14px",
+                      fontFamily: "var(--font-poster)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.16em",
+                      fontSize: 10,
+                      cursor: "pointer",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      background: "var(--color-ink)",
+                      color: "var(--color-cream)",
                     }}
                   >
-                    <summary
-                      style={{
-                        padding: "10px 14px",
-                        fontFamily: "var(--font-poster)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.16em",
-                        fontSize: 10,
-                        cursor: "pointer",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        background: "var(--color-ink)",
-                        color: "var(--color-cream)",
-                      }}
-                    >
-                      <span>
-                        <em
-                          style={{
-                            fontFamily: "var(--font-chess)",
-                            fontStyle: "italic",
-                            color: "var(--color-marquee)",
-                            marginRight: 6,
-                            fontSize: 12,
-                          }}
-                        >
-                          ♜
-                        </em>
-                        Ronda {round.roundNumber}
-                      </span>
-                      <span
+                    <span>
+                      <em
                         style={{
-                          fontFamily: "ui-monospace, monospace",
-                          fontSize: 9,
-                          opacity: 0.6,
+                          fontFamily: "var(--font-chess)",
+                          fontStyle: "italic",
+                          color: "var(--color-marquee)",
+                          marginRight: 6,
+                          fontSize: 12,
                         }}
                       >
-                        {round.games.length} partidas
-                      </span>
-                    </summary>
-                    <div>
-                      {round.games.map((game, i) => {
-                        const isLast = i === round.games.length - 1;
-                        const whitePlayer = tournamentPlayer(
-                          tournament,
-                          game.whitePlayerId,
-                        );
-                        const blackPlayer = tournamentPlayer(
-                          tournament,
-                          game.blackPlayerId,
-                        );
-                        const w = whitePlayer?.name ?? "BYE";
-                        const b = blackPlayer?.name ?? "BYE";
-                        return (
+                        ♜
+                      </em>
+                      Ronda {round.roundNumber}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: "ui-monospace, monospace",
+                        fontSize: 9,
+                        opacity: 0.6,
+                      }}
+                    >
+                      {round.games.length} partidas
+                    </span>
+                  </summary>
+                  <div>
+                    {round.games.map((game, i) => {
+                      const isLast = i === round.games.length - 1;
+                      const whitePlayer = tournamentPlayer(
+                        tournament,
+                        game.whitePlayerId,
+                      );
+                      const blackPlayer = tournamentPlayer(
+                        tournament,
+                        game.blackPlayerId,
+                      );
+                      const w = whitePlayer?.name ?? "BYE";
+                      const b = blackPlayer?.name ?? "BYE";
+                      return (
+                        <div
+                          key={game.id}
+                          style={{
+                            padding: "10px 14px",
+                            borderBottom: isLast
+                              ? "none"
+                              : "1px dashed rgba(26,26,26,0.15)",
+                          }}
+                        >
                           <div
-                            key={game.id}
                             style={{
-                              padding: "10px 14px",
-                              borderBottom: isLast
-                                ? "none"
-                                : "1px dashed rgba(26,26,26,0.15)",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                              marginBottom: game.isBye ? 0 : 7,
                             }}
                           >
-                            <div
+                            <span
                               style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 6,
-                                marginBottom: game.isBye ? 0 : 7,
+                                fontFamily: "var(--font-poster)",
+                                fontSize: 10,
+                                color: "var(--color-stage)",
+                                letterSpacing: "0.14em",
+                                textTransform: "uppercase",
                               }}
                             >
-                              <span
-                                style={{
-                                  fontFamily: "var(--font-poster)",
-                                  fontSize: 10,
-                                  color: "var(--color-stage)",
-                                  letterSpacing: "0.14em",
-                                  textTransform: "uppercase",
-                                }}
-                              >
-                                {game.isBye
-                                  ? "BYE"
-                                  : `Mesa ${game.boardNumber}`}
-                              </span>
-                              <span
-                                style={{
-                                  fontFamily: "ui-monospace, monospace",
-                                  fontSize: 10,
-                                  fontWeight: 700,
-                                  background: "var(--color-ink)",
-                                  color: "var(--color-cream)",
-                                  padding: "1px 8px",
-                                }}
-                              >
-                                {RESULT_LABEL[game.result]}
-                              </span>
-                            </div>
-                            {!game.isBye ? (
-                              <div
-                                style={{
-                                  display: "grid",
-                                  gridTemplateColumns: "1fr 24px 1fr",
-                                  alignItems: "center",
-                                  gap: 4,
-                                }}
-                              >
-                                <TournamentPlayerIdentity
-                                  name={w}
-                                  photoUrl={whitePlayer?.photoUrl}
-                                  avatarId={whitePlayer?.avatarId}
-                                  size={24}
-                                  style={{
-                                    fontFamily: "var(--font-body)",
-                                    fontSize: 12,
-                                    fontWeight: 600,
-                                    maxWidth: "100%",
-                                  }}
-                                  nameClassName="truncate"
-                                />
-                                <span
-                                  style={{
-                                    textAlign: "center",
-                                    fontFamily: "var(--font-chess)",
-                                    fontStyle: "italic",
-                                    fontSize: 13,
-                                    color: "var(--color-stage)",
-                                  }}
-                                >
-                                  vs
-                                </span>
-                                <TournamentPlayerIdentity
-                                  name={b}
-                                  photoUrl={blackPlayer?.photoUrl}
-                                  avatarId={blackPlayer?.avatarId}
-                                  size={24}
-                                  style={{
-                                    fontFamily: "var(--font-body)",
-                                    fontSize: 12,
-                                    fontWeight: 600,
-                                    maxWidth: "100%",
-                                    justifyContent: "flex-end",
-                                  }}
-                                  nameClassName="truncate"
-                                />
-                              </div>
-                            ) : (
+                              {game.isBye ? "BYE" : `Mesa ${game.boardNumber}`}
+                            </span>
+                            <span
+                              style={{
+                                fontFamily: "ui-monospace, monospace",
+                                fontSize: 10,
+                                fontWeight: 700,
+                                background: "var(--color-ink)",
+                                color: "var(--color-cream)",
+                                padding: "1px 8px",
+                              }}
+                            >
+                              {RESULT_LABEL[game.result]}
+                            </span>
+                          </div>
+                          {!game.isBye ? (
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "1fr 24px 1fr",
+                                alignItems: "center",
+                                gap: 4,
+                              }}
+                            >
                               <TournamentPlayerIdentity
                                 name={w}
                                 photoUrl={whitePlayer?.photoUrl}
@@ -1060,18 +946,58 @@ export default function TournamentLivePage() {
                                 size={24}
                                 style={{
                                   fontFamily: "var(--font-body)",
-                                  fontSize: 13,
+                                  fontSize: 12,
                                   fontWeight: 600,
+                                  maxWidth: "100%",
                                 }}
                                 nameClassName="truncate"
                               />
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </details>
-                ))}
+                              <span
+                                style={{
+                                  textAlign: "center",
+                                  fontFamily: "var(--font-chess)",
+                                  fontStyle: "italic",
+                                  fontSize: 13,
+                                  color: "var(--color-stage)",
+                                }}
+                              >
+                                vs
+                              </span>
+                              <TournamentPlayerIdentity
+                                name={b}
+                                photoUrl={blackPlayer?.photoUrl}
+                                avatarId={blackPlayer?.avatarId}
+                                size={24}
+                                style={{
+                                  fontFamily: "var(--font-body)",
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  maxWidth: "100%",
+                                  justifyContent: "flex-end",
+                                }}
+                                nameClassName="truncate"
+                              />
+                            </div>
+                          ) : (
+                            <TournamentPlayerIdentity
+                              name={w}
+                              photoUrl={whitePlayer?.photoUrl}
+                              avatarId={whitePlayer?.avatarId}
+                              size={24}
+                              style={{
+                                fontFamily: "var(--font-body)",
+                                fontSize: 13,
+                                fontWeight: 600,
+                              }}
+                              nameClassName="truncate"
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </details>
+              ))}
             </div>
           </div>
         )}
