@@ -597,7 +597,7 @@
       try{
         if(typeof qrcode === "undefined"){ return; }
         var qr = qrcode(0, "M");
-        qr.addData("https://azotea-salcaja.vercel.app/ajedrez/proyeccion");
+        qr.addData(window.location.origin + "/ajedrez/proyeccion");
         qr.make();
         var box = document.getElementById("qrbox");
         if(box){ box.innerHTML = qr.createSvgTag({ cellSize:8, margin:0, scalable:true });

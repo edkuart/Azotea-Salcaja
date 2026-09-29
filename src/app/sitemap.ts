@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getPublishedOfficialTournaments } from "@/modules/chess/public-data";
 
-const baseUrl = process.env.APP_URL ?? "https://azotea-salcaja.vercel.app";
+const baseUrl = process.env.APP_URL ?? "https://web-production-5f909.up.railway.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();

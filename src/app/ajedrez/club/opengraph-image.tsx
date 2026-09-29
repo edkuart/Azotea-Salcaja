@@ -110,7 +110,7 @@ export default async function Image() {
             fontSize: 22,
           }}
         >
-          <div style={{ display: "flex", color: "#D4A017" }}>azotea-salcaja.vercel.app/ajedrez/club</div>
+          <div style={{ display: "flex", color: "#D4A017" }}>{new URL(process.env.APP_URL ?? "https://web-production-5f909.up.railway.app").host}/ajedrez/club</div>
           <div style={{ display: "flex", opacity: 0.85 }}>Cada lunes · 7:30 p.m.</div>
         </div>
       </div>

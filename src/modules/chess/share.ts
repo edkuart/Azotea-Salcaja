@@ -13,7 +13,7 @@ export function formatPoints(points: number): string {
 }
 
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://azotea-salcaja.vercel.app";
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://web-production-5f909.up.railway.app";
 
 export function formatSpanishDate(isoDate?: string): string {
   if (!isoDate) return "";

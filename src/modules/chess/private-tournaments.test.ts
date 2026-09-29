@@ -40,6 +40,19 @@ describe("private tournament tokens", () => {
       system: "round_robin",
     });
     expect(tournament.players).toHaveLength(4);
+    expect(tournament.roundsPlanned).toBe(3);
+  });
+
+  it("derives round robin rounds from the player count", () => {
+    const token = createPrivateTournamentToken({
+      title: "Todos contra todos",
+      system: "round_robin",
+      roundsPlanned: 12,
+      playerNames: ["A", "B", "C", "D"],
+      createdAt: "2026-08-04T00:00:00.000Z",
+    });
+
+    expect(decodePrivateTournamentToken(token)?.roundsPlanned).toBe(3);
   });
 
   it("rejects malformed or oversized private tokens", () => {

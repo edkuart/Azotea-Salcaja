@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Copy, Link2, Play } from "lucide-react";
 
 import { createPrivateTournamentToken } from "@/modules/chess/private-tournaments";
+import { roundRobinRoundCount } from "@/modules/chess/round-robin";
 import type { TournamentSystem } from "@/modules/chess/types";
 
 const defaultPlayers = `Jugador 1
@@ -27,17 +28,21 @@ export function PrivateTournamentCreator() {
         .filter(Boolean),
     [playersText],
   );
+  const effectiveRounds =
+    system === "round_robin"
+      ? roundRobinRoundCount(playerNames.length)
+      : rounds;
 
   const token = useMemo(
     () =>
       createPrivateTournamentToken({
         title,
         system,
-        roundsPlanned: rounds,
+        roundsPlanned: effectiveRounds,
         playerNames,
         createdAt: new Date().toISOString(),
       }),
-    [playerNames, rounds, system, title],
+    [effectiveRounds, playerNames, system, title],
   );
 
   const viewPath = `/ajedrez/privado/${token}`;
@@ -99,8 +104,14 @@ export function PrivateTournamentCreator() {
                 min={1}
                 onChange={(event) => setRounds(Number(event.target.value))}
                 type="number"
-                value={rounds}
+                value={effectiveRounds}
+                disabled={system === "round_robin"}
               />
+              {system === "round_robin" && (
+                <span className="text-xs font-normal text-stone-500">
+                  Se calcula automáticamente según los jugadores.
+                </span>
+              )}
             </label>
           </div>
 
@@ -134,7 +145,7 @@ export function PrivateTournamentCreator() {
             <p className="font-semibold">Formato</p>
             <p className="mt-1 text-stone-200">
               {system === "swiss" ? "Sistema suizo" : "Todos contra todos"} ·{" "}
-              {rounds} rondas
+              {effectiveRounds} rondas
             </p>
           </div>
         </div>

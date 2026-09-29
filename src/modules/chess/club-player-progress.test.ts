@@ -143,6 +143,39 @@ describe("computeClubPlayerProgress", () => {
     expect(progress!.games[0]!.tournamentSlug).toBe("lunes-002");
   });
 
+  it("shows one normalized tournament change across all rated games", () => {
+    const base = makeTournament();
+    const tournament = makeTournament({
+      roundsPlanned: 5,
+      rounds: [
+        {
+          ...base.rounds[0]!,
+          games: Array.from({ length: 5 }, (_, index) => ({
+            id: `g${index + 1}`,
+            boardNumber: index + 1,
+            whitePlayerId: "p1",
+            blackPlayerId: "p2",
+            result: "white_win" as const,
+            whiteScore: 1,
+            blackScore: 0,
+          })),
+        },
+      ],
+    });
+
+    const progress = computeClubPlayerProgress(
+      [tournament],
+      CLUB,
+      "c1",
+      new Date("2026-07-20"),
+    )!;
+
+    expect(progress.currentElo).toBe(1405);
+    expect(progress.tournaments[0]!.eloDelta).toBe(5);
+    expect(progress.eloSeries[0]!.eloDelta).toBe(5);
+    expect(progress.games).toHaveLength(5);
+  });
+
   it("returns a useful empty profile for a player without tournaments", () => {
     const progress = computeClubPlayerProgress(
       [],

@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    cpus: 2,
+    staticGenerationMaxConcurrency: 1,
+  },
   async headers() {
     return [
       {

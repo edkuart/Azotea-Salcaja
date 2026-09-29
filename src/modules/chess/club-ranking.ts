@@ -12,8 +12,9 @@ import type { ChessTournament, ClubPlayer } from "./types";
  *   y ya FINALIZADOS (status efectivo "closed", no cancelados).
  * - Los jugadores se vinculan por `clubPlayerId`; si falta (agregados a mitad
  *   de torneo escribiendo el nombre), se intenta por nombre exacto.
- * - ELO: arranca del rating base del roster (o 1200) y se recalcula partida a
- *   partida en orden cronológico. Solo partidas jugadas (no byes ni forfeits).
+ * - ELO: arranca del rating base del roster (o 1200) y aplica una sola
+ *   variación normalizada al cerrar cada torneo. Solo partidas realmente
+ *   jugadas (no byes ni forfeits) forman esa variación.
  * - Puntos tipo circuito (ATP): por posición final en cada torneo, acumulados
  *   por año calendario. Premia la constancia: participar siempre suma.
  */
@@ -23,7 +24,9 @@ export const POSITION_POINTS = [100, 70, 50, 40, 30, 25, 20, 15] as const;
 export const PARTICIPATION_POINTS = 10;
 
 export const DEFAULT_ELO = 1200;
-export const CLUB_ELO_K = 24;
+/** Factor máximo por torneo. Contra rivales de fuerza similar, un desempeño
+ *  perfecto produce aproximadamente +5 y uno sin puntos, -5. */
+export const CLUB_ELO_K = 10;
 
 /** Días sin jugar torneo del club para considerarse "inactivo" en el ranking. */
 export const INACTIVITY_DAYS = 120;
@@ -36,6 +39,8 @@ export type ClubRankingEntry = {
   eloGames: number;
   /** Diferencia contra el rating base del roster. */
   eloDelta: number;
+  /** Variación aplicada al cerrar el último torneo que jugó. */
+  lastTournamentEloDelta: number;
   tournamentsPlayed: number;
   /** Primeros lugares en torneos del club. */
   tournamentWins: number;
@@ -91,6 +96,7 @@ export function computeClubRanking(
       elo: player.rating ?? DEFAULT_ELO,
       eloGames: 0,
       eloDelta: 0,
+      lastTournamentEloDelta: 0,
       tournamentsPlayed: 0,
       tournamentWins: 0,
       lifetimePoints: 0,
@@ -122,16 +128,41 @@ export function computeClubRanking(
       if (entry) entryByTournamentPlayer.set(player.id, entry);
     }
 
+    // El rating queda congelado durante todo el torneo. Así el movimiento se
+    // calcula como un único desempeño del evento, no como varios mini-eventos.
+    const tournamentStartEloByClubId = new Map(
+      [...entries.values()].map((entry) => [entry.player.id, entry.elo]),
+    );
+
     // Rating de referencia para cada jugador del torneo (para rivales
     // invitados se usa su rating inscrito o el default).
     const ratingOf = (playerId: string): number => {
       const clubEntry = entryByTournamentPlayer.get(playerId);
-      if (clubEntry) return clubEntry.elo;
+      if (clubEntry) {
+        return (
+          tournamentStartEloByClubId.get(clubEntry.player.id) ?? clubEntry.elo
+        );
+      }
       const player = tournament.players.find((p) => p.id === playerId);
       return player?.rating ?? DEFAULT_ELO;
     };
 
-    // ── ELO partida a partida, en orden de rondas y mesas ──
+    const performanceByClubId = new Map<
+      string,
+      { entry: ClubRankingEntry; scoreGap: number; games: number }
+    >();
+    const addPerformance = (entry: ClubRankingEntry, scoreGap: number) => {
+      const performance = performanceByClubId.get(entry.player.id) ?? {
+        entry,
+        scoreGap: 0,
+        games: 0,
+      };
+      performance.scoreGap += scoreGap;
+      performance.games += 1;
+      performanceByClubId.set(entry.player.id, performance);
+    };
+
+    // ── Rendimiento ELO del torneo ──
     for (const round of tournament.rounds) {
       for (const game of round.games) {
         const scores = ELO_RESULTS[game.result];
@@ -145,18 +176,30 @@ export function computeClubRanking(
         const blackRating = ratingOf(game.blackPlayerId);
 
         if (whiteEntry) {
-          whiteEntry.elo +=
-            CLUB_ELO_K *
-            (scores[0] - expectedClubEloScore(whiteRating, blackRating));
-          whiteEntry.eloGames += 1;
+          addPerformance(
+            whiteEntry,
+            scores[0] - expectedClubEloScore(whiteRating, blackRating),
+          );
         }
         if (blackEntry) {
-          blackEntry.elo +=
-            CLUB_ELO_K *
-            (scores[1] - expectedClubEloScore(blackRating, whiteRating));
-          blackEntry.eloGames += 1;
+          addPerformance(
+            blackEntry,
+            scores[1] - expectedClubEloScore(blackRating, whiteRating),
+          );
         }
       }
+    }
+
+    const tournamentEloDeltaByClubId = new Map<string, number>();
+    for (const [clubPlayerId, performance] of performanceByClubId) {
+      const eloBefore = performance.entry.elo;
+      performance.entry.elo +=
+        CLUB_ELO_K * (performance.scoreGap / performance.games);
+      performance.entry.eloGames += performance.games;
+      tournamentEloDeltaByClubId.set(
+        clubPlayerId,
+        Math.round(performance.entry.elo) - Math.round(eloBefore),
+      );
     }
 
     // ── Puntos por posición final ──
@@ -173,6 +216,8 @@ export function computeClubRanking(
       entry.lifetimePoints += points;
       entry.yearlyPoints[year] = (entry.yearlyPoints[year] ?? 0) + points;
       entry.tournamentsPlayed += 1;
+      entry.lastTournamentEloDelta =
+        tournamentEloDeltaByClubId.get(entry.player.id) ?? 0;
       if (index === 0) {
         entry.tournamentWins += 1;
         entry.yearlyWins[year] = (entry.yearlyWins[year] ?? 0) + 1;

@@ -17,6 +17,7 @@ import {
   computeAge,
   SEX_CATEGORY_LABELS,
 } from "@/modules/chess/categories";
+import { roundRobinRoundCount } from "@/modules/chess/round-robin";
 
 const TIEBREAK_PRESETS: Record<string, TieBreakCode[]> = {
   casual: ["points", "progressive", "buchholz", "median_buchholz", "wins"],
@@ -171,7 +172,10 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
   const [tiebreaks, setTiebreaks] = useState<"casual" | "formal">(
     isMondayTemplate ? MONDAY_TEMPLATE.tiebreaks : "formal",
   );
-  const [startsAtDate, setStartsAtDate] = useState("");
+  const [startsAtDate, setStartsAtDate] = useState(getTodayInputValue);
+  const [rounds, setRounds] = useState(
+    isMondayTemplate ? MONDAY_TEMPLATE.rounds : 5,
+  );
 
   // ── Jugadores: roster del club (seleccionables) + invitados puntuales ──
   const [clubEntries, setClubEntries] = useState<ClubRankingEntry[]>([]);
@@ -277,8 +281,6 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
   }
 
   useEffect(() => {
-    setStartsAtDate(getTodayInputValue());
-
     let cancelled = false;
     (async () => {
       try {
@@ -357,8 +359,6 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const title = (fd.get("title") as string).trim();
-    const rounds = parseInt(fd.get("rounds") as string, 10);
-
     const id = `t${Date.now()}`;
     const selectedClub = clubEntries.filter((entry) =>
       selectedClubIds.has(entry.player.id),
@@ -399,7 +399,10 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
       slug: slugify(title),
       description: ((fd.get("description") as string | null) ?? "").trim(),
       system,
-      roundsPlanned: isNaN(rounds) ? 5 : rounds,
+      roundsPlanned:
+        system === "round_robin"
+          ? roundRobinRoundCount(players.length)
+          : rounds,
       currentRoundNumber: 0,
       status: "setup" as const,
       startsAt: startsAtDate || getTodayInputValue(),
@@ -485,12 +488,27 @@ export function NewTournamentForm({ template }: { template?: "lunes" }) {
             type="number"
             min="1"
             max="20"
-            defaultValue={isMondayTemplate ? MONDAY_TEMPLATE.rounds : 5}
-            required
-            style={INPUT}
+            value={
+              system === "round_robin"
+                ? roundRobinRoundCount(selectedClubIds.size + guests.length)
+                : rounds
+            }
+            onChange={(e) => setRounds(Number.parseInt(e.currentTarget.value, 10) || 1)}
+            disabled={system === "round_robin"}
+            required={system === "swiss"}
+            style={{
+              ...INPUT,
+              opacity: system === "round_robin" ? 0.65 : 1,
+              cursor: system === "round_robin" ? "not-allowed" : "text",
+            }}
             onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-navy)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,42,74,0.18)"; }}
             onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-ink)"; e.currentTarget.style.boxShadow = "none"; }}
           />
+          {system === "round_robin" && (
+            <p style={{ fontFamily: "monospace", fontSize: 10, color: "#666", marginTop: 4 }}>
+              Automático: cada jugador se enfrenta una vez con todos.
+            </p>
+          )}
         </div>
       </div>
 

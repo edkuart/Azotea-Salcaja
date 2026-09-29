@@ -40,7 +40,7 @@ const chessFont = Playfair_Display({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.APP_URL ?? "https://azotea-salcaja.vercel.app",
+    process.env.APP_URL ?? "https://web-production-5f909.up.railway.app",
   ),
   title: {
     default: "Chessitos",

@@ -45,19 +45,116 @@ describe("generateRoundRobinRounds", () => {
     ]);
 
     expect(rounds).toHaveLength(5);
-    expect(rounds.some((round) => round.games.some((game) => game.isBye))).toBe(true);
+    expect(rounds.some((round) => round.games.some((game) => game.isBye))).toBe(
+      true,
+    );
+  });
+
+  it("balances colors and prevents long same-color streaks", () => {
+    for (const playerCount of [7, 8]) {
+      const players = Array.from({ length: playerCount }, (_, index) => ({
+        id: `p${index + 1}`,
+        name: `Player ${index + 1}`,
+        seed: index + 1,
+        status: "active" as const,
+      }));
+      const rounds = generateRoundRobinRounds(players);
+
+      for (const player of players) {
+        const colors = rounds.flatMap((round) =>
+          round.games.flatMap((game) => {
+            if (game.whitePlayerId === player.id) return ["W"];
+            if (game.blackPlayerId === player.id) return ["B"];
+            return [];
+          }),
+        );
+        const white = colors.filter((color) => color === "W").length;
+        const black = colors.filter((color) => color === "B").length;
+
+        expect(Math.abs(white - black)).toBeLessThanOrEqual(1);
+        expect(colors.join("")).not.toMatch(/WWWW|BBBB/);
+      }
+    }
   });
 });
 
 describe("generateSwissNextRound", () => {
-  it("pairs the first swiss round by seed order", () => {
+  it("pairs the first swiss round by upper and lower ranking halves", () => {
     const result = generateSwissNextRound(baseTournament);
 
     expect(result.warnings).toHaveLength(0);
     expect(result.round.games).toMatchObject([
-      { whitePlayerId: "p1", blackPlayerId: "p2" },
-      { whitePlayerId: "p3", blackPlayerId: "p4" },
+      { whitePlayerId: "p1", blackPlayerId: "p3" },
+      { whitePlayerId: "p2", blackPlayerId: "p4" },
     ]);
+  });
+
+  it("keeps the upper ranking half apart during the first two rounds", () => {
+    const players = Array.from({ length: 8 }, (_, index) => ({
+      id: `p${index + 1}`,
+      name: `Player ${index + 1}`,
+      rating: 2000 - index * 50,
+      seed: index + 1,
+      status: "active" as const,
+    }));
+    const firstRound = generateSwissNextRound({
+      ...baseTournament,
+      players,
+    }).round;
+
+    expect(
+      firstRound.games.map((game) => [game.whitePlayerId, game.blackPlayerId]),
+    ).toEqual([
+      ["p1", "p5"],
+      ["p2", "p6"],
+      ["p3", "p7"],
+      ["p4", "p8"],
+    ]);
+
+    const completedFirstRound = {
+      ...firstRound,
+      status: "completed" as const,
+      games: firstRound.games.map((game) => ({
+        ...game,
+        result: "white_win" as const,
+      })),
+    };
+    const secondRound = generateSwissNextRound({
+      ...baseTournament,
+      players,
+      rounds: [completedFirstRound],
+    }).round;
+    const upperHalf = new Set(["p1", "p2", "p3", "p4"]);
+
+    for (const game of secondRound.games) {
+      expect(
+        upperHalf.has(game.whitePlayerId!) &&
+          upperHalf.has(game.blackPlayerId!),
+      ).toBe(false);
+      expect(
+        upperHalf.has(game.whitePlayerId!) ||
+          upperHalf.has(game.blackPlayerId!),
+      ).toBe(true);
+    }
+  });
+
+  it("uses rating before legacy seed when establishing the protected ranking", () => {
+    const players = Array.from({ length: 8 }, (_, index) => ({
+      id: `rank${index + 1}`,
+      name: `Rank ${index + 1}`,
+      rating: 2000 - index * 50,
+      seed: 8 - index,
+      status: "active" as const,
+    }));
+    const result = generateSwissNextRound({ ...baseTournament, players });
+    const pairOfBest = result.round.games.find(
+      (game) =>
+        game.whitePlayerId === "rank1" || game.blackPlayerId === "rank1",
+    );
+
+    expect([pairOfBest?.whitePlayerId, pairOfBest?.blackPlayerId]).toContain(
+      "rank5",
+    );
   });
 
   it("assigns the bye and places it last, without displacing real boards", () => {
@@ -98,8 +195,20 @@ describe("generateSwissNextRound", () => {
           roundNumber: 1,
           status: "completed",
           games: [
-            { id: "g1", boardNumber: 1, whitePlayerId: "p1", blackPlayerId: "p2", result: "white_win" },
-            { id: "g2", boardNumber: 2, whitePlayerId: "p3", blackPlayerId: "p4", result: "white_win" },
+            {
+              id: "g1",
+              boardNumber: 1,
+              whitePlayerId: "p1",
+              blackPlayerId: "p2",
+              result: "white_win",
+            },
+            {
+              id: "g2",
+              boardNumber: 2,
+              whitePlayerId: "p3",
+              blackPlayerId: "p4",
+              result: "white_win",
+            },
           ],
         },
       ],
@@ -111,7 +220,9 @@ describe("generateSwissNextRound", () => {
       )!;
     const opponentOf = (id: string) => {
       const game = gameOf(id);
-      return game.whitePlayerId === id ? game.blackPlayerId : game.whitePlayerId;
+      return game.whitePlayerId === id
+        ? game.blackPlayerId
+        : game.whitePlayerId;
     };
     const veterans = new Set(["p1", "p2", "p3", "p4"]);
 
@@ -147,9 +258,27 @@ describe("generateSwissNextRound", () => {
           roundNumber: 1,
           status: "completed",
           games: [
-            { id: "g1", boardNumber: 1, whitePlayerId: "p1", blackPlayerId: "p4", result: "draw" },
-            { id: "g2", boardNumber: 2, whitePlayerId: "p2", blackPlayerId: "p3", result: "draw" },
-            { id: "g3", boardNumber: 3, whitePlayerId: "p5", blackPlayerId: "p6", result: "draw" },
+            {
+              id: "g1",
+              boardNumber: 1,
+              whitePlayerId: "p1",
+              blackPlayerId: "p4",
+              result: "draw",
+            },
+            {
+              id: "g2",
+              boardNumber: 2,
+              whitePlayerId: "p2",
+              blackPlayerId: "p3",
+              result: "draw",
+            },
+            {
+              id: "g3",
+              boardNumber: 3,
+              whitePlayerId: "p5",
+              blackPlayerId: "p6",
+              result: "draw",
+            },
           ],
         },
       ],
@@ -180,7 +309,13 @@ describe("generateSwissNextRound", () => {
           roundNumber: 1,
           status: "completed",
           games: [
-            { id: "g1", boardNumber: 1, whitePlayerId: "p1", blackPlayerId: "p2", result: "white_win" },
+            {
+              id: "g1",
+              boardNumber: 1,
+              whitePlayerId: "p1",
+              blackPlayerId: "p2",
+              result: "white_win",
+            },
           ],
         },
       ],
@@ -204,8 +339,20 @@ describe("generateSwissNextRound", () => {
           roundNumber: 1,
           status: "completed",
           games: [
-            { id: "g1", boardNumber: 1, whitePlayerId: "p1", blackPlayerId: "p2", result: "white_win" },
-            { id: "g2", boardNumber: 2, whitePlayerId: "p3", blackPlayerId: "p4", result: "white_win" },
+            {
+              id: "g1",
+              boardNumber: 1,
+              whitePlayerId: "p1",
+              blackPlayerId: "p2",
+              result: "white_win",
+            },
+            {
+              id: "g2",
+              boardNumber: 2,
+              whitePlayerId: "p3",
+              blackPlayerId: "p4",
+              result: "white_win",
+            },
           ],
         },
       ],
@@ -216,7 +363,9 @@ describe("generateSwissNextRound", () => {
     expect(byeGame!.whitePlayerId).not.toBe("p5");
 
     const p5Game = result.round.games.find(
-      (game) => !game.isBye && (game.whitePlayerId === "p5" || game.blackPlayerId === "p5"),
+      (game) =>
+        !game.isBye &&
+        (game.whitePlayerId === "p5" || game.blackPlayerId === "p5"),
     );
     expect(p5Game).toBeDefined();
   });
@@ -266,5 +415,43 @@ describe("generateNextRoundPreview", () => {
     });
 
     expect(result.round.games).toHaveLength(2);
+  });
+
+  it("uses actual round robin color history when assigning the next round", () => {
+    const result = generateNextRoundPreview({
+      ...baseTournament,
+      system: "round_robin",
+      roundsPlanned: 3,
+      rounds: [
+        {
+          id: "rr-r1",
+          roundNumber: 1,
+          status: "completed",
+          games: [
+            {
+              id: "r1-b1",
+              boardNumber: 1,
+              whitePlayerId: "p4",
+              blackPlayerId: "p1",
+              result: "white_win",
+            },
+            {
+              id: "r1-b2",
+              boardNumber: 2,
+              whitePlayerId: "p3",
+              blackPlayerId: "p2",
+              result: "white_win",
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(result.round.games).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ whitePlayerId: "p1", blackPlayerId: "p3" }),
+        expect.objectContaining({ whitePlayerId: "p2", blackPlayerId: "p4" }),
+      ]),
+    );
   });
 });

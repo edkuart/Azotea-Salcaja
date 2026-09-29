@@ -249,8 +249,9 @@ export default async function ClubRankingPage({
                 </h2>
               </div>
               <p className="mt-1.5 max-w-2xl text-sm text-stone-600">
-                Se recalcula con cada torneo que finaliza; sin jugar 4 meses,
-                aparece como inactivo.
+                Permanece fijo durante el torneo y aplica un cambio moderado al
+                finalizar. La última columna muestra solo la variación del
+                torneo más reciente.
               </p>
 
               <div className="mt-3 border-2" style={CARD_BASE}>
@@ -279,8 +280,8 @@ export default async function ClubRankingPage({
                       <span className="w-14 text-right" style={HEADER_CELL}>
                         ELO
                       </span>
-                      <span className="w-12 text-right" style={HEADER_CELL}>
-                        ±
+                      <span className="w-20 text-right" style={HEADER_CELL}>
+                        Últ. torneo
                       </span>
                     </div>
                     {eloTable.map((entry, index) => {
@@ -333,20 +334,21 @@ export default async function ClubRankingPage({
                             {entry.elo}
                           </span>
                           <span
-                            className="w-12 text-right text-xs font-semibold"
+                            className="w-20 text-right text-xs font-semibold"
+                            title="Cambio aplicado al cerrar el último torneo jugado"
                             style={{
                               fontFamily: "ui-monospace, monospace",
                               color:
-                                entry.eloDelta > 0
+                                entry.lastTournamentEloDelta > 0
                                   ? "var(--color-emerald)"
-                                  : entry.eloDelta < 0
+                                  : entry.lastTournamentEloDelta < 0
                                     ? "var(--color-stage)"
                                     : "#999",
                             }}
                           >
-                            {entry.eloDelta > 0
-                              ? `+${entry.eloDelta}`
-                              : entry.eloDelta || "–"}
+                            {entry.lastTournamentEloDelta > 0
+                              ? `+${entry.lastTournamentEloDelta}`
+                              : entry.lastTournamentEloDelta || "–"}
                           </span>
                         </div>
                       );

@@ -70,17 +70,72 @@ describe("computeClubRanking", () => {
     expect(entries.every((entry) => entry.eloGames === 0)).toBe(true);
   });
 
-  it("updates elo per game: winner gains, loser drops, guests untouched", () => {
+  it("applies one small normalized ELO variation when the tournament closes", () => {
     const entries = computeClubRanking([makeTournament()], CLUB);
     const byId = new Map(entries.map((entry) => [entry.player.id, entry]));
 
-    // Ana (1400) le ganó a Beto (1400): mismo rating → +K/2 = +12.
-    expect(byId.get("c1")!.elo).toBe(1412);
-    expect(byId.get("c2")!.elo).toBe(1388);
+    // Ana (1400) le ganó a Beto (1400): desempeño perfecto → alrededor de +5.
+    expect(byId.get("c1")!.elo).toBe(1405);
+    expect(byId.get("c1")!.lastTournamentEloDelta).toBe(5);
+    expect(byId.get("c2")!.elo).toBe(1395);
+    expect(byId.get("c2")!.lastTournamentEloDelta).toBe(-5);
     // Carla (1300) perdió contra invitado de 1500: pierde poco (era esperado).
     expect(byId.get("c3")!.elo).toBeGreaterThan(1300 - 12);
     expect(byId.get("c3")!.elo).toBeLessThan(1300);
     expect(byId.get("c3")!.eloGames).toBe(1);
+  });
+
+  it("does not multiply the ELO swing by the number of tournament rounds", () => {
+    const base = makeTournament();
+    const games = Array.from({ length: 5 }, (_, index) => ({
+      id: `g${index + 1}`,
+      boardNumber: index + 1,
+      whitePlayerId: "p1",
+      blackPlayerId: "p2",
+      result: "white_win" as const,
+      whiteScore: 1,
+      blackScore: 0,
+    }));
+    const tournament = makeTournament({
+      roundsPlanned: 5,
+      rounds: [{ ...base.rounds[0]!, games }],
+    });
+    const entries = computeClubRanking([tournament], CLUB);
+    const ana = entries.find((entry) => entry.player.id === "c1")!;
+
+    expect(ana.eloGames).toBe(5);
+    expect(ana.elo).toBe(1405);
+    expect(ana.lastTournamentEloDelta).toBe(5);
+  });
+
+  it("shows the variation from the latest tournament, not the lifetime delta", () => {
+    const first = makeTournament();
+    const second = makeTournament({
+      id: "t2",
+      startsAt: "2026-07-13",
+      rounds: [
+        {
+          ...makeTournament().rounds[0]!,
+          games: [
+            {
+              id: "g-latest",
+              boardNumber: 1,
+              whitePlayerId: "p1",
+              blackPlayerId: "p2",
+              result: "black_win",
+              whiteScore: 0,
+              blackScore: 1,
+            },
+          ],
+        },
+      ],
+    });
+    const ana = computeClubRanking([first, second], CLUB).find(
+      (entry) => entry.player.id === "c1",
+    )!;
+
+    expect(ana.lastTournamentEloDelta).toBe(-5);
+    expect(ana.eloDelta).not.toBe(ana.lastTournamentEloDelta);
   });
 
   it("links tournament players without clubPlayerId by name", () => {

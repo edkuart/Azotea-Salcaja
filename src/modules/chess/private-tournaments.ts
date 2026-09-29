@@ -8,6 +8,7 @@ import {
   privateTournamentDraftSchema,
   sanitizePrivatePlayerNames,
 } from "./validation";
+import { roundRobinRoundCount } from "./round-robin";
 
 const maxTokenLength = 12_000;
 
@@ -47,9 +48,14 @@ function base64UrlDecode(value: string) {
 }
 
 export function createPrivateTournamentToken(draft: PrivateTournamentDraft) {
+  const playerNames = sanitizePrivatePlayerNames(draft.playerNames);
   const payload = privateTournamentDraftSchema.parse({
     ...draft,
-    playerNames: sanitizePrivatePlayerNames(draft.playerNames),
+    playerNames,
+    roundsPlanned:
+      draft.system === "round_robin"
+        ? roundRobinRoundCount(playerNames.length)
+        : draft.roundsPlanned,
   });
 
   return base64UrlEncode(JSON.stringify(payload));
@@ -96,7 +102,10 @@ export function privateDraftToTournament(
     recap:
       "Torneo privado/no oficial para uso rapido entre amigos o grupos pequenos.",
     system: draft.system as TournamentSystem,
-    roundsPlanned: draft.roundsPlanned,
+    roundsPlanned:
+      draft.system === "round_robin"
+        ? roundRobinRoundCount(players.length)
+        : draft.roundsPlanned,
     currentRoundNumber: 0,
     status: "setup",
     startsAt: draft.createdAt,

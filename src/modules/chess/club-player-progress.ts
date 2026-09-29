@@ -261,6 +261,35 @@ export function computeClubPlayerProgress(
 
   for (const tournament of counted) {
     const links = buildClubLinks(tournament, clubPlayers);
+    const tournamentStartEloByClubId = new Map(currentEloByClubId);
+    const ratedGamesByClubId = new Map<string, number>();
+
+    for (const round of tournament.rounds) {
+      for (const game of round.games) {
+        if (
+          !ELO_RESULTS[game.result] ||
+          !game.whitePlayerId ||
+          !game.blackPlayerId
+        ) {
+          continue;
+        }
+        const whiteLink = links.get(game.whitePlayerId);
+        const blackLink = links.get(game.blackPlayerId);
+        if (whiteLink) {
+          ratedGamesByClubId.set(
+            whiteLink.clubPlayerId,
+            (ratedGamesByClubId.get(whiteLink.clubPlayerId) ?? 0) + 1,
+          );
+        }
+        if (blackLink) {
+          ratedGamesByClubId.set(
+            blackLink.clubPlayerId,
+            (ratedGamesByClubId.get(blackLink.clubPlayerId) ?? 0) + 1,
+          );
+        }
+      }
+    }
+
     const targetTournamentPlayer = tournament.players.find(
       (tournamentPlayer) => {
         const link = links.get(tournamentPlayer.id);
@@ -299,26 +328,34 @@ export function computeClubPlayerProgress(
 
         if (scores && game.whitePlayerId && game.blackPlayerId) {
           const whiteRating = whiteLink
-            ? (currentEloByClubId.get(whiteLink.clubPlayerId) ?? DEFAULT_ELO)
+            ? (tournamentStartEloByClubId.get(whiteLink.clubPlayerId) ??
+              DEFAULT_ELO)
             : (whiteTournamentPlayer?.rating ?? DEFAULT_ELO);
           const blackRating = blackLink
-            ? (currentEloByClubId.get(blackLink.clubPlayerId) ?? DEFAULT_ELO)
+            ? (tournamentStartEloByClubId.get(blackLink.clubPlayerId) ??
+              DEFAULT_ELO)
             : (blackTournamentPlayer?.rating ?? DEFAULT_ELO);
 
           if (whiteLink) {
+            const games = ratedGamesByClubId.get(whiteLink.clubPlayerId) ?? 1;
             currentEloByClubId.set(
               whiteLink.clubPlayerId,
-              whiteRating +
-                CLUB_ELO_K *
-                  (scores[0] - expectedClubEloScore(whiteRating, blackRating)),
+              (currentEloByClubId.get(whiteLink.clubPlayerId) ?? whiteRating) +
+                (CLUB_ELO_K *
+                  (scores[0] -
+                    expectedClubEloScore(whiteRating, blackRating))) /
+                  games,
             );
           }
           if (blackLink) {
+            const games = ratedGamesByClubId.get(blackLink.clubPlayerId) ?? 1;
             currentEloByClubId.set(
               blackLink.clubPlayerId,
-              blackRating +
-                CLUB_ELO_K *
-                  (scores[1] - expectedClubEloScore(blackRating, whiteRating)),
+              (currentEloByClubId.get(blackLink.clubPlayerId) ?? blackRating) +
+                (CLUB_ELO_K *
+                  (scores[1] -
+                    expectedClubEloScore(blackRating, whiteRating))) /
+                  games,
             );
           }
         }

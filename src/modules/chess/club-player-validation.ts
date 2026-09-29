@@ -1,11 +1,12 @@
 import { z } from "zod";
 
-import { CLUB_AVATAR_IDS } from "@/modules/chess/avatars";
+import { CLUB_AVATAR_IDS } from "./avatars";
 
 const optionalText = (max: number) =>
   z
-    .union([z.string().trim().max(max), z.undefined(), z.null()])
-    .transform((value) => value || undefined);
+    .union([z.string().trim().max(max), z.null()])
+    .transform((value) => value || undefined)
+    .optional();
 
 export const clubPlayerInputSchema = z.object({
   name: z.string().trim().min(1, "El nombre es obligatorio").max(120),
