@@ -1,8 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
+import { ImageGallery } from "@/components/media/ImageGallery";
 import { ArrowRight, CalendarDays } from "lucide-react";
 
 import { PublicLayout } from "@/components/public/PublicLayout";
-import { BrandMark } from "@/components/public/BrandMark";
 import { chessCommunity } from "@/modules/chess/public-data";
 import { computeClubRanking } from "@/modules/chess/club-ranking";
 import { listClubPlayers } from "@/lib/club-players-store";
@@ -94,16 +95,21 @@ export default async function Home() {
             CHESS
           </div>
 
-          {/* Emblema Chessitos (decorativo, responsive) */}
-          <BrandMark
-            size={560}
-            priority
-            aria-hidden
-            className="hero-emblem parallax-slow"
+          <Image
+            src="/images/chessitos/comunidad/club-0.jpg"
+            alt="Jugadores de Chessitos comparten una partida en Azotea Salcajá"
+            fill
+            preload
+            sizes="100vw"
+            className="object-cover object-[center_40%]"
           />
 
           {/* Scrim para garantizar contraste del texto sobre el emblema */}
-          <div className="hero-scrim" aria-hidden="true" />
+          <div
+            className="absolute inset-0"
+            aria-hidden="true"
+            style={{ background: "linear-gradient(90deg, rgba(13,18,20,0.94) 0%, rgba(13,18,20,0.78) 45%, rgba(13,18,20,0.4) 100%)" }}
+          />
 
           {/* Content */}
           <div
@@ -208,6 +214,31 @@ export default async function Home() {
                 </Link>
               ))}
             </nav>
+          </div>
+        </section>
+
+        <section className="section-restaurant py-16 sm:py-20" aria-labelledby="comunidad-fotos">
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <span className="section-label" style={{ color: "var(--color-stage)" }}>Así se vive Chessitos</span>
+                <h2 id="comunidad-fotos" className="mt-4" style={{ fontFamily: "var(--font-display)", fontSize: "var(--text-3xl)", lineHeight: 1 }}>Tu próxima partida empieza aquí.</h2>
+                <p className="mt-4 max-w-[56ch] leading-7">Un tablero, nuevos amigos y muchas ganas de jugar. Conoce los encuentros y las premiaciones de nuestra comunidad en Salcajá.</p>
+              </div>
+              <Link href="/ajedrez/agenda" className="btn btn-primary shrink-0">Ven a jugar <ArrowRight className="h-4 w-4" aria-hidden /></Link>
+            </div>
+            <ImageGallery
+              fit="cover"
+              columns="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+              images={[
+                { src: "/images/chessitos/comunidad/club-94.jpg", alt: "Concentración frente al tablero" },
+                { src: "/images/chessitos/comunidad/club-59.jpg", alt: "Una jornada de partidas en el club" },
+                { src: "/images/chessitos/comunidad/club-130.jpg", alt: "Jugadores con sus trofeos en Azotea Salcajá" },
+                { src: "/images/chessitos/comunidad/club-23.jpg", alt: "Los tableros listos para jugar" },
+                { src: "/images/chessitos/comunidad/club-118.jpg", alt: "Encuentro de ajedrez en la sede del club" },
+                { src: "/images/chessitos/comunidad/club-35.jpg", alt: "Participantes durante una premiación" },
+              ]}
+            />
           </div>
         </section>
 
